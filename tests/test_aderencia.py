@@ -250,3 +250,47 @@ def test_sem_ancora_nenhuma_todo_numero_fica_fora() -> None:
     medida = medir_aderencia("A Selic ficou em 14,00% a.a.", [])
     assert medida.proporcao == 0.0
     assert medida.cobertura_textual == {}
+
+
+# -- O número fora das Âncoras, legível para a Correção ------------------------
+
+
+def test_numero_fora_com_unidade_mostra_a_unidade() -> None:
+    """A Correção precisa dizer "15%" e "0,75 p.p.", não "15" e "0,75"."""
+    texto = "subiu 15%, ou 0,75 p.p., ou 75 pb, indo a 15,00% a.a., custando R$ 1.234,56"
+    medida = medir_aderencia(texto, [])
+    assert medida.numeros_fora_das_ancoras == ["15", "0,75", "75", "15,00", "1.234,56"]
+    assert medida.numeros_fora_com_unidade == [
+        "15%",
+        "0,75 p.p.",
+        "75 pb",
+        "15,00% a.a.",
+        "R$ 1.234,56",
+    ]
+
+
+def test_numero_fora_com_unidade_carrega_o_qualificador() -> None:
+    medida = medir_aderencia("o papel paga CDI+2% e o outro paga 110% do CDI", [])
+    assert medida.numeros_fora_das_ancoras == ["2", "110"]
+    assert medida.numeros_fora_com_unidade == ["CDI+2%", "110% do CDI"]
+
+
+def test_data_voto_e_numero_solto_ficam_so_com_o_literal() -> None:
+    texto = "Na 280ª reunião, em 4 e 5 de agosto de 2026, a decisão saiu por 7 votos a 0."
+    medida = medir_aderencia(texto, [])
+    assert medida.numeros_fora_com_unidade == [
+        "280",
+        "4 e 5 de agosto de 2026",
+        "7 votos a 0",
+    ]
+    assert medida.numeros_fora_com_unidade == medida.numeros_fora_das_ancoras
+
+
+def test_as_duas_listas_de_fora_andam_juntas() -> None:
+    """Mesma ordem e mesmo tamanho: o índice de uma vale na outra."""
+    texto = "subiu 15% em 4 e 5 de agosto de 2026, com a Selic em 14,00% a.a."
+    medida = medir_aderencia(texto, [SELIC])
+    assert medida.numeros_conferidos == ["14,00"]
+    assert len(medida.numeros_fora_com_unidade) == len(medida.numeros_fora_das_ancoras)
+    assert medida.numeros_fora_das_ancoras == ["15", "4 e 5 de agosto de 2026"]
+    assert medida.numeros_fora_com_unidade == ["15%", "4 e 5 de agosto de 2026"]

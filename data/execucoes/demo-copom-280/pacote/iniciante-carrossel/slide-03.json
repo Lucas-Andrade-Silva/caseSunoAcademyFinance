@@ -1,0 +1,75 @@
+{
+  "slide": 3,
+  "total": 6,
+  "audiencia": "iniciante",
+  "largura": 1080,
+  "altura": 1350,
+  "caixas": [
+    {
+      "nome": "selo",
+      "retangulo": [
+        108,
+        84,
+        253,
+        120
+      ],
+      "texto": "Iniciante",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 30,
+      "entrelinha": 0,
+      "cor": "#0E1420",
+      "cor_fundo": "#F0B429"
+    },
+    {
+      "nome": "titulo",
+      "retangulo": [
+        84,
+        190,
+        996,
+        441
+      ],
+      "texto": "Foi decisão de todos",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 62,
+      "entrelinha": 16,
+      "cor": "#F2F5FA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "corpo",
+      "retangulo": [
+        84,
+        490,
+        996,
+        712
+      ],
+      "texto": "O placar ficou em 7 a 0. Ou seja: ninguém\nvotou contra.",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 38,
+      "entrelinha": 14,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "rodape",
+      "retangulo": [
+        84,
+        1240,
+        996,
+        1273
+      ],
+      "texto": "3/6",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 28,
+      "entrelinha": 0,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    }
+  ],
+  "numeros": [
+    {
+      "chave": "placar_votacao",
+      "texto": "7 a 0"
+    }
+  ]
+}

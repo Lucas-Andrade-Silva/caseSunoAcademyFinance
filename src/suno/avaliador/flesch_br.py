@@ -11,10 +11,15 @@ São deliberadas — é aqui que alguém "corrige" sem saber:
 - **Frase** termina em ``.``, ``!``, ``?``, ``…`` ou quebra dupla de linha. Uma sequência
   de terminadores (``...``, ``?!``) termina uma frase só, e o terminador no fim do texto
   não abre frase vazia. Trecho sem nenhuma palavra não conta como frase.
-- **Não terminam frase**: as abreviações de ``ABREVIACOES`` (``a.a.``, ``p.p.``, ``Sr.``,
-  ``etc.``…) e o ponto de milhar (``1.234``). Texto financeiro é cheio de ``14,00% a.a.``
-  no meio da frase. O preço disso é que uma abreviação no fim de uma frase de verdade não
-  a encerra: preferimos juntar duas frases a partir uma em ``14,00% a. / a. pelo Copom``.
+- **Ponto de milhar** (``1.234``) nunca termina frase.
+- **Abreviação** de ``ABREVIACOES`` (``a.a.``, ``p.p.``, ``etc.``…) termina frase só quando
+  o que vem depois parece frase nova: espaço e letra maiúscula, quebra de linha, ou fim do
+  texto. Seguida de minúscula, de dígito ou de pontuação, não termina — texto financeiro é
+  cheio de ``14,00% a.a. pelo Copom`` e de ``14,00% a.a., e entende que`` no meio da frase,
+  e a Célula também costuma *fechar* a frase na Selic (``…para 14,00% a.a. O Comitê…``).
+  O ponto interno da abreviação (o de ``a.a.``) nunca termina nada.
+- **Abreviação de tratamento** (``Sr.``, ``Sra.``, ``Dr.``, ``Dra.``) fica fora dessa
+  regra e nunca termina frase: o que vem depois é nome próprio, sempre maiúsculo.
 - **Palavra** é uma sequência de letras com acento e hífen interno (``bem-vindo`` é uma),
   ou uma abreviação inteira (``a.a.`` é uma), ou um número (``14,00`` é uma). Símbolos
   isolados (``%``, ``—``, ``•``, ``-``) não são palavras.
@@ -39,6 +44,9 @@ COEFICIENTE_LINEAR = 248.835
 COEFICIENTE_PALAVRAS_POR_FRASE = 1.015
 COEFICIENTE_SILABAS_POR_PALAVRA = 84.6
 
+ABREVIACOES_DE_TRATAMENTO: tuple[str, ...] = ("sra.", "sr.", "dra.", "dr.")
+"""Nunca terminam frase: o que vem depois é nome próprio, e nome próprio é maiúsculo."""
+
 ABREVIACOES: tuple[str, ...] = (
     "p.ex.",
     "n.º",
@@ -48,12 +56,8 @@ ABREVIACOES: tuple[str, ...] = (
     "p.m.",
     "etc.",
     "vs.",
-    "sra.",
-    "sr.",
-    "dra.",
-    "dr.",
-)
-"""Pontos que não terminam frase. Ordenadas da mais longa para a mais curta."""
+) + ABREVIACOES_DE_TRATAMENTO
+"""Pontos que só terminam frase diante de maiúscula, quebra de linha ou fim de texto."""
 
 _LETRAS = "A-Za-zÀ-ÖØ-öø-ÿ"
 _MARCA = "\x00"
@@ -64,6 +68,8 @@ _ABREVIACAO = re.compile(
     re.IGNORECASE,
 )
 _PONTO_DE_MILHAR = re.compile(r"(?<=\d)\.(?=\d)")
+_FRASE_NOVA_DEPOIS = re.compile(r"[ \t]*(?:\n|\Z)|[ \t]+[A-ZÀ-ÖØ-Þ]")
+"""O que, depois de uma abreviação, denuncia frase nova: maiúscula, linha ou fim."""
 _PREFIXO_MARKDOWN = re.compile(
     r"^[ \t]*(?:>+[ \t]*|#{1,6}[ \t]*|[-*+•][ \t]+|\d+[.)][ \t]+)+", re.MULTILINE
 )
@@ -136,8 +142,17 @@ def _sem_markdown(texto: str) -> str:
 
 def _mascarar(texto: str) -> str:
     """Troca por sentinela o ponto que não termina frase: abreviação e milhar."""
-    protegido = _ABREVIACAO.sub(lambda achado: achado.group(0).replace(".", _MARCA), texto)
-    return _PONTO_DE_MILHAR.sub(_MARCA, protegido)
+
+    def proteger(achado: re.Match[str]) -> str:
+        bruto = achado.group(0)
+        if bruto.lower() in ABREVIACOES_DE_TRATAMENTO or not bruto.endswith("."):
+            return bruto.replace(".", _MARCA)  # Sr. Silva, n.º 280
+        miolo = bruto[:-1].replace(".", _MARCA)  # o ponto de dentro de a.a. nunca termina
+        if _FRASE_NOVA_DEPOIS.match(texto, achado.end()):
+            return miolo + "."  # ...14,00% a.a. O Comitê... são duas frases
+        return miolo + _MARCA  # ...14,00% a.a. pelo Copom... é uma só
+
+    return _PONTO_DE_MILHAR.sub(_MARCA, _ABREVIACAO.sub(proteger, texto))
 
 
 def _silabas_do_token(token: str) -> int:

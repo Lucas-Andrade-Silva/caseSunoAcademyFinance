@@ -159,6 +159,8 @@ class AncoraNumerica(BaseModel):
             if self.qualificador:
                 return f"{self.valor_literal}% {self.qualificador}"
             return f"{self.valor_literal}%"
+        if self.unidade is Unidade.PERCENTUAL_AO_ANO:
+            return f"{self.valor_literal}% a.a."  # como a Ata escreve: sem espaço antes do %
         return f"{self.valor_literal} {self.unidade}"
 
 
@@ -512,6 +514,10 @@ class HistoricoCelula(BaseModel):
     tentativas: list[Tentativa] = Field(default_factory=list)
     destino_final: Destino
     provedores_usados: list[str] = Field(default_factory=list)
+    falha: str | None = Field(
+        default=None,
+        description="Erro de provedor que interrompeu o Ciclo antes do teto, se houve. Vai à Pendencia H4.",
+    )
 
     @property
     def celula_final(self) -> Celula | None:

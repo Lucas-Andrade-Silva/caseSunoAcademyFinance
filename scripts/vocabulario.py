@@ -84,6 +84,8 @@ def main() -> int:
             for nome in nomes:
                 if nome in EXCECOES_DE_NOME:
                     continue
+                if nome.startswith("__") and nome.endswith("__"):
+                    continue  # dunders são protocolo do Python (__post_init__), não nome nosso
                 for parte in partes_do_nome(nome):
                     if normalizar(parte) in evitar:
                         achados.append((str(arquivo.relative_to(RAIZ)), nome, normalizar(parte)))

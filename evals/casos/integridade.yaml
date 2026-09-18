@@ -1,0 +1,197 @@
+# Casos da Integridade da extração (ADR 0013). A medida olha a tabela de Âncoras, não a
+# Célula: é a leitura da Ata que está sob suspeita, e reescrever a Célula não conserta
+# documento mal lido. Por isso a reprovação daqui não aciona o Ciclo de correção — vai
+# direto à fila humana, e o próprio `Laudo` do domínio recusa qualquer outro destino.
+#
+# Todos os casos usam o mesmo texto, aprovado nas outras quatro métricas para a Audiência
+# Iniciante: o que muda de caso para caso é só a tabela de Âncoras.
+name: integridade
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: tres-chaves-essenciais-presentes-aprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: &texto_limpo >-
+        O Banco Central é o órgão que cuida do dinheiro do país. Nesta semana ele decidiu
+        manter a taxa de juros, ou seja, o preço do dinheiro no tempo. A taxa segue alta.
+        Isso deixa o crédito caro. Quem guarda dinheiro ganha mais. Quem pega dinheiro
+        emprestado paga mais.
+      ancoras:
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Selic decidida, data da reunião e placar: as três chaves de `CHAVES_ESSENCIAIS`. É o
+      piso de comparação dos outros casos, todos com o mesmo texto.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, minimo: 1.0}
+
+  - name: sem-ancora-nenhuma-vai-a-revisao-humana
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras: []
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Ata fora do padrão: a extração não achou nada. O silêncio é o modo de falha, e o
+      sistema não pode confundi-lo com "a Ata não tinha número".
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, minimo: 0.0, maximo: 0.0001}
+
+  - name: sem-selic-decidida-vai-a-revisao-humana
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras:
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Falta a decisão da reunião — o número que a Ata existe para comunicar. Duas de três
+      chaves não é "quase certo": é extração degradada.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, maximo: 1.0}
+
+  - name: sem-placar-de-votacao-vai-a-revisao-humana
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras:
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Unanimidade e dissenso mudam a leitura da decisão; sem o placar, a Célula não tem
+      como falar disso sem inventar.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, maximo: 1.0}
+
+  - name: sem-data-da-reuniao-vai-a-revisao-humana
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras:
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Sem a data não dá para saber de qual reunião a Célula fala, e o Pacote de publicação
+      sai sem referência temporal.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, maximo: 1.0}
+
+  - name: chave-nao-essencial-nao-supre-a-essencial
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras:
+        - chave: ipca_projecao_ano_corrente
+          rotulo: Projeção do IPCA para o ano corrente
+          literal: "4,20"
+          numero: 4.2
+          unidade: "%"
+          trecho: projeção de 4,20% para o IPCA de 2026
+        - chave: numero_reuniao
+          rotulo: Número da reunião
+          literal: "280"
+          numero: 280.0
+          unidade: numero
+          trecho: 280ª reunião do Copom
+        - chave: alvo_inflacao
+          rotulo: Alvo de inflação
+          literal: "3,00"
+          numero: 3.0
+          unidade: "%"
+          trecho: meta de 3,00% definida pelo CMN
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Três Âncoras numéricas presentes e nenhuma delas essencial. Quantidade de Âncora não
+      é integridade: o que conta é quais chaves vieram.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, minimo: 0.0, maximo: 0.0001}
+
+  - name: ancora-textual-nao-supre-a-numerica
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: *texto_limpo
+      ancoras:
+        - chave: decisao
+          afirmacao: O Copom decidiu manter a taxa básica de juros no patamar anterior.
+          trecho: O Copom decidiu, por unanimidade, manter a taxa básica de juros.
+        - chave: balanco_de_riscos_1
+          afirmacao: O comitê avalia que o balanço de riscos segue assimétrico para cima.
+          trecho: O Comitê avalia que o balanço de riscos permanece assimétrico.
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Uma afirmação em prosa não substitui o número que falta: `CHAVES_ESSENCIAIS` é um
+      conjunto de chaves de Âncora numérica, e "decidiu manter" não diz em quanto.
+    evaluators:
+      - MedidaNaFaixa: {metrica: integridade, minimo: 0.0, maximo: 0.0001}

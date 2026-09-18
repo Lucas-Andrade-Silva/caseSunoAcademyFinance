@@ -1,0 +1,404 @@
+{
+  "execucao": "demo-copom-280",
+  "audiencia": "intermediario",
+  "formato": "carrossel",
+  "legenda": "O Copom definiu a Selic em 14,00% a.a.\n\nSelic em 14,00% a.a.\n\nO Copom reduziu os juros na reunião de 4 e 5 de agosto de 2026, com placar de 7 a 0 e sem registro de divergência entre os membros presentes na apuração final.\n\nConteúdo informativo. Não é recomendação de investimento.",
+  "hashtags": [
+    "#copom",
+    "#selic",
+    "#juros",
+    "#bancocentral",
+    "#rendafixa",
+    "#macroeconomia",
+    "#investimentos"
+  ],
+  "imagens": [
+    {
+      "indice": 0,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-01.png",
+      "largura": 1080,
+      "altura": 1350
+    },
+    {
+      "indice": 1,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-02.png",
+      "largura": 1080,
+      "altura": 1350
+    },
+    {
+      "indice": 2,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-03.png",
+      "largura": 1080,
+      "altura": 1350
+    },
+    {
+      "indice": 3,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-04.png",
+      "largura": 1080,
+      "altura": 1350
+    },
+    {
+      "indice": 4,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-05.png",
+      "largura": 1080,
+      "altura": 1350
+    },
+    {
+      "indice": 5,
+      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\slide-06.png",
+      "largura": 1080,
+      "altura": 1350
+    }
+  ],
+  "folha_de_contato": "data\\execucoes\\demo-copom-280\\pacote\\intermediario-carrossel\\folha-de-contato.png",
+  "video": null,
+  "conferencia": {
+    "medicoes": [
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 222.0,
+        "detalhe": "caixa corpo: 4 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-01.png",
+        "defeito": null,
+        "valor": null,
+        "detalhe": "'selic_decidida': a imagem mostra '14,00% a.a.' e a Âncora cita '14,00% a.a.'"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 163.0,
+        "detalhe": "caixa corpo: 3 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-02.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 163.0,
+        "detalhe": "caixa corpo: 3 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-03.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 163.0,
+        "detalhe": "caixa corpo: 3 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-04.png",
+        "defeito": null,
+        "valor": null,
+        "detalhe": "'ipca_projecao_ano_corrente': a imagem mostra '5,1%' e a Âncora cita '5,1%'"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 222.0,
+        "detalhe": "caixa corpo: 4 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-05.png",
+        "defeito": null,
+        "valor": null,
+        "detalhe": "'ipca_projecao_horizonte': a imagem mostra '3,2%' e a Âncora cita '3,2%'"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1350; todo slide precisa de 1080x1350"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 36.0,
+        "detalhe": "caixa selo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 9.89,
+        "detalhe": "caixa selo: #0E1420 sobre #F0B429 dá razão 9.89; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 73.0,
+        "detalhe": "caixa titulo: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 16.86,
+        "detalhe": "caixa titulo: #F2F5FA sobre #0E1420 dá razão 16.86; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 222.0,
+        "detalhe": "caixa corpo: 4 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa corpo: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 33.0,
+        "detalhe": "caixa rodape: 1 linha(s) dentro do retângulo reservado"
+      },
+      {
+        "artefato": "slide-06.png",
+        "defeito": null,
+        "valor": 10.74,
+        "detalhe": "caixa rodape: #B9C7DA sobre #0E1420 dá razão 10.74; o mínimo é 4.5"
+      }
+    ],
+    "juiz_visao": null
+  },
+  "montado_em": "2026-09-18T12:51:09.268260Z",
+  "aprovado_por_humano": false
+}

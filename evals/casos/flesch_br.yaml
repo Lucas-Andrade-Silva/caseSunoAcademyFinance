@@ -1,0 +1,175 @@
+# Casos do Flesch-BR (ADR 0002). As faixas por Audiência são as do NILC, publicadas em
+# `LIMIARES_PROVISORIOS`: Iniciante >= 50, Intermediário 25 a 50, Avançado < 25.
+#
+# Nenhum texto daqui tem número: assim a Aderência sai ausente e o único veredito em jogo
+# é o do Flesch-BR. Os valores nas faixas de `MedidaNaFaixa` foram medidos com
+# `suno.avaliador.flesch_br.flesch_br`, não estimados.
+name: flesch_br
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: iniciante-texto-muito-facil
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O Banco Central é o órgão que cuida do dinheiro do país. Nesta semana ele decidiu
+        manter a taxa de juros, ou seja, o preço do dinheiro no tempo. A taxa segue alta.
+        Isso deixa o crédito caro. Quem guarda dinheiro ganha mais. Quem pega dinheiro
+        emprestado paga mais.
+      ancoras: &essenciais
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Frases curtas e palavras comuns, com os termos do Léxico explicados: é o alvo da
+      Audiência Iniciante e o caso que prova que a faixa alta do NILC aprova.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, minimo: 75.0}
+
+  - name: iniciante-texto-dificil-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        A comunicação divulgada pelo comitê nesta quarta-feira procurou deixar claro que
+        qualquer mudança futura dependerá da evolução das informações disponíveis, das
+        projeções apresentadas e da percepção predominante sobre o comportamento dos
+        preços ao longo dos próximos trimestres.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [flesch_br]
+    metadata: >-
+      Uma frase só, longa e de palavras compridas, sem nenhum termo do Léxico: isola o
+      Flesch-BR como único motivo de reprovação.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, maximo: 25.0}
+
+  - name: iniciante-fronteira-acima-do-limiar
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve a decisão anterior. A equipe explicou que o cenário ainda pede
+        cautela e que qualquer mudança depende dos dados que vierem pela frente. O texto
+        divulgado repete o recado das reuniões passadas.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Fronteira do Limiar por cima: 50,87. O par com o caso seguinte é a mesma Célula com
+      uma frase curta a mais, e é ela que derruba o índice abaixo de 50.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, minimo: 50.0, maximo: 51.0}
+
+  - name: iniciante-fronteira-abaixo-do-limiar
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve a decisão anterior. A equipe explicou que o cenário ainda pede
+        cautela e que qualquer mudança depende dos dados que vierem pela frente. O texto
+        divulgado repete o recado das reuniões passadas. A cautela permanece.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [flesch_br]
+    metadata: >-
+      Fronteira do Limiar por baixo: 49,96. `Faixa` é fechada no mínimo, então 50,0 passa
+      e 49,9 não — a asserção sobre o 50,0 exato está em tests/test_evals.py, porque
+      contagem inteira de palavras, frases e sílabas não cai exatamente em 50,0.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, minimo: 49.5, maximo: 50.0}
+
+  - name: intermediario-na-faixa-do-nilc
+    inputs:
+      audiencia: intermediario
+      formato: texto_analitico
+      texto: >-
+        O comitê decidiu manter a taxa básica de juros. A avaliação considera que a
+        inflação corrente ainda supera o objetivo perseguido. As projeções melhoraram, mas
+        permanecem acima do centro do objetivo. O comitê seguirá vigilante e avaliará os
+        próximos passos com cautela.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      32,7: dentro da faixa 25–50 do Intermediário. Só termos do núcleo do Léxico, que
+      esta Audiência dispensa de explicação.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, minimo: 25.0, maximo: 50.0}
+
+  - name: avancado-texto-tecnico
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        A decisão de manutenção da taxa básica reflete a avaliação de que o processo de
+        desinflação em curso ainda não se consolidou o suficiente para justificar qualquer
+        flexibilização das condições monetárias, especialmente diante da persistência das
+        expectativas de inflação acima do objetivo perseguido pela autoridade monetária ao
+        longo do horizonte relevante de política monetária considerado pelo comitê.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Índice negativo (-37,6): a faixa do Avançado é aberta para baixo, e texto denso é o
+      que essa Audiência pede. Prova que "difícil" não é defeito por si.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, maximo: 0.0}
+
+  - name: avancado-facil-demais-reprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O Banco Central é o órgão que cuida do dinheiro do país. Nesta semana ele decidiu
+        manter a taxa de juros, ou seja, o preço do dinheiro no tempo. A taxa segue alta.
+        Isso deixa o crédito caro. Quem guarda dinheiro ganha mais. Quem pega dinheiro
+        emprestado paga mais.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [flesch_br]
+    metadata: >-
+      O mesmo texto do primeiro caso, na Audiência errada. O Limiar tem teto, não só piso:
+      texto raso para o Avançado reprova igual a texto denso para o Iniciante.
+    evaluators:
+      - MedidaNaFaixa: {metrica: flesch_br, minimo: 25.0}
+
+  - name: texto-vazio-medida-ausente
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: ""
+      ancoras: *essenciais
+    metadata: >-
+      Caso-limite do ADR 0008: sem palavra não há base para medir, e a Medida sai ausente,
+      nunca Flesch-BR zero — zero seria "muito difícil" e reprovaria por engano. Este caso
+      não afirma nada sobre o destino: o que ele defende é a ausência da medida.
+    evaluators:
+      - MedidaAusente: flesch_br

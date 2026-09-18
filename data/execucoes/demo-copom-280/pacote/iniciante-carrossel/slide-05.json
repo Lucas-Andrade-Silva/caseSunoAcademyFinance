@@ -1,0 +1,75 @@
+{
+  "slide": 5,
+  "total": 6,
+  "audiencia": "iniciante",
+  "largura": 1080,
+  "altura": 1350,
+  "caixas": [
+    {
+      "nome": "selo",
+      "retangulo": [
+        108,
+        84,
+        253,
+        120
+      ],
+      "texto": "Iniciante",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 30,
+      "entrelinha": 0,
+      "cor": "#0E1420",
+      "cor_fundo": "#F0B429"
+    },
+    {
+      "nome": "titulo",
+      "retangulo": [
+        84,
+        190,
+        996,
+        441
+      ],
+      "texto": "O que esperam dos\npreços",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 62,
+      "entrelinha": 16,
+      "cor": "#F2F5FA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "corpo",
+      "retangulo": [
+        84,
+        490,
+        996,
+        712
+      ],
+      "texto": "A conta do governo é de 5,1% neste ano. No\nano que vem, cai para 3,8%.",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 38,
+      "entrelinha": 14,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "rodape",
+      "retangulo": [
+        84,
+        1240,
+        996,
+        1273
+      ],
+      "texto": "5/6",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 28,
+      "entrelinha": 0,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    }
+  ],
+  "numeros": [
+    {
+      "chave": "ipca_projecao_ano_corrente",
+      "texto": "5,1%"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+# Casos de ponta a ponta do Laudo: os três Formatos, as três Audiências e os três destinos
+# do ADR 0013. Enquanto os outros arquivos isolam uma métrica por vez, aqui o interesse é o
+# Laudo inteiro — inclusive a Célula que reprova por dois motivos ao mesmo tempo.
+#
+# Carrossel e Roteiro entram como texto em parágrafos: cada parágrafo vira um Slide
+# (primeira linha o título) ou um Bloco de fala. `Conteudo.texto_avaliavel` recompõe o
+# mesmo texto, e é por isso que a medida do Carrossel pode ser comparada com a do Texto
+# analítico — o Formato não deveria mudar o veredito sozinho.
+name: matriz
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: iniciante-carrossel-aprovado
+    inputs:
+      audiencia: iniciante
+      formato: carrossel
+      texto: |-
+        O que ficou decidido
+        O grupo que define o custo do dinheiro manteve tudo como estava.
+
+        Por que isso importa
+        O crédito segue caro para quem pega dinheiro emprestado.
+
+        O que muda para você
+        Quem guarda dinheiro ganha mais. Quem deve paga mais.
+      ancoras: &essenciais
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Três Slides, título e corpo, na Audiência Iniciante. O Avaliador julga o texto do
+      Slide, nunca a imagem (a conferência visual é outra coisa, ADR 0014).
+
+  - name: iniciante-roteiro-aprovado
+    inputs:
+      audiencia: iniciante
+      formato: roteiro
+      texto: |-
+        O grupo que define o custo do dinheiro se reuniu esta semana.
+
+        A decisão foi manter tudo como estava.
+
+        Isso quer dizer que o crédito segue caro por mais um tempo.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Três Blocos de fala. Só a fala é medida: a rubrica de cena fica de fora do
+      Flesch-BR, senão a direção de arte entraria na conta da legibilidade.
+
+  - name: intermediario-texto-analitico-aprovado
+    inputs:
+      audiencia: intermediario
+      formato: texto_analitico
+      texto: >-
+        O Copom manteve a Selic no patamar anterior. A inflação corrente ainda supera o
+        objetivo. As projeções recuaram, mas seguem distantes do centro desejado.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      O meio da Matriz: Audiência Intermediária no Formato mais longo. Termos do núcleo
+      sem explicação, que é o que esta Audiência espera.
+
+  - name: avancado-texto-analitico-aprovado
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O Copom decidiu manter a taxa Selic em 14,00% a.a. na reunião de 4 e 5 de agosto de
+        2026, por 7 votos a 0, mantendo inalterado o grau de restrição monetária
+        considerado adequado ao horizonte relevante.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      A Célula com os três números da Ata, na Audiência que aguenta a densidade. É a
+      combinação que o relatório usa como exemplo de Célula aprovada com Âncora citada.
+
+  - name: iniciante-carrossel-reprovado-por-flesch
+    inputs:
+      audiencia: iniciante
+      formato: carrossel
+      texto: |-
+        Comunicação da decisão
+        A comunicação divulgada pelo comitê nesta quarta-feira procurou deixar claro que
+        qualquer mudança futura dependerá da evolução das informações disponíveis.
+
+        Condicionantes
+        As projeções apresentadas e a percepção predominante sobre o comportamento dos
+        preços ao longo dos próximos trimestres seguem condicionando a avaliação.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [flesch_br]
+    metadata: >-
+      Texto de Ata copiado para dentro de um Slide de Iniciante. O Formato não salva o
+      texto: o Limiar é da Audiência, e o Ciclo de correção existe para isto.
+
+  - name: iniciante-roteiro-reprovado-por-recomendacao
+    inputs:
+      audiencia: iniciante
+      formato: roteiro
+      texto: |-
+        O grupo que define o custo do dinheiro manteve tudo como estava.
+
+        Compre títulos agora e garanta o ganho do ano.
+
+        A janela não vai durar muito tempo.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [recomendacao]
+    metadata: >-
+      O gancho de Roteiro é onde a Recomendação escapa: a fala do meio vende, as outras
+      duas informam. A linha do CONTEXT.md não depende do Formato.
+
+  - name: intermediario-carrossel-numero-fora-das-ancoras
+    inputs:
+      audiencia: intermediario
+      formato: carrossel
+      texto: |-
+        A decisão
+        O Copom manteve a Selic em 13,25% a.a. nesta reunião de agosto.
+
+        O que vem pela frente
+        As projeções recuaram, mas seguem distantes do centro desejado pelo comitê ao
+        longo do horizonte relevante considerado na avaliação.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [aderencia]
+    metadata: >-
+      Número errado dentro de um Slide, que é onde ele fica mais difícil de conferir a
+      olho: a Âncora diz 14,00 e o Slide diz 13,25.
+
+  - name: avancado-roteiro-falha-de-extracao
+    inputs:
+      audiencia: avancado
+      formato: roteiro
+      texto: |-
+        O comitê avaliou que o processo de desinflação segue em curso, ainda que em ritmo
+        inferior ao desejado pela autoridade monetária.
+
+        A manutenção do grau de restrição permanece condicionada à convergência das
+        expectativas ao objetivo perseguido no horizonte relevante.
+      ancoras: []
+    expected_output:
+      destino: reprovado_revisao_humana
+      motivos: [falha_de_extracao]
+    metadata: >-
+      Célula boa, Ata mal lida. O Roteiro passa em tudo o que depende do texto e ainda
+      assim vai à fila humana: reescrever não conserta extração.
+
+  - name: iniciante-texto-analitico-dois-motivos
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O balanço de riscos permanece assimétrico para cima, com o hiato do produto ainda
+        positivo e as expectativas de inflação acima da meta contínua no horizonte
+        relevante, o que sustenta a manutenção de uma política monetária contracionista.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [flesch_br, densidade]
+    metadata: >-
+      Dois motivos no mesmo Laudo. O motivo é enumerado justamente para isto: contar
+      reprovação por motivo (ADR 0013) só funciona se uma Célula puder ter mais de um.
