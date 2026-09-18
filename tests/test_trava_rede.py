@@ -20,9 +20,16 @@ def test_conexao_por_socket_e_bloqueada():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         with pytest.raises(RedeBloqueada):
-            s.connect(("127.0.0.1", 9))
+            s.connect(("192.0.2.1", 9))  # TEST-NET-1: nunca roteável
     finally:
         s.close()
+
+
+def test_loopback_fica_livre_para_o_laco_asyncio():
+    """No Windows, `asyncio.new_event_loop()` conecta em 127.0.0.1 via socketpair; não pode cair na trava."""
+    a, b = socket.socketpair()
+    a.close()
+    b.close()
 
 
 def test_resolucao_de_nome_e_bloqueada():

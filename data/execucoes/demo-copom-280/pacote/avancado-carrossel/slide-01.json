@@ -1,0 +1,75 @@
+{
+  "slide": 1,
+  "total": 6,
+  "audiencia": "avancado",
+  "largura": 1080,
+  "altura": 1350,
+  "caixas": [
+    {
+      "nome": "selo",
+      "retangulo": [
+        108,
+        84,
+        272,
+        120
+      ],
+      "texto": "Avançado",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 30,
+      "entrelinha": 0,
+      "cor": "#0E1420",
+      "cor_fundo": "#F0B429"
+    },
+    {
+      "nome": "titulo",
+      "retangulo": [
+        84,
+        190,
+        996,
+        441
+      ],
+      "texto": "Decisão e placar",
+      "fonte": "DejaVuSans-Bold.ttf",
+      "tamanho": 62,
+      "entrelinha": 16,
+      "cor": "#F2F5FA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "corpo",
+      "retangulo": [
+        84,
+        490,
+        996,
+        712
+      ],
+      "texto": "O Copom fixou a taxa básica de juros em\n14,00% a.a. na 280ª reunião, realizada em 4 e\n5 de agosto de 2026, com placar de 7 a 0 e\nsem registro de dissenso na ata divulgada.",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 38,
+      "entrelinha": 14,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    },
+    {
+      "nome": "rodape",
+      "retangulo": [
+        84,
+        1240,
+        996,
+        1273
+      ],
+      "texto": "1/6",
+      "fonte": "DejaVuSans.ttf",
+      "tamanho": 28,
+      "entrelinha": 0,
+      "cor": "#B9C7DA",
+      "cor_fundo": "#0E1420"
+    }
+  ],
+  "numeros": [
+    {
+      "chave": "selic_decidida",
+      "texto": "14,00% a.a."
+    }
+  ]
+}

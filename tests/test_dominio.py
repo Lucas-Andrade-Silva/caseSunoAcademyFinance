@@ -70,7 +70,7 @@ def test_matriz_tem_nove_celulas_em_ordem_estavel():
 
 
 def test_ancora_numerica_cita_valor_literal_com_unidade():
-    assert _ancora_selic().citacao() == "14,00 % a.a."
+    assert _ancora_selic().citacao() == "14,00% a.a."
     votos = AncoraNumerica(chave="placar_votacao", rotulo="Placar", valor_literal="7 a 0", unidade=Unidade.VOTOS, trecho="...")
     assert votos.citacao() == "7 a 0"
     pct = AncoraNumerica(chave="ipca", rotulo="IPCA", valor_literal="5,1", unidade=Unidade.PERCENTUAL, trecho="...")

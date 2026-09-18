@@ -1,0 +1,205 @@
+# Casos da Aderência (ADR 0011). O número da Célula é copiado da Âncora, nunca reescrito:
+# a conferência é por igualdade exata de valor E unidade, com tolerância só de
+# representação (14 = 14,0 = 14,00).
+#
+# Todos os casos rodam na Audiência Avançada de propósito: número escrito por extenso conta
+# sílaba por dígito e derruba o Flesch-BR, e a Exigência de explicação do Avançado é
+# `nunca`. Assim o único veredito em jogo é o da Aderência.
+name: aderencia
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: numeros-copiados-das-ancoras-aprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O Copom decidiu manter a taxa Selic em 14,00% a.a. na reunião de 4 e 5 de agosto de
+        2026, por 7 votos a 0, mantendo inalterado o grau de restrição monetária
+        considerado adequado ao horizonte relevante.
+      ancoras: &essenciais
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Os três números da Célula saem literalmente das Âncoras. É o caso feliz do ADR 0011
+      e o piso de comparação de todos os outros deste arquivo.
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 1.0}
+
+  - name: numero-fora-das-ancoras-reprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O Copom decidiu manter a taxa Selic em 13,25% a.a. na reunião de 4 e 5 de agosto de
+        2026, por 7 votos a 0, mantendo inalterado o grau de restrição monetária
+        considerado adequado ao horizonte relevante.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [aderencia]
+    metadata: >-
+      Um dígito trocado no meio de uma Célula correta: 13,25 em vez de 14,00. É exatamente
+      a alucinação numérica que o ADR 0011 existe para pegar, e ela não aparece em nenhuma
+      outra métrica.
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 0.6, maximo: 0.7}
+
+  - name: percentual-nao-casa-com-ponto-percentual-reprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        A decisão representa uma variação de 0,50% em relação ao patamar anterior,
+        mantendo inalterado o grau de restrição monetária considerado adequado pelo comitê
+        ao longo do horizonte relevante de política monetária.
+      ancoras:
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+        - chave: variacao_pp
+          rotulo: Variação em pontos percentuais
+          literal: "0,50"
+          numero: 0.5
+          unidade: p.p.
+          trecho: redução de 0,50 p.p. ante a reunião anterior
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [aderencia]
+    metadata: >-
+      O valor bate e a unidade não: 0,50 p.p. não é 0,50%. A pesquisa §3 registra os dois
+      como unidades distintas, e tratá-las como iguais é o erro clássico de quem escreve
+      sobre juros. A Âncora existe; o que reprova é a unidade.
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 0.0, maximo: 0.0001}
+
+  - name: placar-em-outra-forma-casa
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        A decisão foi tomada por 7 votos a 0, sem dissenso registrado entre os membros do
+        comitê, o que reforça a leitura de convergência sobre o diagnóstico apresentado no
+        comunicado divulgado imediatamente após o encerramento do encontro de política
+        monetária.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Tolerância de representação, não de valor: "por 7 votos a 0" e "7 a 0" são o mesmo
+      placar, normalizado antes de comparar. A Célula não precisa repetir a Ata palavra por
+      palavra — precisa não mudar o número.
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 1.0}
+
+  - name: data-em-outra-forma-casa
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        A avaliação apresentada na reunião de 5 de agosto de 2026 manteve inalterado o grau
+        de restrição monetária considerado adequado ao horizonte relevante de política
+        monetária perseguido pela autoridade.
+      ancoras: *essenciais
+    metadata: >-
+      A Âncora diz "4 e 5 de agosto de 2026" e a Célula diz "5 de agosto de 2026": mesma
+      data, literal diferente. Um Roteiro de trinta segundos não repete os dois dias da
+      reunião, e encurtar assim não é distorcer a Ata.
+    expected_output:
+      destino: aprovado
+      motivos: []
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 1.0}
+
+  - name: texto-sem-numero-aderencia-ausente
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O comitê avaliou que o processo de desinflação segue em curso, ainda que em ritmo
+        inferior ao desejado, e reiterou que manterá o grau de restrição monetária
+        necessário à convergência das expectativas ao objetivo perseguido.
+      ancoras: *essenciais
+    metadata: >-
+      Célula sem número nenhum não tem Aderência zero: não há base para medir, e a Medida
+      sai ausente. Zero aqui reprovaria um texto que não afirmou nada de errado. Este caso
+      não afirma nada sobre o destino — o que ele defende é a ausência da medida.
+    evaluators:
+      - MedidaAusente: aderencia
+
+  - name: qualificador-diferente-reprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O rendimento acompanhou 110% do CDI ao longo do período considerado, mantendo
+        inalterado o grau de restrição monetária adequado ao horizonte relevante de
+        política monetária perseguido pela autoridade.
+      ancoras:
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+        - chave: rendimento_indexado
+          rotulo: Rendimento indexado
+          literal: "110"
+          numero: 110.0
+          unidade: "%"
+          trecho: rendimento de 110%
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [aderencia]
+    metadata: >-
+      "110% do CDI" não é "110%". O qualificador é parte do número, e a Âncora sem ele não
+      autoriza a Célula a citá-lo — é o outro caso da pesquisa §3, junto com CDI+2%.
+    evaluators:
+      - MedidaNaFaixa: {metrica: aderencia, minimo: 0.0, maximo: 0.0001}

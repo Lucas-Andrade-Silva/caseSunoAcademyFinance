@@ -178,7 +178,31 @@ def test_uma_palavra_so_nao_quebra() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_abreviacao_e_ponto_de_milhar_nao_terminam_frase() -> None:
+@pytest.mark.parametrize(
+    "texto, frases",
+    [
+        # Termina: a abreviação é seguida de maiúscula, de quebra de linha ou do fim.
+        ("O Copom levou a Selic para 14,00% a.a. O Comitê seguiu cauteloso.", 2),
+        ("A taxa fechou em 14,00% a.a.\nO Comitê seguiu cauteloso.", 2),
+        ("Juros, câmbio, inflação, etc. O Comitê decidiu.", 2),
+        ("O ciclo terminou. A Selic ficou em 14,00% a.a.", 2),
+        ("A Selic ficou em 14,00% a.a.", 1),  # fim de texto não abre frase vazia
+        # Não termina: minúscula, pontuação ou outro número depois.
+        ("O Copom levou a Selic para 14,00% a.a. pelo segundo mês seguido.", 1),
+        ("O Copom levou a Selic para 14,00% a.a., e entende que basta.", 1),
+        ("O juro real ficou em 9,00% a.a. contra 8,50% a.a. no trimestre.", 1),
+        ("O spread subiu 0,50 p.p. ante o mês anterior.", 1),
+        # Tratamento fica fora da regra: o que vem depois é nome próprio.
+        ("O Sr. Silva e o Dr. Souza votaram com o presidente.", 1),
+        ("O Sr. Silva votou. O Dr. Souza também.", 2),
+    ],
+)
+def test_abreviacao_termina_frase_so_diante_de_frase_nova(texto: str, frases: int) -> None:
+    """A Célula fecha frase na Selic: '…para 14,00% a.a. O Comitê…' são duas frases."""
+    assert contar(texto).frases == frases
+
+
+def test_abreviacao_diante_de_minuscula_e_ponto_de_milhar_nao_terminam_frase() -> None:
     texto = (
         "A taxa Selic ficou em 14,00% a.a. pelo Copom. "
         "O Sr. Dr. Silva citou 1.234 pontos e p.p. adicionais."
@@ -197,7 +221,7 @@ def test_abreviacao_e_ponto_de_milhar_nao_terminam_frase() -> None:
         ("Fim do texto.", 1),  # terminador no fim não abre frase vazia
         ("Primeira linha\n\nSegunda linha", 2),  # quebra dupla termina frase
         ("Primeira linha\nmesma frase", 1),  # quebra simples, não
-        ("14,00% a.a. e 3,25% a.a.", 1),
+        ("14,00% a.a. e 3,25% a.a.", 1),  # a do fim termina, mas não abre frase vazia
     ],
 )
 def test_contagem_de_frases(texto: str, frases: int) -> None:

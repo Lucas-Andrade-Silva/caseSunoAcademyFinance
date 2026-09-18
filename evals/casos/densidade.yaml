@@ -1,0 +1,141 @@
+# Casos da Densidade (ADR 0012). O que a Densidade cobra não é quantidade de jargão: é a
+# Exigência de explicação da Audiência na primeira ocorrência de cada termo do Léxico —
+# Iniciante `sempre`, Intermediário `fora_do_nucleo`, Avançado `nunca`.
+#
+# Os textos foram medidos para cair dentro da faixa de Flesch-BR da sua Audiência, de modo
+# que o único motivo de reprovação em jogo aqui seja a Densidade. Nenhum tem número, então
+# a Aderência sai ausente.
+name: densidade
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: iniciante-termo-do-lexico-sem-explicacao-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        A Selic ficou onde estava. O comitê decidiu manter o rumo. O crédito segue caro
+        para quem pega dinheiro emprestado.
+      ancoras: &essenciais
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [densidade]
+    metadata: >-
+      "Selic" solta, sem dizer o que é, na Audiência que exige explicação sempre. O
+      Flesch-BR está acima de 50, então a reprovação é só da Densidade.
+    evaluators:
+      - MedidaNaFaixa: {metrica: densidade, minimo: 0.04, maximo: 0.06}
+
+  - name: iniciante-mesmo-termo-explicado-aprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        A Selic é a taxa básica de juros do país. Ela ficou onde estava. O comitê decidiu
+        manter o rumo. O crédito segue caro para quem pega dinheiro emprestado.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      O par do caso anterior: mesmo termo, mesma Audiência, mas com a marca de explicação
+      ("é a") logo depois. É o que a Célula corrigida deveria parecer.
+    evaluators:
+      - MedidaNaFaixa: {metrica: densidade, minimo: 0.06, maximo: 0.08}
+
+  - name: intermediario-termo-do-nucleo-dispensa-explicacao
+    inputs:
+      audiencia: intermediario
+      formato: texto_analitico
+      texto: >-
+        O Copom manteve a Selic no patamar anterior. A inflação corrente ainda supera o
+        objetivo. As projeções recuaram, mas seguem distantes do centro desejado.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Copom, Selic e inflação são termos do núcleo do Léxico: quem lê como Intermediário
+      já os conhece, e explicá-los seria ruído. Exigência `fora_do_nucleo` em ação.
+
+  - name: intermediario-termo-fora-do-nucleo-sem-explicacao-reprova
+    inputs:
+      audiencia: intermediario
+      formato: texto_analitico
+      texto: >-
+        O Copom manteve a Selic no patamar anterior. O hiato do produto continua no
+        terreno negativo. As projeções recuaram, mas seguem distantes do centro desejado.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [densidade]
+    metadata: >-
+      "Hiato do produto" está fora do núcleo: para o Intermediário ele precisa vir
+      explicado na primeira ocorrência, e não veio. Mesma Audiência do caso anterior, e a
+      diferença é só de qual termo entrou.
+
+  - name: avancado-jargao-livre-aprova
+    inputs:
+      audiencia: avancado
+      formato: texto_analitico
+      texto: >-
+        O balanço de riscos permanece assimétrico para cima, com o hiato do produto ainda
+        positivo e as expectativas de inflação acima da meta contínua no horizonte
+        relevante, o que sustenta a manutenção de uma política monetária contracionista
+        por período suficientemente prolongado.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Exigência `nunca`: na Audiência Avançada explicar cada termo seria condescendência,
+      e a Densidade não reprova por jargão. Mesmos termos que reprovam no caso anterior.
+
+  - name: iniciante-texto-sem-termo-do-lexico-aprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O grupo que decide se reuniu esta semana. A decisão foi manter tudo como estava.
+        O texto divulgado repete o recado das reuniões passadas.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Proporção zero é uma medida, não uma ausência: o texto tem palavras, só não tem
+      termo do Léxico. Nenhum Limiar de Densidade mínima está ligado (H2), então aprova.
+    evaluators:
+      - MedidaNaFaixa: {metrica: densidade, minimo: 0.0, maximo: 0.0001}
+
+  - name: texto-vazio-densidade-ausente
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: ""
+      ancoras: *essenciais
+    metadata: >-
+      Distingue "zero termos em cem palavras" de "nenhuma palavra": o primeiro é 0,0, o
+      segundo é ausente. Confundir os dois é o erro que o ADR 0008 proíbe.
+    evaluators:
+      - MedidaAusente: densidade

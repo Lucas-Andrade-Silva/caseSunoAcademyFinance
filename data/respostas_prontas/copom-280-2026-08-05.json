@@ -1,0 +1,351 @@
+{
+  "extracao": [
+    {
+      "chaves": [
+        {
+          "chave": "ipca_projecao_ano_corrente",
+          "indice": 24,
+          "valor_lido": "5,1%"
+        },
+        {
+          "chave": "ipca_projecao_ano_seguinte",
+          "indice": 25,
+          "valor_lido": "3,8%"
+        },
+        {
+          "chave": "ipca_projecao_horizonte",
+          "indice": 26,
+          "valor_lido": "3,2%"
+        }
+      ],
+      "afirmacoes": [
+        {
+          "identificador": "decisao",
+          "afirmacao": "O Copom reduziu a taxa básica de juros e considera a decisão compatível com a convergência da inflação à meta.",
+          "trecho": "O Copom decidiu reduzir a taxa básica de juros para 14,00% a.a., e entende que essa decisão é compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante"
+        },
+        {
+          "identificador": "inflacao_corrente",
+          "afirmacao": "A inflação cheia desacelerou, mas segue acima do limite superior da meta.",
+          "trecho": "a inflação cheia desacelerou, porém ainda acima do limite superior da meta"
+        },
+        {
+          "identificador": "politica_restritiva",
+          "afirmacao": "A inflação segue pressionada pela demanda e exige política monetária restritiva.",
+          "trecho": "a inflação permanece pressionada pela demanda, exigindo que a política monetária mantenha caráter restritivo"
+        },
+        {
+          "identificador": "atividade_em_moderacao",
+          "afirmacao": "A atividade econômica doméstica manteve trajetória de moderação, como o Comitê antecipava.",
+          "trecho": "A atividade econômica doméstica manteve trajetória de moderação, tal como antecipado pelo Comitê"
+        },
+        {
+          "identificador": "cenario_externo",
+          "afirmacao": "A incerteza sobre o cenário externo segue elevada.",
+          "trecho": "A incerteza com relação ao cenário externo segue em níveis elevados"
+        },
+        {
+          "identificador": "afirmacao_sem_lastro",
+          "afirmacao": "Afirmação sem lastro na Ata: o conferidor de trecho a descarta, e é de propósito que ela está aqui.",
+          "trecho": "O Copom antecipou o fim do ciclo e prometeu novos cortes já na próxima reunião."
+        }
+      ]
+    }
+  ],
+  "celula:iniciante:texto_analitico:0": [
+    {
+      "titulo": "Copom reduz a taxa básica de juros e mantém postura cautelosa",
+      "o_que_foi_decidido": "Na reunião de {{data_reuniao}}, a {{numero_reuniao}}ª do colegiado, o Copom decidiu reduzir a taxa básica de juros para {{selic_decidida}}, em decisão aprovada pelo placar de {{placar_votacao}} e considerada compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante de política monetária, conforme o comunicado divulgado pelo Banco Central ao final do encontro.",
+      "por_que": "O Comitê avalia que as evidências de transmissão da política monetária contracionista para a atividade econômica têm se acumulado gradualmente, ainda que a inflação permaneça pressionada pela demanda agregada, o que exige que a política monetária preserve caráter restritivo enquanto o hiato do produto seguir em terreno desfavorável e enquanto o balanço de riscos permanecer assimétrico na direção altista, conforme o diagnóstico reiterado pelo colegiado.",
+      "o_que_observar_adiante": "As projeções do cenário de referência apontam inflação de {{ipca_projecao_ano_corrente}} no ano corrente, {{ipca_projecao_ano_seguinte}} no ano seguinte e {{ipca_projecao_horizonte}} no horizonte relevante, trajetória que o Comitê acompanhará à luz da evolução do cenário, sem antecipar a magnitude do próximo passo e mantendo a restrição adequada para assegurar a convergência da inflação à meta perseguida pelo arcabouço vigente."
+    }
+  ],
+  "celula:iniciante:texto_analitico:1": [
+    {
+      "titulo": "O juro do país caiu: o que muda no seu bolso",
+      "o_que_foi_decidido": "O Copom é o grupo que define o juro básico do Brasil. Ele se reuniu em {{data_reuniao}}. A taxa Selic, que é o juro que serve de base para todo o resto, caiu para {{selic_decidida}} ao fim do encontro. O placar foi de {{placar_votacao}}. Ou seja: todo mundo votou do mesmo jeito.",
+      "por_que": "A inflação é a alta geral dos preços. Ela ainda está acima do alvo do governo. Mas os preços já sobem menos do que subiam. E o comércio está mais fraco. Com menos gente comprando, a alta de preços perde força. Foi por isso que o juro pôde cair um pouco.",
+      "o_que_observar_adiante": "O Banco Central, que é o órgão dono dessa conta, espera preços subindo {{ipca_projecao_ano_corrente}} neste ano. Para o ano que vem, a conta cai para {{ipca_projecao_ano_seguinte}}. Mais adiante, chega a {{ipca_projecao_horizonte}}. No seu bolso, um juro menor deixa o crédito mais barato. A poupança, que é a conta simples do banco, rende menos quando o juro cai. O grupo não disse qual será o próximo passo."
+    }
+  ],
+  "celula:iniciante:carrossel:0": [
+    {
+      "slides": [
+        {
+          "titulo": "O juro do país caiu",
+          "corpo": "O Copom é o grupo que define o juro básico do Brasil. Ele acabou de baixar esse juro.",
+          "dado": "selic_decidida"
+        },
+        {
+          "titulo": "Quanto ficou",
+          "corpo": "A taxa Selic, que é o juro base do país, foi para {{selic_decidida}}, segundo o comunicado. A decisão saiu em {{data_reuniao}}.",
+          "dado": "selic_decidida"
+        },
+        {
+          "titulo": "Foi decisão de todos",
+          "corpo": "O placar ficou em {{placar_votacao}}. Ou seja: ninguém votou contra.",
+          "dado": "placar_votacao"
+        },
+        {
+          "titulo": "Por que baixou",
+          "corpo": "A inflação é a alta geral dos preços. Ela ainda está alta. Mas já sobe menos do que subia.",
+          "dado": null
+        },
+        {
+          "titulo": "O que esperam dos preços",
+          "corpo": "A conta do governo é de {{ipca_projecao_ano_corrente}} neste ano. No ano que vem, cai para {{ipca_projecao_ano_seguinte}}.",
+          "dado": "ipca_projecao_ano_corrente"
+        },
+        {
+          "titulo": "No seu bolso",
+          "corpo": "Juro menor deixa o crédito mais barato. E faz a poupança, que é a conta simples do banco, render menos.",
+          "dado": null
+        }
+      ]
+    }
+  ],
+  "celula:iniciante:roteiro:0": [
+    {
+      "blocos": [
+        {
+          "inicio_s": 0,
+          "fim_s": 6,
+          "fala": "O juro do Brasil caiu. Vou te contar o que isso muda no seu bolso.",
+          "tela": "Texto grande na tela: O JURO CAIU"
+        },
+        {
+          "inicio_s": 6,
+          "fim_s": 20,
+          "fala": "O Copom é o grupo que define o juro básico do país. Ele se reuniu em {{data_reuniao}}. E baixou a taxa Selic, que é o juro base, para {{selic_decidida}}, segundo o comunicado.",
+          "tela": "Gráfico da Selic com o novo valor em destaque"
+        },
+        {
+          "inicio_s": 20,
+          "fim_s": 34,
+          "fala": "O placar foi de {{placar_votacao}}. Ou seja: ninguém votou contra. A inflação é a alta geral dos preços. Ela ainda está alta, mas já sobe menos.",
+          "tela": "Placar da votação"
+        },
+        {
+          "inicio_s": 34,
+          "fim_s": 48,
+          "fala": "A conta do governo é de {{ipca_projecao_ano_corrente}} neste ano. No ano que vem, cai para {{ipca_projecao_ano_seguinte}}. No seu bolso, o crédito fica um pouco mais barato.",
+          "tela": "Ícones de carrinho de compras e de cartão"
+        },
+        {
+          "inicio_s": 48,
+          "fim_s": 58,
+          "fala": "O grupo não disse qual vai ser o próximo passo. Isso aqui é informação, não é palpite sobre onde pôr o seu dinheiro.",
+          "tela": "Aviso final em texto"
+        }
+      ]
+    }
+  ],
+  "celula:intermediario:texto_analitico:0": [
+    {
+      "titulo": "Copom leva a Selic a {{selic_decidida}} com placar de {{placar_votacao}}",
+      "o_que_foi_decidido": "O Copom reduziu a Selic para {{selic_decidida}} na reunião de {{data_reuniao}}, a {{numero_reuniao}}ª do colegiado, com placar de {{placar_votacao}} e sem registro de divergência entre os membros presentes na apuração final.",
+      "por_que": "A inflação cheia desacelerou na margem, mas permanece acima do limite superior da meta perseguida, e o Comitê avalia que a demanda agregada continua pressionando os preços, configuração que sustenta a manutenção dos juros em terreno restritivo. A atividade econômica, que é o ritmo agregado de produção e consumo, perdeu força na passagem entre trimestres, enquanto o balanço de riscos, que é a leitura ordenada do que pode empurrar a inflação para cima ou para baixo, permanece assimétrico na direção altista.",
+      "o_que_observar_adiante": "O cenário de referência projeta IPCA de {{ipca_projecao_ano_corrente}} no ano corrente, {{ipca_projecao_ano_seguinte}} no ano seguinte e {{ipca_projecao_horizonte}} no horizonte relevante, sem que o colegiado tenha sinalizado a magnitude do próximo movimento. O comunicado repete que a calibragem será ajustada conforme a evolução do cenário, o que mantém a trajetória dos juros condicionada aos indicadores divulgados até a reunião seguinte."
+    }
+  ],
+  "celula:intermediario:carrossel:0": [
+    {
+      "slides": [
+        {
+          "titulo": "Selic em {{selic_decidida}}",
+          "corpo": "O Copom reduziu os juros na reunião de {{data_reuniao}}, com placar de {{placar_votacao}} e sem registro de divergência entre os membros presentes na apuração final.",
+          "dado": "selic_decidida"
+        },
+        {
+          "titulo": "A leitura do Comitê",
+          "corpo": "A inflação cheia desacelerou na margem. Mas segue acima do limite superior da meta perseguida pelo colegiado.",
+          "dado": null
+        },
+        {
+          "titulo": "Demanda ainda pressiona",
+          "corpo": "A demanda agregada continua pressionando os preços. Isso sustenta a manutenção dos juros em terreno restritivo.",
+          "dado": null
+        },
+        {
+          "titulo": "Projeções de IPCA",
+          "corpo": "O cenário de referência projeta IPCA de {{ipca_projecao_ano_corrente}} no ano corrente e {{ipca_projecao_ano_seguinte}} no ano seguinte, ambos acima da meta perseguida.",
+          "dado": "ipca_projecao_ano_corrente"
+        },
+        {
+          "titulo": "No horizonte relevante",
+          "corpo": "No horizonte relevante de política monetária, a projeção do cenário de referência situa-se em {{ipca_projecao_horizonte}}, patamar que o colegiado considera compatível com a convergência.",
+          "dado": "ipca_projecao_horizonte"
+        },
+        {
+          "titulo": "O que fica de sinal",
+          "corpo": "O comunicado não sinalizou a magnitude do próximo movimento e repete que a calibragem será ajustada conforme a evolução observada do cenário.",
+          "dado": null
+        }
+      ]
+    }
+  ],
+  "celula:intermediario:roteiro:0": [
+    {
+      "blocos": [
+        {
+          "inicio_s": 0,
+          "fim_s": 8,
+          "fala": "O juro caiu. Vou te contar em um minuto.",
+          "tela": "Texto grande: SELIC"
+        },
+        {
+          "inicio_s": 8,
+          "fim_s": 24,
+          "fala": "A Selic foi para {{selic_decidida}}, segundo o comunicado. O placar foi de {{placar_votacao}}. A data foi {{data_reuniao}}.",
+          "tela": "Gráfico da Selic"
+        },
+        {
+          "inicio_s": 24,
+          "fim_s": 40,
+          "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é {{ipca_projecao_ano_corrente}}. O do ano que vem é {{ipca_projecao_ano_seguinte}}.",
+          "tela": "Projeções de IPCA"
+        },
+        {
+          "inicio_s": 40,
+          "fim_s": 56,
+          "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+          "tela": "Fecho"
+        }
+      ]
+    }
+  ],
+  "celula:intermediario:roteiro:1": [
+    {
+      "blocos": [
+        {
+          "inicio_s": 0,
+          "fim_s": 8,
+          "fala": "O juro caiu. Olha só o que mudou.",
+          "tela": "Texto grande: SELIC"
+        },
+        {
+          "inicio_s": 8,
+          "fim_s": 24,
+          "fala": "A Selic foi para {{selic_decidida}}, segundo o comunicado. O placar foi de {{placar_votacao}}. A data foi {{data_reuniao}}.",
+          "tela": "Gráfico da Selic"
+        },
+        {
+          "inicio_s": 24,
+          "fim_s": 40,
+          "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é {{ipca_projecao_ano_corrente}}. O do ano que vem é {{ipca_projecao_ano_seguinte}}.",
+          "tela": "Projeções de IPCA"
+        },
+        {
+          "inicio_s": 40,
+          "fim_s": 56,
+          "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+          "tela": "Fecho"
+        }
+      ]
+    }
+  ],
+  "celula:intermediario:roteiro:2": [
+    {
+      "blocos": [
+        {
+          "inicio_s": 0,
+          "fim_s": 8,
+          "fala": "O juro caiu. Vem comigo que eu te explico.",
+          "tela": "Texto grande: SELIC"
+        },
+        {
+          "inicio_s": 8,
+          "fim_s": 24,
+          "fala": "A Selic foi para {{selic_decidida}}, segundo o comunicado. O placar foi de {{placar_votacao}}. A data foi {{data_reuniao}}.",
+          "tela": "Gráfico da Selic"
+        },
+        {
+          "inicio_s": 24,
+          "fim_s": 40,
+          "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é {{ipca_projecao_ano_corrente}}. O do ano que vem é {{ipca_projecao_ano_seguinte}}.",
+          "tela": "Projeções de IPCA"
+        },
+        {
+          "inicio_s": 40,
+          "fim_s": 56,
+          "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+          "tela": "Fecho"
+        }
+      ]
+    }
+  ],
+  "celula:avancado:texto_analitico:0": [
+    {
+      "titulo": "Copom: {{selic_decidida}}, unanimidade e assimetria altista no balanço de riscos",
+      "o_que_foi_decidido": "O Copom reduziu a taxa básica de juros para {{selic_decidida}} na {{numero_reuniao}}ª reunião, realizada em {{data_reuniao}}, com placar de {{placar_votacao}}, entendendo a decisão compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante de política monetária, sem prejuízo do objetivo fundamental de assegurar a estabilidade de preços e da consequente suavização das flutuações do nível de atividade econômica.",
+      "por_que": "O diagnóstico do colegiado combina acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica com persistência da pressão de demanda sobre a inflação corrente, configuração que sustenta a manutenção de caráter restritivo mesmo diante da desaceleração observada nas medidas subjacentes, enquanto a desancoragem das expectativas apuradas pela pesquisa Focus e a assimetria altista do balanço de riscos recomendam serenidade e cautela na condução da política monetária, sem antecipação de trajetória para as próximas reuniões.",
+      "o_que_observar_adiante": "No cenário de referência, as projeções de inflação acumulada em quatro trimestres situam-se em {{ipca_projecao_ano_corrente}} para o ano corrente, {{ipca_projecao_ano_seguinte}} para o ano seguinte e {{ipca_projecao_horizonte}} para o horizonte relevante de política monetária, configuração que condiciona a magnitude do ciclo de calibração à evolução observada da desinflação, dos efeitos de segunda ordem dos choques de oferta e da própria reancoragem das expectativas, elementos que o Comitê declara acompanhar detidamente sem comprometer-se com trajetória predeterminada."
+    }
+  ],
+  "celula:avancado:carrossel:0": [
+    {
+      "slides": [
+        {
+          "titulo": "Decisão e placar",
+          "corpo": "O Copom fixou a taxa básica de juros em {{selic_decidida}} na {{numero_reuniao}}ª reunião, realizada em {{data_reuniao}}, com placar de {{placar_votacao}} e sem registro de dissenso na ata divulgada.",
+          "dado": "selic_decidida"
+        },
+        {
+          "titulo": "Transmissão e demanda",
+          "corpo": "A avaliação registra acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica, enquanto a inflação permanece pressionada pela demanda agregada, configuração que sustenta a manutenção do caráter restritivo.",
+          "dado": null
+        },
+        {
+          "titulo": "Balanço de riscos",
+          "corpo": "A assimetria altista do balanço de riscos, combinada à desancoragem das expectativas apuradas pela pesquisa Focus, sustenta a comunicação de serenidade e cautela na condução da política monetária, sem antecipação de trajetória.",
+          "dado": null
+        },
+        {
+          "titulo": "Choques de oferta",
+          "corpo": "O Comitê reitera que não reage aos efeitos primários de choques de oferta, monitorando eventuais efeitos de segunda ordem e reagindo com firmeza caso esses efeitos venham a se materializar no horizonte relevante de política monetária.",
+          "dado": null
+        },
+        {
+          "titulo": "Projeções do cenário de referência",
+          "corpo": "As projeções de inflação acumulada em quatro trimestres situam-se em {{ipca_projecao_ano_corrente}} para o ano corrente, {{ipca_projecao_ano_seguinte}} para o ano seguinte e {{ipca_projecao_horizonte}} para o horizonte relevante.",
+          "dado": "ipca_projecao_horizonte"
+        },
+        {
+          "titulo": "Condicionalidade do ciclo",
+          "corpo": "A magnitude do ciclo de calibração permanece condicionada à evolução observada da desinflação e à reancoragem das expectativas, sem compromisso com trajetória predeterminada para as próximas reuniões do colegiado.",
+          "dado": null
+        }
+      ]
+    }
+  ],
+  "celula:avancado:roteiro:0": [
+    {
+      "blocos": [
+        {
+          "inicio_s": 0,
+          "fim_s": 10,
+          "fala": "Decisão unânime de {{placar_votacao}} levou a taxa básica de juros a {{selic_decidida}}, com comunicação deliberadamente desprovida de compromisso com trajetória futura.",
+          "tela": "Cartela com a decisão"
+        },
+        {
+          "inicio_s": 10,
+          "fim_s": 28,
+          "fala": "O diagnóstico combina acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica com persistência da pressão de demanda sobre a inflação corrente, configuração que sustenta a manutenção do caráter restritivo mesmo diante da desaceleração das medidas subjacentes.",
+          "tela": "Gráfico de transmissão"
+        },
+        {
+          "inicio_s": 28,
+          "fim_s": 44,
+          "fala": "A assimetria altista do balanço de riscos e a desancoragem das expectativas apuradas pela pesquisa Focus sustentam a comunicação de serenidade e cautela, sem antecipação da magnitude do próximo movimento de calibração.",
+          "tela": "Projeções Focus"
+        },
+        {
+          "inicio_s": 44,
+          "fim_s": 60,
+          "fala": "As projeções do cenário de referência situam-se em {{ipca_projecao_ano_corrente}} para o ano corrente, {{ipca_projecao_ano_seguinte}} para o ano seguinte e {{ipca_projecao_horizonte}} para o horizonte relevante de política monetária.",
+          "tela": "Tabela de projeções"
+        }
+      ]
+    }
+  ]
+}

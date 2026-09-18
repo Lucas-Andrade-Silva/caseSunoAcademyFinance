@@ -1,0 +1,1575 @@
+{
+  "identificador": "demo-copom-280",
+  "ata": "copom-280-2026-08-05",
+  "provedor_gerador": "falso",
+  "iniciada_em": "2026-09-18T12:51:02.097450Z",
+  "concluida_em": "2026-09-18T12:51:06.894224Z",
+  "ancoras": {
+    "ata": "copom-280-2026-08-05",
+    "numericas": [
+      {
+        "chave": "selic_decidida",
+        "rotulo": "Selic decidida nesta reunião",
+        "valor_literal": "14,00",
+        "valor": 14.0,
+        "unidade": "% a.a.",
+        "trecho": "O Copom decidiu reduzir a taxa básica de juros para 14,00% a.a., e entende que essa decisão é compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante .",
+        "data_iso": null,
+        "qualificador": null
+      },
+      {
+        "chave": "placar_votacao",
+        "rotulo": "Placar da votação",
+        "valor_literal": "7 a 0",
+        "valor": 7.0,
+        "unidade": "votos",
+        "trecho": "Votaram por essa decisão os seguintes membros do Comitê: Gabriel Muricca Galípolo (presidente), Ailton de Aquino Santos, Gilneu Francisco Astolfi Vivan, Izabela Moreira Correa, Nilton José Schneider David, Paulo Picchetti, e Rodrigo Alves Teixeira.",
+        "data_iso": null,
+        "qualificador": null
+      },
+      {
+        "chave": "data_reuniao",
+        "rotulo": "Data da reunião",
+        "valor_literal": "4 e 5 de agosto de 2026",
+        "valor": null,
+        "unidade": "data",
+        "trecho": "4 e 5 de agosto de 2026",
+        "data_iso": "2026-08-05",
+        "qualificador": null
+      },
+      {
+        "chave": "numero_reuniao",
+        "rotulo": "Número da reunião do Copom",
+        "valor_literal": "280",
+        "valor": 280.0,
+        "unidade": "numero",
+        "trecho": "280ª Reunião COPOM 4 e 5 de agosto 2 bcb.gov.br",
+        "data_iso": null,
+        "qualificador": null
+      },
+      {
+        "chave": "ipca_projecao_ano_corrente",
+        "rotulo": "Projeção do IPCA para o ano corrente",
+        "valor_literal": "5,1",
+        "valor": 5.1,
+        "unidade": "%",
+        "trecho": "No cenário de referência, a s projeções para a inflação acumulada em quatro trimestres para 2026 , 2027, e para o primeiro trimestre de 202 8, atual horizonte relevante de política monetária, são, respectivamente, 5,1%, 3,8%, e 3,2%.",
+        "data_iso": null,
+        "qualificador": null
+      },
+      {
+        "chave": "ipca_projecao_ano_seguinte",
+        "rotulo": "Projeção do IPCA para o ano seguinte",
+        "valor_literal": "3,8",
+        "valor": 3.8,
+        "unidade": "%",
+        "trecho": "No cenário de referência, a s projeções para a inflação acumulada em quatro trimestres para 2026 , 2027, e para o primeiro trimestre de 202 8, atual horizonte relevante de política monetária, são, respectivamente, 5,1%, 3,8%, e 3,2%.",
+        "data_iso": null,
+        "qualificador": null
+      },
+      {
+        "chave": "ipca_projecao_horizonte",
+        "rotulo": "ipca projecao horizonte",
+        "valor_literal": "3,2",
+        "valor": 3.2,
+        "unidade": "%",
+        "trecho": "No cenário de referência, a s projeções para a inflação acumulada em quatro trimestres para 2026 , 2027, e para o primeiro trimestre de 202 8, atual horizonte relevante de política monetária, são, respectivamente, 5,1%, 3,8%, e 3,2%.",
+        "data_iso": null,
+        "qualificador": null
+      }
+    ],
+    "textuais": [
+      {
+        "identificador": "decisao",
+        "afirmacao": "O Copom reduziu a taxa básica de juros e considera a decisão compatível com a convergência da inflação à meta.",
+        "trecho": "O Copom decidiu reduzir a taxa básica de juros para 14,00% a.a., e entende que essa decisão é compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante"
+      },
+      {
+        "identificador": "inflacao_corrente",
+        "afirmacao": "A inflação cheia desacelerou, mas segue acima do limite superior da meta.",
+        "trecho": "a inflação cheia desacelerou, porém ainda acima do limite superior da meta"
+      },
+      {
+        "identificador": "politica_restritiva",
+        "afirmacao": "A inflação segue pressionada pela demanda e exige política monetária restritiva.",
+        "trecho": "a inflação permanece pressionada pela demanda, exigindo que a política monetária mantenha caráter restritivo"
+      },
+      {
+        "identificador": "atividade_em_moderacao",
+        "afirmacao": "A atividade econômica doméstica manteve trajetória de moderação, como o Comitê antecipava.",
+        "trecho": "A atividade econômica doméstica manteve trajetória de moderação, tal como antecipado pelo Comitê"
+      },
+      {
+        "identificador": "cenario_externo",
+        "afirmacao": "A incerteza sobre o cenário externo segue elevada.",
+        "trecho": "A incerteza com relação ao cenário externo segue em níveis elevados"
+      }
+    ],
+    "extraida_em": "2026-09-18T12:51:02.330926Z"
+  },
+  "celulas": [
+    {
+      "audiencia": "iniciante",
+      "formato": "texto_analitico",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "iniciante",
+            "formato": "texto_analitico",
+            "conteudo": {
+              "formato": "texto_analitico",
+              "texto": "# Copom reduz a taxa básica de juros e mantém postura cautelosa\n\n## O que foi decidido\n\nNa reunião de 4 e 5 de agosto de 2026, a 280ª do colegiado, o Copom decidiu reduzir a taxa básica de juros para 14,00% a.a., em decisão aprovada pelo placar de 7 a 0 e considerada compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante de política monetária, conforme o comunicado divulgado pelo Banco Central ao final do encontro.\n\n## Por quê\n\nO Comitê avalia que as evidências de transmissão da política monetária contracionista para a atividade econômica têm se acumulado gradualmente, ainda que a inflação permaneça pressionada pela demanda agregada, o que exige que a política monetária preserve caráter restritivo enquanto o hiato do produto seguir em terreno desfavorável e enquanto o balanço de riscos permanecer assimétrico na direção altista, conforme o diagnóstico reiterado pelo colegiado.\n\n## O que observar adiante\n\nAs projeções do cenário de referência apontam inflação de 5,1% no ano corrente, 3,8% no ano seguinte e 3,2% no horizonte relevante, trajetória que o Comitê acompanhará à luz da evolução do cenário, sem antecipar a magnitude do próximo passo e mantendo a restrição adequada para assegurar a convergência da inflação à meta perseguida pelo arcabouço vigente.\n",
+              "slides": null,
+              "blocos": null,
+              "ancoras_citadas": [
+                "data_reuniao",
+                "numero_reuniao",
+                "selic_decidida",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.335176Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "iniciante",
+            "formato": "texto_analitico",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 12.979905660377398,
+                "faixa": {
+                  "minimo": 50.0,
+                  "maximo": null
+                },
+                "atingiu": false,
+                "observacoes": [
+                  "Flesch-BR medido 13,0; o Limiar da Audiência Iniciante é ≥ 50 (faltam 37,0 pontos para ficar mais fácil)"
+                ]
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.059907834101382486,
+                "faixa": null,
+                "atingiu": false,
+                "observacoes": [
+                  "Termo do Léxico sem explicação na primeira ocorrência: Copom",
+                  "Termo do Léxico sem explicação na primeira ocorrência: Selic",
+                  "Termo do Léxico sem explicação na primeira ocorrência: inflação",
+                  "Termo do Léxico sem explicação na primeira ocorrência: Banco Central",
+                  "Termo do Léxico sem explicação na primeira ocorrência: transmissão da política monetária",
+                  "Termo do Léxico sem explicação na primeira ocorrência: atividade econômica",
+                  "Termo do Léxico sem explicação na primeira ocorrência: hiato do produto",
+                  "Termo do Léxico sem explicação na primeira ocorrência: balanço de riscos"
+                ]
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "reprovado_corrigivel",
+            "motivos": [
+              "flesch_br",
+              "densidade"
+            ],
+            "correcoes": [
+              {
+                "metrica": "flesch_br",
+                "valor_medido": 12.979905660377398,
+                "faixa": {
+                  "minimo": 50.0,
+                  "maximo": null
+                },
+                "distancia": 37.0200943396226,
+                "instrucao": "Flesch-BR medido 13,0; o Limiar da Audiência Iniciante é ≥ 50 (faltam 37,0 pontos para ficar mais fácil)"
+              },
+              {
+                "metrica": "densidade",
+                "valor_medido": 0.059907834101382486,
+                "faixa": null,
+                "distancia": null,
+                "instrucao": "Termos do Léxico sem explicação na primeira ocorrência: Copom, Selic, inflação, Banco Central, transmissão da política monetária, atividade econômica, hiato do produto, balanço de riscos. A Audiência Iniciante exige explicação ou analogia em todos."
+              }
+            ],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.827588Z"
+          }
+        },
+        {
+          "rodada": 1,
+          "celula": {
+            "audiencia": "iniciante",
+            "formato": "texto_analitico",
+            "conteudo": {
+              "formato": "texto_analitico",
+              "texto": "# O juro do país caiu: o que muda no seu bolso\n\n## O que foi decidido\n\nO Copom é o grupo que define o juro básico do Brasil. Ele se reuniu em 4 e 5 de agosto de 2026. A taxa Selic, que é o juro que serve de base para todo o resto, caiu para 14,00% a.a. ao fim do encontro. O placar foi de 7 a 0. Ou seja: todo mundo votou do mesmo jeito.\n\n## Por quê\n\nA inflação é a alta geral dos preços. Ela ainda está acima do alvo do governo. Mas os preços já sobem menos do que subiam. E o comércio está mais fraco. Com menos gente comprando, a alta de preços perde força. Foi por isso que o juro pôde cair um pouco.\n\n## O que observar adiante\n\nO Banco Central, que é o órgão dono dessa conta, espera preços subindo 5,1% neste ano. Para o ano que vem, a conta cai para 3,8%. Mais adiante, chega a 3,2%. No seu bolso, um juro menor deixa o crédito mais barato. A poupança, que é a conta simples do banco, rende menos quando o juro cai. O grupo não disse qual será o próximo passo.\n",
+              "slides": null,
+              "blocos": null,
+              "ancoras_citadas": [
+                "data_reuniao",
+                "selic_decidida",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 1,
+            "gerada_em": "2026-09-18T12:51:06.828309Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "iniciante",
+            "formato": "texto_analitico",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 92.54832495812397,
+                "faixa": {
+                  "minimo": 50.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.024509803921568627,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.893293Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "iniciante",
+      "formato": "carrossel",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "iniciante",
+            "formato": "carrossel",
+            "conteudo": {
+              "formato": "carrossel",
+              "texto": null,
+              "slides": [
+                {
+                  "titulo": "O juro do país caiu",
+                  "corpo": "O Copom é o grupo que define o juro básico do Brasil. Ele acabou de baixar esse juro.",
+                  "dado": "selic_decidida"
+                },
+                {
+                  "titulo": "Quanto ficou",
+                  "corpo": "A taxa Selic, que é o juro base do país, foi para 14,00% a.a., segundo o comunicado. A decisão saiu em 4 e 5 de agosto de 2026.",
+                  "dado": "selic_decidida"
+                },
+                {
+                  "titulo": "Foi decisão de todos",
+                  "corpo": "O placar ficou em 7 a 0. Ou seja: ninguém votou contra.",
+                  "dado": "placar_votacao"
+                },
+                {
+                  "titulo": "Por que baixou",
+                  "corpo": "A inflação é a alta geral dos preços. Ela ainda está alta. Mas já sobe menos do que subia.",
+                  "dado": null
+                },
+                {
+                  "titulo": "O que esperam dos preços",
+                  "corpo": "A conta do governo é de 5,1% neste ano. No ano que vem, cai para 3,8%.",
+                  "dado": "ipca_projecao_ano_corrente"
+                },
+                {
+                  "titulo": "No seu bolso",
+                  "corpo": "Juro menor deixa o crédito mais barato. E faz a poupança, que é a conta simples do banco, render menos.",
+                  "dado": null
+                }
+              ],
+              "blocos": null,
+              "ancoras_citadas": [
+                "selic_decidida",
+                "data_reuniao",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.336007Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "iniciante",
+            "formato": "carrossel",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 89.14794871794871,
+                "faixa": {
+                  "minimo": 50.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.02877697841726619,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.643778Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "iniciante",
+      "formato": "roteiro",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "iniciante",
+            "formato": "roteiro",
+            "conteudo": {
+              "formato": "roteiro",
+              "texto": null,
+              "slides": null,
+              "blocos": [
+                {
+                  "inicio_s": 0.0,
+                  "fim_s": 6.0,
+                  "fala": "O juro do Brasil caiu. Vou te contar o que isso muda no seu bolso.",
+                  "tela": "Texto grande na tela: O JURO CAIU"
+                },
+                {
+                  "inicio_s": 6.0,
+                  "fim_s": 20.0,
+                  "fala": "O Copom é o grupo que define o juro básico do país. Ele se reuniu em 4 e 5 de agosto de 2026. E baixou a taxa Selic, que é o juro base, para 14,00% a.a., segundo o comunicado.",
+                  "tela": "Gráfico da Selic com o novo valor em destaque"
+                },
+                {
+                  "inicio_s": 20.0,
+                  "fim_s": 34.0,
+                  "fala": "O placar foi de 7 a 0. Ou seja: ninguém votou contra. A inflação é a alta geral dos preços. Ela ainda está alta, mas já sobe menos.",
+                  "tela": "Placar da votação"
+                },
+                {
+                  "inicio_s": 34.0,
+                  "fim_s": 48.0,
+                  "fala": "A conta do governo é de 5,1% neste ano. No ano que vem, cai para 3,8%. No seu bolso, o crédito fica um pouco mais barato.",
+                  "tela": "Ícones de carrinho de compras e de cartão"
+                },
+                {
+                  "inicio_s": 48.0,
+                  "fim_s": 58.0,
+                  "fala": "O grupo não disse qual vai ser o próximo passo. Isso aqui é informação, não é palpite sobre onde pôr o seu dinheiro.",
+                  "tela": "Aviso final em texto"
+                }
+              ],
+              "ancoras_citadas": [
+                "data_reuniao",
+                "selic_decidida",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.336758Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "iniciante",
+            "formato": "roteiro",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 92.74055343511452,
+                "faixa": {
+                  "minimo": 50.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.022222222222222223,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.777930Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "texto_analitico",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "intermediario",
+            "formato": "texto_analitico",
+            "conteudo": {
+              "formato": "texto_analitico",
+              "texto": "# Copom leva a Selic a 14,00% a.a. com placar de 7 a 0\n\n## O que foi decidido\n\nO Copom reduziu a Selic para 14,00% a.a. na reunião de 4 e 5 de agosto de 2026, a 280ª do colegiado, com placar de 7 a 0 e sem registro de divergência entre os membros presentes na apuração final.\n\n## Por quê\n\nA inflação cheia desacelerou na margem, mas permanece acima do limite superior da meta perseguida, e o Comitê avalia que a demanda agregada continua pressionando os preços, configuração que sustenta a manutenção dos juros em terreno restritivo. A atividade econômica, que é o ritmo agregado de produção e consumo, perdeu força na passagem entre trimestres, enquanto o balanço de riscos, que é a leitura ordenada do que pode empurrar a inflação para cima ou para baixo, permanece assimétrico na direção altista.\n\n## O que observar adiante\n\nO cenário de referência projeta IPCA de 5,1% no ano corrente, 3,8% no ano seguinte e 3,2% no horizonte relevante, sem que o colegiado tenha sinalizado a magnitude do próximo movimento. O comunicado repete que a calibragem será ajustada conforme a evolução do cenário, o que mantém a trajetória dos juros condicionada aos indicadores divulgados até a reunião seguinte.\n",
+              "slides": null,
+              "blocos": null,
+              "ancoras_citadas": [
+                "selic_decidida",
+                "placar_votacao",
+                "data_reuniao",
+                "numero_reuniao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.337301Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "intermediario",
+            "formato": "texto_analitico",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 33.81992884510129,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05238095238095238,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.806170Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "carrossel",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "intermediario",
+            "formato": "carrossel",
+            "conteudo": {
+              "formato": "carrossel",
+              "texto": null,
+              "slides": [
+                {
+                  "titulo": "Selic em 14,00% a.a.",
+                  "corpo": "O Copom reduziu os juros na reunião de 4 e 5 de agosto de 2026, com placar de 7 a 0 e sem registro de divergência entre os membros presentes na apuração final.",
+                  "dado": "selic_decidida"
+                },
+                {
+                  "titulo": "A leitura do Comitê",
+                  "corpo": "A inflação cheia desacelerou na margem. Mas segue acima do limite superior da meta perseguida pelo colegiado.",
+                  "dado": null
+                },
+                {
+                  "titulo": "Demanda ainda pressiona",
+                  "corpo": "A demanda agregada continua pressionando os preços. Isso sustenta a manutenção dos juros em terreno restritivo.",
+                  "dado": null
+                },
+                {
+                  "titulo": "Projeções de IPCA",
+                  "corpo": "O cenário de referência projeta IPCA de 5,1% no ano corrente e 3,8% no ano seguinte, ambos acima da meta perseguida.",
+                  "dado": "ipca_projecao_ano_corrente"
+                },
+                {
+                  "titulo": "No horizonte relevante",
+                  "corpo": "No horizonte relevante de política monetária, a projeção do cenário de referência situa-se em 3,2%, patamar que o colegiado considera compatível com a convergência.",
+                  "dado": "ipca_projecao_horizonte"
+                },
+                {
+                  "titulo": "O que fica de sinal",
+                  "corpo": "O comunicado não sinalizou a magnitude do próximo movimento e repete que a calibragem será ajustada conforme a evolução observada do cenário.",
+                  "dado": null
+                }
+              ],
+              "blocos": null,
+              "ancoras_citadas": [
+                "selic_decidida",
+                "data_reuniao",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.337937Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "intermediario",
+            "formato": "carrossel",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 32.680896057347724,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.043478260869565216,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.593749Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "roteiro",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "conteudo": {
+              "formato": "roteiro",
+              "texto": null,
+              "slides": null,
+              "blocos": [
+                {
+                  "inicio_s": 0.0,
+                  "fim_s": 8.0,
+                  "fala": "O juro caiu. Vou te contar em um minuto.",
+                  "tela": "Texto grande: SELIC"
+                },
+                {
+                  "inicio_s": 8.0,
+                  "fim_s": 24.0,
+                  "fala": "A Selic foi para 14,00% a.a., segundo o comunicado. O placar foi de 7 a 0. A data foi 4 e 5 de agosto de 2026.",
+                  "tela": "Gráfico da Selic"
+                },
+                {
+                  "inicio_s": 24.0,
+                  "fim_s": 40.0,
+                  "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é 5,1%. O do ano que vem é 3,8%.",
+                  "tela": "Projeções de IPCA"
+                },
+                {
+                  "inicio_s": 40.0,
+                  "fim_s": 56.0,
+                  "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+                  "tela": "Fecho"
+                }
+              ],
+              "ancoras_citadas": [
+                "selic_decidida",
+                "placar_votacao",
+                "data_reuniao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.338632Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 90.77322860238354,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "atingiu": false,
+                "observacoes": [
+                  "Flesch-BR medido 90,8; o Limiar da Audiência Intermediário é < 50 (sobram 40,8 pontos: o texto está fácil demais para Intermediário)"
+                ]
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05333333333333334,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "reprovado_corrigivel",
+            "motivos": [
+              "flesch_br"
+            ],
+            "correcoes": [
+              {
+                "metrica": "flesch_br",
+                "valor_medido": 90.77322860238354,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "distancia": 40.77322860238354,
+                "instrucao": "Flesch-BR medido 90,8; o Limiar da Audiência Intermediário é < 50 (sobram 40,8 pontos: o texto está fácil demais para Intermediário)"
+              }
+            ],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:05.615643Z"
+          }
+        },
+        {
+          "rodada": 1,
+          "celula": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "conteudo": {
+              "formato": "roteiro",
+              "texto": null,
+              "slides": null,
+              "blocos": [
+                {
+                  "inicio_s": 0.0,
+                  "fim_s": 8.0,
+                  "fala": "O juro caiu. Olha só o que mudou.",
+                  "tela": "Texto grande: SELIC"
+                },
+                {
+                  "inicio_s": 8.0,
+                  "fim_s": 24.0,
+                  "fala": "A Selic foi para 14,00% a.a., segundo o comunicado. O placar foi de 7 a 0. A data foi 4 e 5 de agosto de 2026.",
+                  "tela": "Gráfico da Selic"
+                },
+                {
+                  "inicio_s": 24.0,
+                  "fim_s": 40.0,
+                  "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é 5,1%. O do ano que vem é 3,8%.",
+                  "tela": "Projeções de IPCA"
+                },
+                {
+                  "inicio_s": 40.0,
+                  "fim_s": 56.0,
+                  "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+                  "tela": "Fecho"
+                }
+              ],
+              "ancoras_citadas": [
+                "selic_decidida",
+                "placar_votacao",
+                "data_reuniao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte"
+              ]
+            },
+            "rodada": 1,
+            "gerada_em": "2026-09-18T12:51:05.618589Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 91.0896153846154,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "atingiu": false,
+                "observacoes": [
+                  "Flesch-BR medido 91,1; o Limiar da Audiência Intermediário é < 50 (sobram 41,1 pontos: o texto está fácil demais para Intermediário)"
+                ]
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05405405405405406,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "reprovado_corrigivel",
+            "motivos": [
+              "flesch_br"
+            ],
+            "correcoes": [
+              {
+                "metrica": "flesch_br",
+                "valor_medido": 91.0896153846154,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "distancia": 41.0896153846154,
+                "instrucao": "Flesch-BR medido 91,1; o Limiar da Audiência Intermediário é < 50 (sobram 41,1 pontos: o texto está fácil demais para Intermediário)"
+              }
+            ],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.501304Z"
+          }
+        },
+        {
+          "rodada": 2,
+          "celula": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "conteudo": {
+              "formato": "roteiro",
+              "texto": null,
+              "slides": null,
+              "blocos": [
+                {
+                  "inicio_s": 0.0,
+                  "fim_s": 8.0,
+                  "fala": "O juro caiu. Vem comigo que eu te explico.",
+                  "tela": "Texto grande: SELIC"
+                },
+                {
+                  "inicio_s": 8.0,
+                  "fim_s": 24.0,
+                  "fala": "A Selic foi para 14,00% a.a., segundo o comunicado. O placar foi de 7 a 0. A data foi 4 e 5 de agosto de 2026.",
+                  "tela": "Gráfico da Selic"
+                },
+                {
+                  "inicio_s": 24.0,
+                  "fim_s": 40.0,
+                  "fala": "A inflação caiu. Mas ainda está alta. O IPCA do ano é 5,1%. O do ano que vem é 3,8%.",
+                  "tela": "Projeções de IPCA"
+                },
+                {
+                  "inicio_s": 40.0,
+                  "fim_s": 56.0,
+                  "fala": "O juro segue alto. O Copom não disse o próximo passo. É isso. Até a próxima.",
+                  "tela": "Fecho"
+                }
+              ],
+              "ancoras_citadas": [
+                "selic_decidida",
+                "placar_votacao",
+                "data_reuniao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte"
+              ]
+            },
+            "rodada": 2,
+            "gerada_em": "2026-09-18T12:51:06.504359Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "intermediario",
+            "formato": "roteiro",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": 89.58167930660889,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "atingiu": false,
+                "observacoes": [
+                  "Flesch-BR medido 89,6; o Limiar da Audiência Intermediário é < 50 (sobram 39,6 pontos: o texto está fácil demais para Intermediário)"
+                ]
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05333333333333334,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "reprovado_corrigivel",
+            "motivos": [
+              "flesch_br"
+            ],
+            "correcoes": [
+              {
+                "metrica": "flesch_br",
+                "valor_medido": 89.58167930660889,
+                "faixa": {
+                  "minimo": 25.0,
+                  "maximo": 50.0
+                },
+                "distancia": 39.58167930660889,
+                "instrucao": "Flesch-BR medido 89,6; o Limiar da Audiência Intermediário é < 50 (sobram 39,6 pontos: o texto está fácil demais para Intermediário)"
+              }
+            ],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.740734Z"
+          }
+        }
+      ],
+      "destino_final": "reprovado_revisao_humana",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "texto_analitico",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "avancado",
+            "formato": "texto_analitico",
+            "conteudo": {
+              "formato": "texto_analitico",
+              "texto": "# Copom: 14,00% a.a., unanimidade e assimetria altista no balanço de riscos\n\n## O que foi decidido\n\nO Copom reduziu a taxa básica de juros para 14,00% a.a. na 280ª reunião, realizada em 4 e 5 de agosto de 2026, com placar de 7 a 0, entendendo a decisão compatível com a estratégia de convergência da inflação para o redor da meta ao longo do horizonte relevante de política monetária, sem prejuízo do objetivo fundamental de assegurar a estabilidade de preços e da consequente suavização das flutuações do nível de atividade econômica.\n\n## Por quê\n\nO diagnóstico do colegiado combina acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica com persistência da pressão de demanda sobre a inflação corrente, configuração que sustenta a manutenção de caráter restritivo mesmo diante da desaceleração observada nas medidas subjacentes, enquanto a desancoragem das expectativas apuradas pela pesquisa Focus e a assimetria altista do balanço de riscos recomendam serenidade e cautela na condução da política monetária, sem antecipação de trajetória para as próximas reuniões.\n\n## O que observar adiante\n\nNo cenário de referência, as projeções de inflação acumulada em quatro trimestres situam-se em 5,1% para o ano corrente, 3,8% para o ano seguinte e 3,2% para o horizonte relevante de política monetária, configuração que condiciona a magnitude do ciclo de calibração à evolução observada da desinflação, dos efeitos de segunda ordem dos choques de oferta e da própria reancoragem das expectativas, elementos que o Comitê declara acompanhar detidamente sem comprometer-se com trajetória predeterminada.\n",
+              "slides": null,
+              "blocos": null,
+              "ancoras_citadas": [
+                "selic_decidida",
+                "numero_reuniao",
+                "data_reuniao",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.339311Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "avancado",
+            "formato": "texto_analitico",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": -2.718548387096746,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 25.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.058365758754863814,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.729145Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "carrossel",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "avancado",
+            "formato": "carrossel",
+            "conteudo": {
+              "formato": "carrossel",
+              "texto": null,
+              "slides": [
+                {
+                  "titulo": "Decisão e placar",
+                  "corpo": "O Copom fixou a taxa básica de juros em 14,00% a.a. na 280ª reunião, realizada em 4 e 5 de agosto de 2026, com placar de 7 a 0 e sem registro de dissenso na ata divulgada.",
+                  "dado": "selic_decidida"
+                },
+                {
+                  "titulo": "Transmissão e demanda",
+                  "corpo": "A avaliação registra acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica, enquanto a inflação permanece pressionada pela demanda agregada, configuração que sustenta a manutenção do caráter restritivo.",
+                  "dado": null
+                },
+                {
+                  "titulo": "Balanço de riscos",
+                  "corpo": "A assimetria altista do balanço de riscos, combinada à desancoragem das expectativas apuradas pela pesquisa Focus, sustenta a comunicação de serenidade e cautela na condução da política monetária, sem antecipação de trajetória.",
+                  "dado": null
+                },
+                {
+                  "titulo": "Choques de oferta",
+                  "corpo": "O Comitê reitera que não reage aos efeitos primários de choques de oferta, monitorando eventuais efeitos de segunda ordem e reagindo com firmeza caso esses efeitos venham a se materializar no horizonte relevante de política monetária.",
+                  "dado": null
+                },
+                {
+                  "titulo": "Projeções do cenário de referência",
+                  "corpo": "As projeções de inflação acumulada em quatro trimestres situam-se em 5,1% para o ano corrente, 3,8% para o ano seguinte e 3,2% para o horizonte relevante.",
+                  "dado": "ipca_projecao_horizonte"
+                },
+                {
+                  "titulo": "Condicionalidade do ciclo",
+                  "corpo": "A magnitude do ciclo de calibração permanece condicionada à evolução observada da desinflação e à reancoragem das expectativas, sem compromisso com trajetória predeterminada para as próximas reuniões do colegiado.",
+                  "dado": null
+                }
+              ],
+              "blocos": null,
+              "ancoras_citadas": [
+                "selic_decidida",
+                "numero_reuniao",
+                "data_reuniao",
+                "placar_votacao",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.340305Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "avancado",
+            "formato": "carrossel",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": -3.3170125786163283,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 25.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05504587155963303,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:06.414281Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "roteiro",
+      "tentativas": [
+        {
+          "rodada": 0,
+          "celula": {
+            "audiencia": "avancado",
+            "formato": "roteiro",
+            "conteudo": {
+              "formato": "roteiro",
+              "texto": null,
+              "slides": null,
+              "blocos": [
+                {
+                  "inicio_s": 0.0,
+                  "fim_s": 10.0,
+                  "fala": "Decisão unânime de 7 a 0 levou a taxa básica de juros a 14,00% a.a., com comunicação deliberadamente desprovida de compromisso com trajetória futura.",
+                  "tela": "Cartela com a decisão"
+                },
+                {
+                  "inicio_s": 10.0,
+                  "fim_s": 28.0,
+                  "fala": "O diagnóstico combina acumulação gradual das evidências de transmissão da política monetária contracionista à atividade econômica com persistência da pressão de demanda sobre a inflação corrente, configuração que sustenta a manutenção do caráter restritivo mesmo diante da desaceleração das medidas subjacentes.",
+                  "tela": "Gráfico de transmissão"
+                },
+                {
+                  "inicio_s": 28.0,
+                  "fim_s": 44.0,
+                  "fala": "A assimetria altista do balanço de riscos e a desancoragem das expectativas apuradas pela pesquisa Focus sustentam a comunicação de serenidade e cautela, sem antecipação da magnitude do próximo movimento de calibração.",
+                  "tela": "Projeções Focus"
+                },
+                {
+                  "inicio_s": 44.0,
+                  "fim_s": 60.0,
+                  "fala": "As projeções do cenário de referência situam-se em 5,1% para o ano corrente, 3,8% para o ano seguinte e 3,2% para o horizonte relevante de política monetária.",
+                  "tela": "Tabela de projeções"
+                }
+              ],
+              "ancoras_citadas": [
+                "placar_votacao",
+                "selic_decidida",
+                "ipca_projecao_ano_corrente",
+                "ipca_projecao_ano_seguinte",
+                "ipca_projecao_horizonte"
+              ]
+            },
+            "rodada": 0,
+            "gerada_em": "2026-09-18T12:51:02.340961Z",
+            "provedor": "falso"
+          },
+          "laudo": {
+            "audiencia": "avancado",
+            "formato": "roteiro",
+            "medidas": [
+              {
+                "metrica": "integridade",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "flesch_br",
+                "estado": "medida",
+                "valor": -7.775161290322558,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 25.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "densidade",
+                "estado": "medida",
+                "valor": 0.05384615384615385,
+                "faixa": null,
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "aderencia",
+                "estado": "medida",
+                "valor": 1.0,
+                "faixa": {
+                  "minimo": 1.0,
+                  "maximo": null
+                },
+                "atingiu": true,
+                "observacoes": []
+              },
+              {
+                "metrica": "recomendacao",
+                "estado": "medida",
+                "valor": 0.0,
+                "faixa": {
+                  "minimo": null,
+                  "maximo": 1.0
+                },
+                "atingiu": true,
+                "observacoes": []
+              }
+            ],
+            "destino": "aprovado",
+            "motivos": [],
+            "correcoes": [],
+            "comite": null,
+            "avaliado_em": "2026-09-18T12:51:05.382608Z"
+          }
+        }
+      ],
+      "destino_final": "aprovado",
+      "provedores_usados": [
+        "falso"
+      ],
+      "falha": null
+    }
+  ],
+  "pendencias": [
+    {
+      "fila": "h4_revisao",
+      "audiencia": "intermediario",
+      "formato": "roteiro",
+      "motivo": "flesch_br",
+      "criada_em": "2026-09-18T12:51:06.894293Z",
+      "resolvida": false,
+      "decisao": null
+    }
+  ],
+  "custo": {
+    "chamadas": 13,
+    "tokens_entrada": 53051,
+    "tokens_saida": 3972,
+    "segundos": 4.796708500012755,
+    "por_provedor": {
+      "falso": 13
+    }
+  },
+  "comite_ligado": false
+}

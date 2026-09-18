@@ -1,0 +1,151 @@
+# Casos da Recomendação (ADR 0012). A linha que o sistema não cruza: recomendar compra,
+# venda ou manutenção de ativo, ou prometer retorno, é atividade regulada no Brasil.
+#
+# Quem decide é código — Léxico mais padrão sintático sobre POS tagging offline — nunca um
+# LLM, porque veredito de juiz-LLM sobre compliance muda entre duas execuções do mesmo
+# texto (ADR 0008). Os textos aqui são curtos e simples de propósito: é assim que a
+# Recomendação escapa, no Roteiro para Iniciante, não no parágrafo técnico.
+name: recomendacao
+
+evaluators:
+  - DestinoEsperado
+  - MotivosEsperados
+
+cases:
+  - name: imperativo-de-compra-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. Compre títulos agora e garanta o ganho do ano.
+        A janela não vai durar muito tempo.
+      ancoras: &essenciais
+        - chave: selic_decidida
+          rotulo: Selic decidida
+          literal: "14,00"
+          numero: 14.0
+          unidade: "% a.a."
+          trecho: manter a taxa Selic em 14,00% a.a.
+        - chave: data_reuniao
+          rotulo: Data da reunião
+          literal: 4 e 5 de agosto de 2026
+          unidade: data
+          data_iso: 2026-08-05
+          trecho: reunião de 4 e 5 de agosto de 2026
+        - chave: placar_votacao
+          rotulo: Placar da votação
+          literal: 7 a 0
+          unidade: votos
+          trecho: por 7 votos a 0
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [recomendacao]
+    metadata: >-
+      A forma mais curta de Recomendação: verbo de ação financeira no imperativo, que já
+      traz o leitor como sujeito e a direção da ação junto. Camada do Léxico.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 1.0}
+
+  - name: formula-de-aconselhamento-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. Recomendamos a troca da sua reserva para papéis
+        mais curtos. O prazo curto ajuda quem precisa do dinheiro logo.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [recomendacao]
+    metadata: >-
+      A voz editorial assume a posição de quem orienta. Não importa o ativo citado: a
+      fórmula sozinha já é atividade regulada.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 1.0}
+
+  - name: parafrase-sem-palavra-proibida-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. Seria prudente considerar reduzir a sua posição
+        em papéis longos. O cenário ainda pede cuidado.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [recomendacao]
+    metadata: >-
+      Nenhuma palavra proibida nesta frase, e ainda assim ela manda o leitor agir. É o caso
+      que justifica a camada sintática do ADR 0012: lista de palavras sozinha deixaria
+      passar.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 1.0}
+
+  - name: promessa-de-retorno-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. Quem entrar agora tem ganho garantido até o fim
+        do ano. É dinheiro na mão.
+      ancoras: *essenciais
+    expected_output:
+      destino: reprovado_corrigivel
+      motivos: [recomendacao]
+    metadata: >-
+      Promessa de retorno sem imperativo de compra. A proibição do CONTEXT.md é das duas
+      coisas: direção de ação e promessa de retorno.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 1.0}
+
+  - name: texto-informativo-nao-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. O texto divulgado explica o que pesou na
+        decisão. Nada disso serve como indicação do que fazer com o seu dinheiro.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      O contrapeso: a Célula precisa poder falar sobre o assunto. Reprovar um texto assim
+      seria tão ruim quanto deixar passar uma Recomendação — um Roteiro para Iniciante é
+      feito de frases deste tipo.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 0.0, maximo: 1.0}
+
+  - name: substantivo-nao-e-imperativo-nao-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        O comitê manteve o rumo desta vez. A venda de papéis longos aumentou no mês
+        passado. O movimento veio de quem precisava de caixa.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      "A venda" aqui é substantivo, não imperativo: quem desfaz o falso positivo é o POS
+      tagging, não a lista. Uma detecção por lista de palavras reprovaria esta Célula.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 0.0, maximo: 1.0}
+
+  - name: terceira-pessoa-nao-reprova
+    inputs:
+      audiencia: iniciante
+      formato: texto_analitico
+      texto: >-
+        Parte do mercado espera um corte mais à frente. O comitê não se comprometeu com
+        nada. O texto segue aberto aos dois lados.
+      ancoras: *essenciais
+    expected_output:
+      destino: aprovado
+      motivos: []
+    metadata: >-
+      Discussão em terceira pessoa sobre o que outros esperam não é Recomendação: não há
+      sujeito dirigido ao leitor nem direção de ação.
+    evaluators:
+      - MedidaNaFaixa: {metrica: recomendacao, minimo: 0.0, maximo: 1.0}

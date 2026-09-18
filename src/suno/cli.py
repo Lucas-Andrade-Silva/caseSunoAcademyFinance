@@ -39,11 +39,14 @@ def _carregar_env() -> None:
 def cmd_executar(args: argparse.Namespace) -> int:
     from suno.gerador.execucao import executar
 
+    # --comite liga; sem a flag, SUNO_COMITE=1 no .env também liga (ADR 0008: nasce desligado).
+    comite = args.comite or os.environ.get("SUNO_COMITE", "0") == "1"
     execucao = executar(
         Path(args.ata),
         args.provedor,
         _pasta_execucoes(args.execucoes),
-        comite=args.comite,
+        comite=comite,
+        identificador=args.identificador,
     )
     aprovadas = sum(1 for h in execucao.celulas if h.destino_final.value == "aprovado")
     print(f"execucao={execucao.identificador} ata={execucao.ata} provedor={execucao.provedor_gerador}")
@@ -104,6 +107,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--provedor", default="falso", help="falso | gemini | groq | sambanova | roteador")
     p.add_argument("--comite", action="store_true", help="liga o comitê de juízes-LLM (ADR 0008)")
     p.add_argument("--execucoes", default=None, help="pasta de saída (padrão: SUNO_EXECUCOES ou data/execucoes)")
+    p.add_argument("--identificador", default=None, help="nome fixo da execução (padrão: <ata>-<provedor>-<carimbo>)")
     p.set_defaults(funcao=cmd_executar)
 
     p = sub.add_parser("pacote", help="monta o Pacote de publicação das Células aprovadas")

@@ -50,6 +50,13 @@ class ResultadoAderencia:
     numeros_fora_das_ancoras: list[str] = field(default_factory=list)
     ancoras_citadas: list[str] = field(default_factory=list)
     cobertura_textual: dict[str, float] = field(default_factory=dict)
+    numeros_fora_com_unidade: list[str] = field(default_factory=list)
+    """Os mesmos números de ``numeros_fora_das_ancoras``, na mesma ordem, legíveis.
+
+    ``numeros_fora_das_ancoras`` traz o literal cru (``"15"``), que é o que casa com o
+    texto; a Correção do Laudo precisa mostrar ``"15%"`` e ``"0,75 p.p."``, senão a
+    instrução não diz qual número está errado.
+    """
 
 
 # Preposições, artigos e verbos de ligação: presença delas não diz nada sobre cobertura.
@@ -124,6 +131,30 @@ def _casa(achado: NumeroEncontrado, ancora: AncoraNumerica) -> bool:
     return achado.literal.strip() == ancora.valor_literal.strip()
 
 
+def _com_unidade(achado: NumeroEncontrado) -> str:
+    """Como o número aparece para um humano: ``"15%"``, ``"0,75 p.p."``, ``"CDI+2%"``.
+
+    A regra de formatação é uma só e mora em ``AncoraNumerica.citacao()``. Em vez de
+    copiá-la — a cópia já divergiu uma vez, no espaço antes do ``%`` de ``% a.a.`` —, monta
+    uma Âncora de mentira com o que o número tem e chama o próprio ``citacao()``. Custo:
+    um modelo Pydantic por número fora das Âncoras, que é o caso raro.
+
+    Data, votos e número solto saem só com o literal ("4 e 5 de agosto de 2026", "7 a 0",
+    "280"), porque é o que ``citacao()`` faz com essas unidades: grudar a unidade neles só
+    atrapalharia a leitura da Correção.
+    """
+    return AncoraNumerica(
+        chave="",
+        rotulo="",
+        valor_literal=achado.literal,
+        valor=achado.valor,
+        unidade=achado.unidade,
+        trecho=achado.trecho,
+        data_iso=achado.data_iso,
+        qualificador=achado.qualificador,
+    ).citacao()
+
+
 def _ano_das_ancoras(numericas: Sequence[AncoraNumerica]) -> int | None:
     """O ano da Ata, para resolver data sem ano no texto sem depender do relógio."""
     for ancora in numericas:
@@ -145,11 +176,13 @@ def medir_aderencia(texto: str, ancoras: Sequence[Ancora]) -> ResultadoAderencia
     achados = extrair_numeros(texto, ano_padrao=_ano_das_ancoras(numericas))
     conferidos: list[str] = []
     fora: list[str] = []
+    fora_legivel: list[str] = []
     citadas: list[str] = []
     for achado in achados:
         casada = next((ancora for ancora in numericas if _casa(achado, ancora)), None)
         if casada is None:
             fora.append(achado.literal)
+            fora_legivel.append(_com_unidade(achado))
             continue
         conferidos.append(achado.literal)
         if casada.chave not in citadas:
@@ -169,6 +202,7 @@ def medir_aderencia(texto: str, ancoras: Sequence[Ancora]) -> ResultadoAderencia
         numeros_fora_das_ancoras=fora,
         ancoras_citadas=citadas,
         cobertura_textual=cobertura,
+        numeros_fora_com_unidade=fora_legivel,
     )
 
 

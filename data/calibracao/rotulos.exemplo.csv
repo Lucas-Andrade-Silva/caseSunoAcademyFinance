@@ -1,0 +1,3 @@
+execucao;audiencia;formato;rodada;pessoa;audiencia_percebida;aprovaria;motivo;observacao
+EXEMPLO-nao-e-calibracao;iniciante;carrossel;0;exemplo;intermediario;nao;linha ficticia: so mostra o formato, nao e rotulo;ver FORMATO.md antes de preencher rotulos.csv
+EXEMPLO-nao-e-calibracao;avancado;texto_analitico;1;exemplo;avancado;sim;;linha ficticia: so mostra o formato, nao e rotulo
