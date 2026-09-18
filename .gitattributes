@@ -1,0 +1,7 @@
+# Fim de linha: LF no repositorio; scripts sh precisam de LF para rodar em Unix.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.pdf binary
+*.mp4 binary
+*.ttf binary

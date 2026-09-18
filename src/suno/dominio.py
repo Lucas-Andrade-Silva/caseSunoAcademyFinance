@@ -142,6 +142,10 @@ class AncoraNumerica(BaseModel):
     unidade: Unidade
     trecho: str = Field(description="A frase literal da Ata onde o número aparece.")
     data_iso: date | None = Field(default=None, description="Para unidade DATA.")
+    qualificador: str | None = Field(
+        default=None,
+        description="O que distingue 'CDI+2%' ('CDI+') de '110% do CDI' ('do CDI'); None na maioria.",
+    )
 
     def citacao(self) -> str:
         """A forma canônica de citar a Âncora dentro de uma Célula."""
@@ -150,6 +154,10 @@ class AncoraNumerica(BaseModel):
         if self.unidade is Unidade.REAIS:
             return f"R$ {self.valor_literal}"
         if self.unidade is Unidade.PERCENTUAL:
+            if self.qualificador and self.qualificador.endswith("+"):
+                return f"{self.qualificador}{self.valor_literal}%"
+            if self.qualificador:
+                return f"{self.valor_literal}% {self.qualificador}"
             return f"{self.valor_literal}%"
         return f"{self.valor_literal} {self.unidade}"
 
@@ -689,6 +697,13 @@ class PedidoLLM(BaseModel):
     )
     max_tokens: int = Field(default=2048, gt=0)
     temperatura: float = Field(default=0.2, ge=0, le=2)
+    esforco_raciocinio: Literal["baixo", "medio", "alto"] | None = Field(
+        default=None,
+        description=(
+            "Em modelo de raciocínio, o 'pensar' gasta o mesmo teto de max_tokens (pesquisa §4): "
+            "papel com teto baixo pede esforço baixo. None = padrão do provedor."
+        ),
+    )
 
 
 class RespostaLLM(BaseModel):
@@ -697,6 +712,9 @@ class RespostaLLM(BaseModel):
     modelo: str
     tokens_entrada: int = 0
     tokens_saida: int = 0
+    tokens_raciocinio: int = Field(
+        default=0, description="Tokens gastos pensando (Gemini: thoughtsTokenCount). Contam na cota."
+    )
     latencia_s: float = 0.0
 
 

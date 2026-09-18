@@ -1,0 +1,438 @@
+# Léxico e padrões sintáticos da detecção de Recomendação (ADR 0012).
+#
+# Este arquivo é conhecimento de domínio: pertence à pessoa dona do Avaliador, não ao
+# pipeline. Mexer aqui muda o que reprova uma Célula, então toda mudança roda o canary
+# set (data/canary/canary.yaml) antes de entrar.
+#
+# Como o detector lê este arquivo (src/suno/avaliador/recomendacao.py):
+#
+#   - As expressões são casadas SEM diferenciar maiúscula de minúscula e COM acento:
+#     escreva "é hora de", nunca "e hora de" — sem o acento a expressão casaria com
+#     "data e hora de divulgação".
+#   - Espaço entre palavras casa qualquer espaço em branco, inclusive quebra de linha
+#     (a Ata vem do PDF com a frase partida em duas linhas).
+#   - Uma expressão de uma palavra só casa palavra inteira e é descartada quando o
+#     spaCy mostra que ali ela é substantivo, não verbo: "a venda de ativos subiu" e
+#     "o resgate de fundos cresceu" não são Recomendação; "venda agora" é.
+#   - O bloco `pode` é allowlist: um trecho que cai dentro de uma expressão de `pode`
+#     não vira Ocorrência, venha ele do Léxico ou da sintaxe.
+#
+# A divisão em `nao_pode` / `pode` é a do ADR 0012: o proibido é personalização com
+# direção de ação e promessa de retorno; o permitido é discussão em terceira pessoa.
+
+versao: 1
+
+# ---------------------------------------------------------------------------
+# Camada 1 — Léxico
+# ---------------------------------------------------------------------------
+
+nao_pode:
+  imperativos_de_acao:
+    porque: >-
+      Verbo de ação financeira no imperativo já traz o leitor como sujeito e a direção
+      da ação junto. É a forma mais curta de Recomendação que existe.
+    exemplo_dispara: "Compre títulos prefixados agora."
+    exemplo_nao_dispara: "A venda de ativos de risco aumentou em julho."
+    expressoes:
+      - compre
+      - venda
+      - aproveite
+      - fuja
+      - garanta
+      - invista
+      - aplique
+      - resgate
+      - migre
+      - monte posição
+      - zere
+      - reduza
+      - aumente
+
+  formulas_de_aconselhamento:
+    porque: >-
+      A voz editorial assume a posição de quem orienta. Não importa o ativo citado: a
+      fórmula sozinha já é atividade regulada.
+    exemplo_dispara: "Recomendamos a alocação em títulos indexados à inflação."
+    exemplo_nao_dispara: "Isso não é recomendação de investimento."
+    expressoes:
+      - recomendamos
+      - recomenda-se
+      - sugerimos
+      - aconselhamos
+      - nossa indicação
+      - nosso posicionamento é
+      - a indicação é
+      - nossa sugestão
+      - a sugestão é
+      - sugestão de investimento
+
+  formulas_de_aconselhamento_coloquiais:
+    porque: >-
+      A mesma fórmula na linguagem de rede social. O registro muda, a atividade regulada
+      é a mesma — e é assim que um Roteiro para Iniciante escorrega, não com
+      "recomendamos". As expressões abaixo são dado, não linguagem do projeto: o
+      CONTEXT.md proíbe estas palavras em nome de classe, campo, chave e função, e é
+      justamente por serem proibidas na nossa boca que precisam estar no ouvido.
+    exemplo_dispara: "Fica a dica: prefixados longos ainda pagam bem."
+    exemplo_nao_dispara: "O Conselho Monetário Nacional define a meta de inflação."
+    expressoes:
+      - nossa dica
+      - a dica é
+      - fica a dica
+      - fica a sugestão
+      - dica de investimento
+      - dica quente
+      - nosso conselho
+      - meu conselho
+      - fica o conselho
+      - conselho de investimento
+      - a call é
+      - nossa call
+      - minha call
+      - call de compra
+
+  momento_oportuno:
+    porque: >-
+      Marcar o instante ("agora", "é hora") transforma informação em chamada para agir.
+      É a paráfrase que mais escapa de uma lista de verbos.
+    exemplo_dispara: "É hora de migrar para a renda fixa."
+    exemplo_nao_dispara: "Em momentos de inflexão no ciclo, os sinais são mistos."
+    expressoes:
+      - é hora de
+      - é a hora de
+      - está na hora de
+      - chegou a hora de
+      - vale a pena entrar
+      - vale a pena comprar
+      - momento de comprar
+      - momento de entrar
+      - bom momento para
+      - melhor momento para
+      - momento certo para
+      - momento ideal para
+      - oportunidade de compra
+      - ponto de entrada
+
+  promessa_de_retorno:
+    porque: >-
+      Retorno futuro não é fato; afirmá-lo como certo é o que a regulação chama de
+      promessa de rentabilidade.
+    exemplo_dispara: "Ganho garantido de 14% ao ano no Tesouro Selic."
+    exemplo_nao_dispara: "Títulos prefixados tendem a render mais quando a Selic cai."
+    expressoes:
+      - ganho garantido
+      - retorno garantido
+      - lucro certo
+      - vai render
+      - vai rendar
+      - não tem como perder
+      - sem risco de perder
+      - rentabilidade assegurada
+      - rentabilidade garantida
+
+  personalizacao_com_direcao:
+    porque: >-
+      Referência ao patrimônio do leitor mais direção de ação. É o caso do ADR 0012:
+      nenhuma palavra da lista óbvia aparece e ainda assim é Recomendação.
+    exemplo_dispara: "Reduza sua exposição a ativos de risco."
+    exemplo_nao_dispara: "Isso afeta o seu bolso quando a Selic cai."
+    expressoes:
+      - sua carteira deve
+      - sua carteira precisa
+      - seu dinheiro deve
+      - seu dinheiro precisa
+      - reduza sua exposição
+      - aumente sua posição
+      - reduza sua posição
+      - aumente sua exposição
+      - ajuste sua carteira
+      - proteja sua carteira
+      - tire seu dinheiro
+      - coloque seu dinheiro
+
+  urgencia_de_acao:
+    porque: >-
+      Pressa é direção de ação sem verbo de ação: só faz sentido se houver algo a fazer
+      agora, e o que há a fazer é investir.
+    exemplo_dispara: "Não perca a chance de garantir 14% ao ano."
+    exemplo_nao_dispara: "O Comitê avaliará o cenário na próxima reunião."
+    expressoes:
+      - não perca a chance
+      - não perca a oportunidade
+      - última chance
+      - antes que a janela feche
+      - enquanto ainda dá tempo
+      - corra para
+
+  direcionamento_ao_leitor:
+    porque: >-
+      Separa quem age de quem não age e coloca o leitor do lado de quem age. É
+      Recomendação com o verbo terceirizado para o cenário.
+    exemplo_dispara: "O cenário favorece quem se posiciona em prefixados."
+    exemplo_nao_dispara: "Quem tem dívida sente o juro mais alto."
+    expressoes:
+      - favorece quem
+      - beneficia quem
+      - premia quem
+      - ideal para quem
+      - perfeito para quem
+      - feito para quem
+      - o tipo de ativo que você
+
+pode:
+  aviso_de_natureza_do_conteudo:
+    porque: >-
+      O próprio aviso de que o material não recomenda nada não pode reprovar a Célula
+      que o carrega — seria o inverso do que o ADR 0012 quer.
+    exemplo_nao_dispara: "Este conteúdo é educacional e não constitui recomendação."
+    expressoes:
+      - não é recomendação
+      - não constitui recomendação
+      - não se trata de recomendação
+      - não é sugestão
+      - não constitui sugestão
+      - não é dica
+      - não é conselho
+      - não é call
+      # A segunda metade de "não é X nem Y": a negação vale para os dois, e o bloco
+      # `pode` casa trecho, não frase inteira.
+      - nem recomendação
+      - nem sugestão
+      - nem dica
+      - nem conselho
+      - conteúdo educacional
+      - caráter informativo
+
+  descricao_em_terceira_pessoa:
+    porque: >-
+      Relato do que o Copom, o mercado ou os analistas fizeram ou esperam. Terceira
+      pessoa, sem leitor no meio: é exatamente o que o sistema existe para produzir.
+    exemplo_nao_dispara: "O Copom decidiu reduzir a taxa básica de juros."
+    expressoes:
+      - o Copom decidiu
+      - o Comitê decidiu
+      - o Copom optou por
+      - o mercado espera
+      - o mercado projeta
+      - analistas projetam
+      - analistas esperam
+      - investidores institucionais reduziram
+      - investidores institucionais aumentaram
+      - títulos prefixados tendem a
+      - historicamente
+      - em geral
+      - poder de compra
+
+  efeito_sem_direcao:
+    porque: >-
+      Explicar o efeito sobre a vida do leitor é o trabalho da Audiência Iniciante.
+      Efeito não é ação: "afeta o seu bolso" não manda fazer nada.
+    exemplo_nao_dispara: "O que isso muda para você?"
+    expressoes:
+      - o que muda para você
+      - o que isso muda para você
+      - isso afeta o seu bolso
+      - afeta o seu bolso
+      - o que acontece com o seu dinheiro
+
+# ---------------------------------------------------------------------------
+# Camada 2 — padrões sintáticos sobre o POS tagging do spaCy (pt_core_news_sm)
+# ---------------------------------------------------------------------------
+#
+# O detector lê os lemas e sintagmas daqui, não do código. Cada padrão traz um exemplo
+# que dispara e um que não dispara: são os dois testes mínimos de cada padrão.
+
+sintaxe:
+  modal_com_sujeito_dirigido:
+    porque: >-
+      O padrão central do ADR 0012: sujeito de segunda pessoa (ou o investidor genérico,
+      ou "quem" + verbo) somado a modal de obrigação/conveniência e a verbo de ação
+      financeira. Pega a paráfrase que nenhuma lista de palavras pega.
+    exige:
+      - sujeito dirigido ao leitor (ver `sujeito_dirigido`)
+      - modal de `gatilhos.modais_por_lema` com pos_ VERB ou AUX
+      - verbo de `lemas_acao` no infinitivo, ou sintagma de `sintagmas_acao`
+    exemplo_dispara: "Quem investe em renda fixa deveria travar a taxa agora."
+    exemplo_nao_dispara: "Quem investe em renda fixa acompanha a Selic de perto."
+
+  conveniencia_impessoal:
+    porque: >-
+      A paráfrase mais comum esconde o sujeito: "seria prudente considerar reduzir
+      posição" não tem leitor escrito, e é sobre o leitor. Sem sujeito, o gatilho de
+      conveniência mais um infinitivo de ação bastam.
+    exige:
+      - expressão de `gatilhos.conveniencia_impessoal`
+      - verbo de `lemas_acao` no infinitivo depois da expressão, ou sintagma
+    exemplo_dispara: "Seria prudente considerar reduzir posição em ativos de risco."
+    exemplo_nao_dispara: "Vale lembrar que a decisão foi unânime."
+
+  imperativo_sobre_patrimonio:
+    porque: >-
+      Imperativo em português vem tagueado de forma instável no pt_core_news_sm (o
+      modelo chega a marcar "Venda" como NOUN e "Mantenha" como PROPN). O que sustenta
+      o padrão é o resto da frase: verbo finito sem sujeito explícito mandando mexer no
+      que é do leitor ("seu dinheiro", "sua carteira").
+    exige:
+      - verbo finito no modo imperativo ou subjuntivo, sem filho nsubj
+      - lema em `lemas_acao` ou em `lemas_de_movimentacao`
+      - possessivo de segunda pessoa sobre substantivo de `substantivos_de_patrimonio`,
+        dentro da subárvore do verbo
+    exemplo_dispara: "Não deixe seu dinheiro parado na poupança."
+    exemplo_nao_dispara: "Entenda o que acontece com o seu dinheiro quando a Selic cai."
+
+  voz_editorial_com_acao:
+    porque: >-
+      "Nossa posição é comprar bolsa" não usa verbo modal nem imperativo: usa a primeira
+      pessoa do plural para assinar a direção. O padrão pega a assinatura, não a palavra.
+    exige:
+      - possessivo de primeira pessoa do plural (lema "nosso"), ou verbo com
+        Person=1 e Number=Plur
+      - verbo de `lemas_acao` no infinitivo na mesma frase
+    exemplo_dispara: "Nossa posição é comprar bolsa agora."
+    exemplo_nao_dispara: "Nosso time acompanha as decisões do Copom."
+
+  favorecimento_de_quem_age:
+    porque: >-
+      Terceiriza a direção para o cenário e mantém a personalização: quem age ganha,
+      logo aja. Sem modal e sem imperativo, escapa das duas outras camadas.
+    exige:
+      - verbo de `gatilhos.verbos_de_favorecimento`
+      - oração subordinada com sujeito "quem" e verbo de `lemas_acao`
+    exemplo_dispara: "O cenário favorece quem se posiciona em prefixados."
+    exemplo_nao_dispara: "A queda da Selic reduz o custo de quem tem dívida."
+
+# --- insumos dos padrões acima ---------------------------------------------
+
+lemas_acao:
+  # Verbos que movimentam patrimônio. Ficaram de fora "entender", "acompanhar",
+  # "observar" e afins: informar não é agir.
+  - comprar
+  - vender
+  - reduzir
+  - aumentar
+  - alocar
+  - realocar
+  - investir
+  - aplicar
+  - resgatar
+  - migrar
+  - sair
+  - entrar
+  - manter
+  - travar
+  - proteger
+  - aproveitar
+  - posicionar
+  - zerar
+  - montar
+  - diversificar
+  - apostar
+
+sintagmas_acao:
+  # Verbo + núcleo do objeto, quando o verbo sozinho não diz nada ("ter" é genérico,
+  # "ter na carteira" não é). O núcleo tem que estar na subárvore do verbo.
+  - verbo: reduzir
+    nucleo: posição
+  - verbo: reduzir
+    nucleo: exposição
+  - verbo: aumentar
+    nucleo: posição
+  - verbo: aumentar
+    nucleo: exposição
+  - verbo: montar
+    nucleo: posição
+  - verbo: zerar
+    nucleo: posição
+  - verbo: ter
+    nucleo: carteira
+  - verbo: proteger
+    nucleo: carteira
+  - verbo: ajustar
+    nucleo: carteira
+  - verbo: montar
+    nucleo: carteira
+  - verbo: tirar
+    nucleo: poupança
+  - verbo: deixar
+    nucleo: dinheiro
+
+lemas_de_movimentacao:
+  # Verbos genéricos que só contam no padrão `imperativo_sobre_patrimonio`, onde o
+  # possessivo do leitor é quem carrega a direção.
+  - deixar
+  - tirar
+  - colocar
+  - guardar
+  - parar
+  - correr
+
+gatilhos:
+  modais_por_lema:
+    # Casados por token.lemma_ com pos_ VERB/AUX — assim "deveria", "devem" e "deve"
+    # caem no mesmo lema e "o poder de compra" (NOUN) não vira modal.
+    - dever
+    - precisar
+    - poder
+    - querer
+    - ir
+    - convir
+    - necessitar
+
+  conveniencia_impessoal:
+    # Casados por texto: o pt_core_news_sm tagueia "Convém" e "Vale" como PROPN no
+    # início de frase, então lema aqui não serve. O que segura o padrão é exigir um
+    # infinitivo de ação depois da expressão.
+    - convém
+    - é prudente
+    - seria prudente
+    - é recomendável
+    - seria recomendável
+    - é aconselhável
+    - vale considerar
+    - vale a pena
+    - faz sentido
+    - faria sentido
+    - o ideal é
+    - o melhor é
+    - o caminho é
+    - pode ser interessante
+    - pode fazer sentido
+    - nada impede de
+
+  verbos_de_favorecimento:
+    - favorecer
+    - beneficiar
+    - premiar
+    - recompensar
+
+sujeito_dirigido:
+  # O que conta como "o leitor está no sujeito".
+  pronomes:
+    - você
+    - vocês
+    - tu
+  relativo:
+    # "quem" em posição de sujeito: "quem investe", "quem está começando".
+    - quem
+  substantivos:
+    # Investidor genérico no singular. "Investidores institucionais reduziram posição"
+    # é relato de terceiro e por isso o plural não entra aqui.
+    - investidor
+    - poupador
+    - iniciante
+  possessivos:
+    - seu
+    - teu
+
+substantivos_de_patrimonio:
+  # O que é do leitor. "Bolso" ficou de fora de propósito: "afeta o seu bolso" é efeito,
+  # não patrimônio movimentável, e é frase de Roteiro para Iniciante.
+  - dinheiro
+  - carteira
+  - posição
+  - exposição
+  - patrimônio
+  - reserva
+  - investimento
+  - aplicação
+  - grana
