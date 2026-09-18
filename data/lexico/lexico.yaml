@@ -1,0 +1,960 @@
+versao_do_arquivo: 1
+data: '2026-09-18'
+nota: Lista de elaboracao propria (Etapa 1, Agente 2 do Suno Content). Cobre o vocabulario do mercado
+  financeiro brasileiro que aparece em Ata do Copom, fato relevante e release de resultado. Nenhuma definicao
+  foi copiada de fonte com licenca restritiva -- o Dicionario CVM e CC BY-ND 3.0 (sem derivados) e foi
+  usado so para confirmar que um termo existe, nunca para copiar texto. Fontes consultadas em data/lexico/ORIGENS.md.
+termos:
+- termo: Selic
+  variantes:
+  - taxa Selic
+  - taxa básica de juros
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: Copom
+  variantes:
+  - Comitê de Política Monetária
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: Banco Central
+  variantes:
+  - BC
+  - BCB
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: IPCA
+  variantes:
+  - Índice de Preços ao Consumidor Amplo
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: inflação
+  variantes:
+  - inflação cheia
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: juros
+  variantes: []
+  nucleo: true
+  area: politica_monetaria
+  origem: propria
+- termo: meta de inflação
+  variantes:
+  - meta de inflação contínua
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: hiato do produto
+  variantes:
+  - hiato
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: forward guidance
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: juro real
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: juro neutro
+  variantes:
+  - taxa neutra de juros
+  - taxa de juros neutra
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: expectativas desancoradas
+  variantes:
+  - desancoragem das expectativas
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: balanço de riscos
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: ciclo de aperto
+  variantes:
+  - ciclo de aperto monetário
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: ciclo de flexibilização
+  variantes:
+  - ciclo de afrouxamento monetário
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: ponto-base
+  variantes:
+  - pontos-base
+  - pb
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: taxa terminal
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: curva de juros
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: prefixado
+  variantes:
+  - pré-fixado
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: pós-fixado
+  variantes:
+  - pos-fixado
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: Focus
+  variantes:
+  - pesquisa Focus
+  - boletim Focus
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: Relatório de Inflação
+  variantes:
+  - RI
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: placar de votação
+  variantes:
+  - votação unânime
+  - votação por maioria
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: unanimidade
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: dissenso
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: reunião do Copom
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: viés de política monetária
+  variantes:
+  - viés
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: transmissão da política monetária
+  variantes:
+  - canal de transmissão da política monetária
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: canal de crédito
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: ancoragem de expectativas
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: reancoragem das expectativas
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: arcabouço de metas
+  variantes:
+  - regime de metas de inflação
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: meta contínua
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: intervalo de tolerância
+  variantes:
+  - banda de tolerância
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: autoridade monetária
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: restrição monetária
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: estímulo monetário
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: condições financeiras
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: política monetária contracionista
+  variantes:
+  - política monetária restritiva
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: política monetária expansionista
+  variantes:
+  - política monetária acomodatícia
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: comunicado do Copom
+  variantes:
+  - nota do Copom
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: calendário de reuniões do Copom
+  variantes: []
+  nucleo: false
+  area: politica_monetaria
+  origem: propria
+- termo: CDI
+  variantes: []
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: Tesouro Direto
+  variantes: []
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: CDB
+  variantes: []
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: poupança
+  variantes:
+  - caderneta de poupança
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: renda fixa
+  variantes: []
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: fundo
+  variantes:
+  - fundo de investimento
+  nucleo: true
+  area: renda_fixa
+  origem: propria
+- termo: DI
+  variantes:
+  - taxa DI
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: LCI
+  variantes:
+  - Letra de Crédito Imobiliário
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: LCA
+  variantes:
+  - Letra de Crédito do Agronegócio
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: debênture
+  variantes:
+  - debêntures incentivadas
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: duration
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: marcação a mercado
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: come-cotas
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: spread
+  variantes:
+  - spread de crédito
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: Tesouro Selic
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: Tesouro IPCA+
+  variantes:
+  - Tesouro IPCA
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: Tesouro Prefixado
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: rating de crédito
+  variantes:
+  - classificação de risco de crédito
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: risco de crédito
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: liquidez diária
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: carência
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: Fundo Garantidor de Créditos
+  variantes:
+  - FGC
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: taxa de administração
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: taxa de performance
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: CRI
+  variantes:
+  - certificado de recebíveis imobiliários
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: CRA
+  variantes:
+  - certificado de recebíveis do agronegócio
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: nota promissória
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: letra financeira
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: custódia
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: rentabilidade líquida
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: rentabilidade bruta
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: tabela regressiva de imposto de renda
+  variantes:
+  - imposto de renda regressivo
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: IOF
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: marcação na curva
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: prazo de vencimento
+  variantes:
+  - vencimento
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: cupom de juros
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: amortização
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: deságio
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: ágio
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: correção monetária
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: índice de referência
+  variantes:
+  - benchmark
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: rating soberano
+  variantes: []
+  nucleo: false
+  area: renda_fixa
+  origem: propria
+- termo: dividendos
+  variantes:
+  - dividendo
+  nucleo: true
+  area: renda_variavel
+  origem: propria
+- termo: ação
+  variantes:
+  - ações
+  nucleo: true
+  area: renda_variavel
+  origem: propria
+- termo: bolsa
+  variantes:
+  - bolsa de valores
+  nucleo: true
+  area: renda_variavel
+  origem: propria
+- termo: renda variável
+  variantes: []
+  nucleo: true
+  area: renda_variavel
+  origem: propria
+- termo: EBITDA
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: EBITDA ajustado
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: covenants
+  variantes:
+  - covenant
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: P/L
+  variantes:
+  - preço sobre lucro
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: payout
+  variantes:
+  - taxa de payout
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: valuation
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: free float
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: follow-on
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: IPO
+  variantes:
+  - oferta pública inicial
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: ação ordinária
+  variantes:
+  - 'ON'
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: ação preferencial
+  variantes:
+  - PN
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: B3
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: Ibovespa
+  variantes:
+  - índice Bovespa
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: volatilidade
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: beta
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: dividend yield
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: lucro líquido
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: lucro por ação
+  variantes:
+  - LPA
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: margem líquida
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: margem EBITDA
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: fluxo de caixa livre
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: guidance
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: recompra de ações
+  variantes:
+  - buyback
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: oferta pública
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: book building
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: underwriting
+  variantes:
+  - subscrição de ações
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: governança corporativa
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: conselho de administração
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: ADR
+  variantes:
+  - American Depositary Receipt
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: BDR
+  variantes:
+  - Brazilian Depositary Receipt
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: small cap
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: blue chip
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: patrimônio líquido
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: retorno sobre patrimônio líquido
+  variantes:
+  - ROE
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: capitalização de mercado
+  variantes:
+  - valor de mercado
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: índice de Sharpe
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: diversificação de carteira
+  variantes:
+  - diversificação
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: gestão ativa
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: gestão passiva
+  variantes: []
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: fundo de índice
+  variantes:
+  - ETF
+  nucleo: false
+  area: renda_variavel
+  origem: propria
+- termo: PIB
+  variantes:
+  - Produto Interno Bruto
+  nucleo: true
+  area: macro
+  origem: propria
+- termo: câmbio
+  variantes:
+  - taxa de câmbio
+  nucleo: true
+  area: macro
+  origem: propria
+- termo: dólar
+  variantes: []
+  nucleo: true
+  area: macro
+  origem: propria
+- termo: balança comercial
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: fiscal primário
+  variantes:
+  - resultado fiscal primário
+  - superávit primário
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: dívida bruta
+  variantes:
+  - dívida bruta do governo geral
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: inflação de serviços
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: núcleo de inflação
+  variantes:
+  - inflação subjacente
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: choque de oferta
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: dívida líquida do setor público
+  variantes:
+  - DLSP
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: resultado nominal
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: arcabouço fiscal
+  variantes:
+  - novo arcabouço fiscal
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: teto de gastos
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: taxa de desemprego
+  variantes:
+  - desemprego
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: produtividade do trabalho
+  variantes:
+  - produtividade
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: atividade econômica
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: consumo das famílias
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: investimento
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: formação bruta de capital fixo
+  variantes:
+  - FBCF
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: balança de pagamentos
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: conta corrente
+  variantes:
+  - transações correntes
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: reservas internacionais
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: risco-país
+  variantes:
+  - EMBI+
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: commodities
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: termos de troca
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: paridade do poder de compra
+  variantes:
+  - PPC
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: produto potencial
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: IGP-M
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: INCC
+  variantes: []
+  nucleo: false
+  area: macro
+  origem: propria
+- termo: investidor
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: mercado financeiro
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: ativo financeiro
+  variantes:
+  - ativo
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: passivo financeiro
+  variantes:
+  - passivo
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: liquidez
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: risco
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: retorno
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: rentabilidade
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: alocação de ativos
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: carteira de investimentos
+  variantes:
+  - carteira
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: perfil de investidor
+  variantes:
+  - suitability
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: horizonte de investimento
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: taxa livre de risco
+  variantes:
+  - risk free rate
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: prêmio de risco
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: custo de oportunidade
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: inflação implícita
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria
+- termo: breakeven de inflação
+  variantes: []
+  nucleo: false
+  area: geral
+  origem: propria

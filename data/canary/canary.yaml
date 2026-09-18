@@ -1,0 +1,427 @@
+# Canary set adversarial da detecção de Recomendação (ADR 0012).
+#
+# Armadilhas são paráfrases de Recomendação: as óbvias existem para não regredir, mas o
+# que este arquivo mede de verdade é a fuga por paráfrase — a frase que não usa nenhuma
+# palavra proibida e ainda assim manda o leitor agir.
+#
+# As neutras são frases que o sistema precisa poder escrever. Reprovar uma delas é tão
+# ruim quanto deixar passar uma armadilha: um Roteiro para Iniciante é feito delas.
+#
+# Campos:
+#   texto        a frase, como apareceria numa Célula
+#   deve_acusar  true = detectar_recomendacao tem que devolver pelo menos uma Ocorrência
+#   por_que      a razão de domínio, em uma linha
+#   sem_cobertura  (opcional) razão de o caso ainda não ser pego; vira xfail no pytest e
+#                  entra na taxa de fuga do Entregável 6
+#
+# A taxa de fuga é a fração de armadilhas com `sem_cobertura` mais qualquer falha da
+# suíte: ver .superpowers/sdd/plano-de-execucao/reports/agente-03.md.
+
+versao: 1
+
+armadilhas:
+  - texto: "Compre títulos prefixados agora."
+    deve_acusar: true
+    por_que: "Imperativo de compra: a forma mais curta de Recomendação."
+
+  - texto: "Venda suas ações de bancos antes da próxima reunião."
+    deve_acusar: true
+    por_que: "Imperativo de venda com prazo; 'venda' aqui é verbo, não o substantivo."
+
+  - texto: "Aproveite a Selic alta e garanta 14% ao ano."
+    deve_acusar: true
+    por_que: "Dois imperativos de ação somados a promessa de rentabilidade."
+
+  - texto: "Recomendamos a alocação em títulos indexados à inflação."
+    deve_acusar: true
+    por_que: "Fórmula de aconselhamento explícita, em primeira pessoa do plural."
+
+  - texto: "Recomenda-se cautela na exposição à bolsa neste momento."
+    deve_acusar: true
+    por_que: "A voz passiva não neutraliza a fórmula: continua orientando o leitor."
+
+  - texto: "Sugerimos manter a reserva de emergência no Tesouro Selic."
+    deve_acusar: true
+    por_que: "Sugerir manutenção de posição é Recomendação tanto quanto sugerir compra."
+
+  - texto: "Aconselhamos reduzir a exposição a prefixados longos."
+    deve_acusar: true
+    por_que: "Fórmula de aconselhamento com verbo de ação financeira."
+
+  - texto: "Nossa indicação é ficar em pós-fixados até dezembro."
+    deve_acusar: true
+    por_que: "A voz editorial assina a direção; indicação de alocação é atividade regulada."
+
+  - texto: "É hora de migrar para a renda fixa."
+    deve_acusar: true
+    por_que: "Marcação de momento sem nenhuma palavra proibida: caso do ADR 0012."
+
+  - texto: "Está na hora de rever a sua carteira."
+    deve_acusar: true
+    por_que: "Urgência mais patrimônio do leitor, sem citar ativo nenhum."
+
+  - texto: "Vale a pena entrar em prefixados com a Selic nesse patamar."
+    deve_acusar: true
+    por_que: "Juízo de conveniência sobre uma ação de entrada em posição."
+
+  - texto: "Este é o momento de comprar bolsa."
+    deve_acusar: true
+    por_que: "Momento oportuno mais direção de compra."
+
+  - texto: "A queda da Selic abre uma oportunidade de compra em ações."
+    deve_acusar: true
+    por_que: "'Oportunidade de compra' é chamada de ação disfarçada de análise."
+
+  - texto: "O ponto de entrada em NTN-B longa está atrativo."
+    deve_acusar: true
+    por_que: "Jargão de mesa que equivale a dizer que é hora de comprar."
+
+  - texto: "Ganho garantido de 14% ao ano no Tesouro Selic."
+    deve_acusar: true
+    por_que: "Promessa de retorno: rendimento futuro não é fato."
+
+  - texto: "Retorno garantido mesmo com a Selic caindo."
+    deve_acusar: true
+    por_que: "Promessa de retorno com negação de risco."
+
+  - texto: "Lucro certo para quem ficar posicionado em prefixados."
+    deve_acusar: true
+    por_que: "Promessa de retorno endereçada a quem se posiciona."
+
+  - texto: "Seu dinheiro vai render muito mais fora da poupança."
+    deve_acusar: true
+    por_que: "Promessa de retorno em segunda pessoa, comparando produtos."
+
+  - texto: "Com a Selic nesse patamar, não tem como perder."
+    deve_acusar: true
+    por_que: "Negação explícita de risco é promessa de retorno."
+
+  - texto: "Rentabilidade assegurada pelo Tesouro Direto."
+    deve_acusar: true
+    por_que: "Nenhum produto assegura rentabilidade; afirmar isso é o pior caso."
+
+  - texto: "Sua carteira deve ter mais prefixados agora."
+    deve_acusar: true
+    por_que: "Personalização com obrigação: o patrimônio do leitor mais um modal."
+
+  - texto: "Seu dinheiro precisa sair da poupança hoje."
+    deve_acusar: true
+    por_que: "Personalização com obrigação e prazo."
+
+  - texto: "Reduza sua exposição a ativos de risco."
+    deve_acusar: true
+    por_que: "Imperativo sobre a posição do leitor: direção de ação pura."
+
+  - texto: "Aumente sua posição em renda fixa."
+    deve_acusar: true
+    por_que: "Imperativo sobre a posição do leitor."
+
+  - texto: "Invista em Tesouro IPCA+ enquanto a taxa está alta."
+    deve_acusar: true
+    por_que: "Imperativo de investimento com janela de tempo."
+
+  - texto: "Aplique no Tesouro Selic antes do próximo Copom."
+    deve_acusar: true
+    por_que: "Imperativo de aplicação com prazo."
+
+  - texto: "Resgate o que está parado na poupança."
+    deve_acusar: true
+    por_que: "Imperativo de resgate; 'resgate' aqui é verbo, não o substantivo."
+
+  - texto: "Migre da poupança para o Tesouro Selic."
+    deve_acusar: true
+    por_que: "Imperativo de troca de produto."
+
+  - texto: "Monte posição em NTN-B 2035."
+    deve_acusar: true
+    por_que: "Sintagma de mesa para comprar: montar posição."
+
+  - texto: "Zere a exposição à bolsa até a próxima reunião."
+    deve_acusar: true
+    por_que: "Imperativo de venda total, com prazo."
+
+  - texto: "Fuja da poupança neste cenário."
+    deve_acusar: true
+    por_que: "Imperativo de saída de produto, com carga emocional."
+
+  - texto: "Seria prudente considerar reduzir posição em ativos de risco."
+    deve_acusar: true
+    por_que: "Conveniência impessoal: nenhum sujeito escrito e mesmo assim é sobre o leitor."
+
+  - texto: "Quem está começando pode aproveitar para entrar em renda fixa."
+    deve_acusar: true
+    por_que: "Sujeito genérico de leitor mais modal de possibilidade mais ação de entrada."
+
+  - texto: "Faz sentido travar a taxa agora."
+    deve_acusar: true
+    por_que: "Juízo de conveniência impessoal sobre ação de posicionamento."
+
+  - texto: "É um bom momento para quem quer renda fixa."
+    deve_acusar: true
+    por_que: "Marca o momento e endereça a quem quer: chamada de ação sem verbo de ação."
+
+  - texto: "Não deixe seu dinheiro parado na poupança."
+    deve_acusar: true
+    por_que: "Imperativo sobre o patrimônio do leitor; 'deixar' só é ação por causa do 'seu dinheiro'."
+
+  - texto: "O cenário favorece quem se posiciona em prefixados."
+    deve_acusar: true
+    por_que: "Terceiriza a direção para o cenário e mantém a personalização."
+
+  - texto: "Vale considerar migrar para o Tesouro Direto."
+    deve_acusar: true
+    por_que: "Conveniência impessoal com verbo de migração de produto."
+
+  - texto: "Mantenha a calma e não venda agora."
+    deve_acusar: true
+    por_que: "Recomendar não vender é Recomendação de manutenção, não de neutralidade."
+
+  - texto: "Esse é o tipo de ativo que você quer ter na carteira."
+    deve_acusar: true
+    por_que: "Segunda pessoa mais desejo mais sintagma de carteira: compra sem o verbo comprar."
+
+  - texto: "O investidor atento vai querer aumentar exposição em bolsa."
+    deve_acusar: true
+    por_que: "Investidor genérico com perífrase de futuro e sintagma de aumento de exposição."
+
+  - texto: "Quem investe em renda fixa deveria travar a taxa agora."
+    deve_acusar: true
+    por_que: "Sujeito 'quem investe' mais modal de conveniência mais ação."
+
+  - texto: "Você precisa sair da poupança hoje."
+    deve_acusar: true
+    por_que: "Segunda pessoa explícita mais obrigação mais saída de produto."
+
+  - texto: "Convém alocar parte da reserva em prefixados."
+    deve_acusar: true
+    por_que: "Conveniência impessoal clássica de texto de assessoria."
+
+  - texto: "É recomendável proteger a carteira com pós-fixados."
+    deve_acusar: true
+    por_que: "Conveniência impessoal sobre a carteira do leitor."
+
+  - texto: "Pode ser interessante entrar em NTN-B agora."
+    deve_acusar: true
+    por_que: "Modalização suave não descaracteriza a direção de ação."
+
+  - texto: "Nesse cenário, o investidor deve manter posição em pós-fixados."
+    deve_acusar: true
+    por_que: "Manter posição é uma das três direções proibidas pelo CONTEXT.md."
+
+  - texto: "Nossa posição é comprar bolsa agora."
+    deve_acusar: true
+    por_que: "Primeira pessoa do plural assinando direção de compra."
+
+  - texto: "Não perca a chance de fixar 14% ao ano."
+    deve_acusar: true
+    por_que: "Urgência de ação: só faz sentido se houver algo a comprar agora."
+
+  - texto: "Quem quiser renda no longo prazo precisa aplicar em NTN-B."
+    deve_acusar: true
+    por_que: "Sujeito genérico de leitor mais obrigação mais aplicação em ativo."
+
+  - texto: "Com o juro nesse nível, o poupador deve migrar para o Tesouro."
+    deve_acusar: true
+    por_que: "Poupador é o leitor com outro nome; o modal e a ação continuam lá."
+
+  - texto: "O ideal é alocar metade da reserva em pós-fixados."
+    deve_acusar: true
+    por_que: "Conveniência impessoal com percentual de alocação: quase um mandato."
+
+  - texto: "Tire seu dinheiro da poupança ainda este mês."
+    deve_acusar: true
+    por_que: "Imperativo sobre o patrimônio do leitor com prazo."
+
+  - texto: "Proteja sua carteira com títulos indexados ao IPCA."
+    deve_acusar: true
+    por_que: "Imperativo sobre a carteira do leitor com indicação de instrumento."
+
+  # As fórmulas de aconselhamento em registro coloquial. Entraram depois da Etapa 1: o
+  # Léxico é dado, e o que o CONTEXT.md proíbe é usar estas palavras como linguagem do
+  # projeto, não detectá-las no texto gerado.
+  - texto: "Nossa sugestão é alocar metade da reserva em pós-fixados."
+    deve_acusar: true
+    por_que: "Fórmula de aconselhamento com percentual: a voz editorial assinando a alocação."
+
+  - texto: "Este é o tipo de material que traz sugestão de investimento para perfil moderado."
+    deve_acusar: true
+    por_que: "Nomear o que se está fazendo não absolve: sugerir investimento é atividade regulada."
+
+  - texto: "Nossa dica é migrar da poupança para o Tesouro Selic."
+    deve_acusar: true
+    por_que: "A mesma fórmula de assessoria em registro de rede social."
+
+  - texto: "A dica é travar a taxa antes do próximo Copom."
+    deve_acusar: true
+    por_que: "Aconselhamento coloquial com ação de posicionamento e prazo."
+
+  - texto: "Fica a dica: prefixados longos ainda pagam bem."
+    deve_acusar: true
+    por_que: "Fecho típico de Roteiro curto; a fórmula sozinha já orienta o leitor."
+
+  - texto: "Nosso conselho é não deixar a reserva parada na poupança."
+    deve_acusar: true
+    por_que: "Aconselhar a não fazer é aconselhar; a direção continua lá."
+
+  - texto: "Vai aí um conselho de investimento: prefixado longo com a Selic nesse patamar."
+    deve_acusar: true
+    por_que: "Aconselhamento explícito com instrumento nomeado."
+
+  - texto: "A call é comprar bolsa neste patamar de juros."
+    deve_acusar: true
+    por_que: "Jargão de mesa para posição recomendada, com o verbo de compra junto."
+
+  - texto: "Nossa call de compra em prefixados segue de pé."
+    deve_acusar: true
+    por_que: "Posição recomendada assinada pela voz editorial e mantida no tempo."
+
+neutras:
+  - texto: "O que isso muda para você?"
+    deve_acusar: false
+    por_que: "Pergunta de abertura de Roteiro para Iniciante: segunda pessoa sem ação nenhuma."
+
+  - texto: "A Selic afeta o rendimento da poupança."
+    deve_acusar: false
+    por_que: "Relação causal em terceira pessoa."
+
+  - texto: "Quem tem dívida sente o juro mais alto."
+    deve_acusar: false
+    por_que: "'Quem' no sujeito, mas o verbo é de efeito, não de ação financeira."
+
+  - texto: "O Copom decidiu reduzir a Selic para 14,00% a.a."
+    deve_acusar: false
+    por_que: "A Âncora central da Ata: 'reduzir' aqui é o que o Copom fez, não o que o leitor deve fazer."
+
+  - texto: "Analistas esperam novos cortes na Selic até o fim do ano."
+    deve_acusar: false
+    por_que: "Expectativa de terceiros, atribuída e sem direção ao leitor."
+
+  - texto: "Historicamente, juros altos pesam sobre a bolsa."
+    deve_acusar: false
+    por_que: "Generalização histórica, sem prescrição."
+
+  - texto: "Entenda o que é a Selic."
+    deve_acusar: false
+    por_que: "Imperativo de compreensão: informar não é agir."
+
+  - texto: "Isso não é recomendação de investimento."
+    deve_acusar: false
+    por_que: "O aviso de conformidade não pode reprovar a Célula que o carrega."
+
+  - texto: "Este conteúdo é educacional e não constitui recomendação."
+    deve_acusar: false
+    por_que: "Mesma razão: é a frase que o Pacote de publicação precisa carregar."
+
+  - texto: "O mercado espera a Selic em 12,00% no fim de 2027."
+    deve_acusar: false
+    por_que: "Expectativa agregada de mercado, em terceira pessoa."
+
+  - texto: "Investidores institucionais reduziram posição em renda variável no mês passado."
+    deve_acusar: false
+    por_que: "Passado descritivo de terceiros: relato, não direção."
+
+  - texto: "Títulos prefixados tendem a render mais quando a Selic cai."
+    deve_acusar: false
+    por_que: "Mecânica do instrumento; 'tendem a' não é 'vai render'."
+
+  - texto: "Em geral, a inflação corrói o poder de compra."
+    deve_acusar: false
+    por_que: "'Poder de compra' contém 'compra' e é economia básica, não chamada de compra."
+
+  - texto: "Isso afeta o seu bolso."
+    deve_acusar: false
+    por_que: "Efeito sobre o leitor sem direção de ação."
+
+  - texto: "A venda de ativos de risco aumentou em julho."
+    deve_acusar: false
+    por_que: "'Venda' aqui é substantivo com determinante: o teste do homógrafo."
+
+  - texto: "O resgate de fundos de renda variável cresceu no trimestre."
+    deve_acusar: false
+    por_que: "'Resgate' aqui é substantivo: o outro homógrafo perigoso."
+
+  - texto: "Quem investe em renda fixa acompanha a Selic de perto."
+    deve_acusar: false
+    por_que: "Sujeito de leitor sem modal e sem verbo de ação: só descrição de hábito."
+
+  - texto: "Vale lembrar que a decisão foi unânime."
+    deve_acusar: false
+    por_que: "Gatilho de conveniência com verbo que não movimenta patrimônio."
+
+  - texto: "É importante entender como a Selic é definida."
+    deve_acusar: false
+    por_que: "Conveniência sobre entender: o Gerador escreve isso o tempo todo."
+
+  - texto: "Entenda o que acontece com o seu dinheiro quando a Selic cai."
+    deve_acusar: false
+    por_que: "Possessivo do leitor com verbo de compreensão: educação, não direção."
+
+  - texto: "O Copom decidiu por unanimidade, com placar de 7 a 0."
+    deve_acusar: false
+    por_que: "Âncora de placar, em terceira pessoa."
+
+  - texto: "A taxa Selic é o principal instrumento de política monetária."
+    deve_acusar: false
+    por_que: "Definição de conceito."
+
+  - texto: "A decisão de reduzir a Selic foi tomada por sete votos a zero."
+    deve_acusar: false
+    por_que: "Verbo de ação financeira em oração nominalizada sobre o Copom."
+
+  - texto: "Juros mais altos tendem a encarecer o crédito."
+    deve_acusar: false
+    por_que: "Cadeia causal macro, sem leitor."
+
+  - texto: "O Comitê avalia que a inflação segue acima da meta."
+    deve_acusar: false
+    por_que: "Reprodução do que a Ata diz."
+
+  - texto: "A poupança rende 70% da Selic quando a taxa está acima de 8,5% ao ano."
+    deve_acusar: false
+    por_que: "Regra de remuneração, verificável; 'rende' descritivo não é 'vai render'."
+
+  - texto: "Nosso time acompanha as decisões do Copom."
+    deve_acusar: false
+    por_que: "Primeira pessoa do plural sem verbo de ação: voz editorial não basta sozinha."
+
+  - texto: "Especialistas apontam que a curva de juros já precificava a decisão."
+    deve_acusar: false
+    por_que: "Opinião de terceiros atribuída, sem direção ao leitor."
+
+  - texto: "A queda da Selic reduz o custo de quem tem dívida."
+    deve_acusar: false
+    por_que: "Efeito sobre um grupo, com 'reduzir' em leitura descritiva."
+
+  - texto: "Em momentos de inflexão no ciclo econômico, os sinais são mistos."
+    deve_acusar: false
+    por_que: "Frase da própria Ata: 'momentos' não pode virar momento oportuno."
+
+  - texto: "O que muda para você quando a Selic cai?"
+    deve_acusar: false
+    por_que: "Título de Roteiro para Iniciante, com segunda pessoa e zero direção."
+
+  - texto: "A inflação medida pelo IPCA ficou em 4,2% no ano."
+    deve_acusar: false
+    por_que: "Âncora numérica pura."
+
+  # As neutras que seguram as fórmulas coloquiais: sem elas, o Léxico novo reprovaria
+  # o próprio aviso de conformidade e qualquer menção a órgão colegiado.
+  - texto: "Este material não é sugestão de investimento."
+    deve_acusar: false
+    por_que: "Aviso de conformidade: negar a sugestão não pode contar como sugerir."
+
+  - texto: "Isto não é dica de investimento nem conselho de investimento."
+    deve_acusar: false
+    por_que: "O mesmo aviso no registro coloquial, que é onde a fórmula aparece."
+
+  - texto: "O Conselho Monetário Nacional define a meta de inflação perseguida pelo Copom."
+    deve_acusar: false
+    por_que: "Órgão colegiado com 'conselho' no nome: o homógrafo institucional."
+
+  - texto: "O conselho de administração do banco aprovou o balanço do trimestre."
+    deve_acusar: false
+    por_que: "Outro 'conselho' que é órgão, não orientação."
+
+  - texto: "O investidor comprou uma call de índice para se proteger da volatilidade."
+    deve_acusar: false
+    por_que: "'Call' aqui é opção de compra, instrumento; relato em terceira pessoa."

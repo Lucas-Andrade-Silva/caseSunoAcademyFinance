@@ -31,7 +31,12 @@ dev = [
     "pytest==9.1.1",
 ]
 # O ramo de vídeo (ADR 0004) instala à parte, porque é o primeiro a cair sob atraso.
-video = []
+# imageio-ffmpeg embute o binário do ffmpeg (chamado por subprocesso, não linkado); edge-tts é a
+# narração opcional, que só roda fora do pytest (pesquisa §6: vivo, endpoint não documentado).
+video = [
+    "imageio-ffmpeg==0.6.0",
+    "edge-tts==7.2.8",
+]
 
 [project.scripts]
 suno = "suno.cli:main"
