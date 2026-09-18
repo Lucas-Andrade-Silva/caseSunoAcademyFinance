@@ -1,0 +1,14 @@
+{
+  "identificador": "copom-280-2026-08-05",
+  "titulo": "280ª Reunião - 4-5 agosto, 2026",
+  "reuniao": 280,
+  "data_referencia": "2026-08-05",
+  "origem_url": "https://www.bcb.gov.br/content/copom/atascopom/Copom280-not20260805280.pdf",
+  "origem_api": "https://www.bcb.gov.br/api/servico/sitebcb/atascopom/ultimas?quantidade=5&filtro=",
+  "buscada_em": "2026-09-18",
+  "sha256_pdf": "36ac5012478032f9f6e72fa09c5219085fe7acd125133bbfd38aa7eb447e638b",
+  "paginas": 5,
+  "caracteres": 14166,
+  "idioma": "pt",
+  "extrator": "pypdf 6.19.0"
+}

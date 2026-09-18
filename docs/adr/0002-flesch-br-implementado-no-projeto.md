@@ -58,3 +58,24 @@ Os Limiares desta decisão deixam de ser só as faixas publicadas do NILC e pass
 confirmados contra a Calibração — ~30 Células rotuladas pelas duas pessoas do time, com
 concordância reportada (alvo Kappa 0,6–0,8). Onde o rótulo humano divergir da faixa publicada,
 o relatório mostra os dois números.
+
+## Atualização (18/09/2026): o silabador é reimplementado, não copiado
+
+A decisão pendente sobre o silabador do NILC (GPL-3.0) foi tomada: **reimplementamos o
+algoritmo de Silva (2011) a partir do artigo, num arquivo isolado
+(`src/suno/avaliador/silabas.py`), sem copiar uma linha do código do NILC**. Copiar o
+arquivo contaminaria o projeto inteiro com a GPL e fecharia a porta para qualquer conversa
+sobre produto; a reimplementação custa um dia de trabalho e testes, e mantém a licença do
+projeto limpa.
+
+Convenções fixadas, cobertas por teste em `tests/test_silabas.py`:
+
+- `ideia` → `i-dei-a` (3 sílabas; o bug de sílaba vazia do NILC não existe aqui).
+- Hiato com vogal tônica marcada ou `i`/`u` tônicos separa: `sa-ú-de`, `pa-ís`, `ba-ú`.
+- Ditongo decrescente não separa: `mãe`, `pau`, `lei`, `cau-sa`.
+- `-ia` átono final é hiato: `e-co-no-mi-a`, `Se-lic` fica `Se-lic`, `ta-xa`, `ju-ros`,
+  `in-fla-ção`, `a-ção`, `a-ções`, `a-ti-vo`, `á-gio`, `á-gua`.
+
+O texto de referência de 45 palavras e 4 frases citado na pesquisa (Flesch-BR 34,4 com o
+silabador correto) não foi preservado; o teste usa um texto próprio de 45 palavras, 4 frases
+e 108 sílabas contadas à mão, que resulta no mesmo 34,4 pela fórmula.

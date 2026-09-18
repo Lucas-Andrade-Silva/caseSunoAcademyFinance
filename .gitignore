@@ -15,3 +15,23 @@
 # Configuração pessoal do Claude Code (MCP servers, permissões locais) —
 # não é do projeto, é da máquina de quem está rodando.
 .claude/settings.local.json
+
+# Ambiente
+.venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.superpowers/
+*.egg-info/
+build/
+dist/
+
+# Interface (ADR 0005)
+web/node_modules/
+web/dist/
+
+# Saídas pesadas de execução: mp4 e PNG não versionam; execucao.json versiona.
+data/execucoes/**/*.mp4
+data/execucoes/**/*.wav
+data/execucoes/**/*.mp3
