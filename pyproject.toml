@@ -1,0 +1,65 @@
+[project]
+name = "suno-content"
+version = "0.1.0"
+description = "Adapta uma Ata em nove Células e reprova as que não atingem o Limiar da sua Audiência."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+# Toda dependência abaixo está em docs/research/viabilidade-tecnica.md ou foi conferida na
+# documentação oficial antes de entrar (ver docs/plano-de-execucao.md). Versões fixas de propósito.
+dependencies = [
+    "pydantic==2.13.4",
+    "pydantic-evals==2.45.0",          # ADR 0003
+    "spacy==3.8.16",                   # ADR 0012 — só POS tagging, offline
+    "pt-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl",
+    "pypdf==6.19.0",                   # ADR 0006 — BSD-3, puro Python; PyMuPDF (AGPL) descartado
+    "text2num==3.1.0",                 # pesquisa §3 — número por extenso
+    "babel==2.18.0",                   # pesquisa §3 — vírgula decimal pt_BR
+    "dateparser==1.4.3",               # pesquisa §3 — datas em português
+    "httpx==0.28.1",                   # ADR 0007 — único caminho para a rede
+    "python-dotenv==1.2.2",
+    "pyyaml==6.0.3",
+    "matplotlib==3.11.1",              # ADR 0009
+    "pillow==12.3.0",                  # ADR 0009, 0014
+    "numpy==2.5.3",
+    "fastapi==0.136.3",                # ADR 0005
+    "uvicorn==0.48.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+]
+# O ramo de vídeo (ADR 0004) instala à parte, porque é o primeiro a cair sob atraso.
+video = []
+
+[project.scripts]
+suno = "suno.cli:main"
+
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+# O modelo pt_core_news_sm do spaCy só existe como wheel no GitHub (ADR 0012).
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/suno"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-p no:cacheprovider"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.uv]
+# `uv sync` instala o projeto em modo editável mais o grupo dev.
+default-groups = ["dev"]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+]
