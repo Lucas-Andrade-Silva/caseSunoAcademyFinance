@@ -1,0 +1,17 @@
+# Skills do pacote Matt Pocock (.claude/skills/) não adotadas neste projeto:
+# dependem de fluxo de issue-tracker/tickets multi-sessão que este case (2 pessoas, 2 semanas) não usa,
+# ou duplicam skills nativas já disponíveis (research, tdd).
+.claude/skills/ask-matt/
+.claude/skills/implement/
+.claude/skills/improve-codebase-architecture/
+.claude/skills/research/
+.claude/skills/resolving-merge-conflicts/
+.claude/skills/setup-matt-pocock-skills/
+.claude/skills/to-spec/
+.claude/skills/to-tickets/
+.claude/skills/triage/
+.claude/skills/wayfinder/
+
+# Configuração pessoal do Claude Code (MCP servers, permissões locais) —
+# não é do projeto, é da máquina de quem está rodando.
+.claude/settings.local.json
