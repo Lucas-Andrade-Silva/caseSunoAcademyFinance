@@ -222,6 +222,22 @@ def test_erro_de_provedor_na_rodada_zero_deixa_o_historico_vazio(
     assert interrompido_por_provedor(historico)
 
 
+def test_erro_que_nao_e_do_provedor_tambem_para_o_ciclo_sem_subir(
+    ata: Ata, ancoras_completas: Ancoras
+):
+    """Achado do revisor de erros (2026-09-19): `ProvedorFalso` documenta e aceita
+    `BaseException` arbitrária na fila (ex.: um `TimeoutError` roteirizado); antes desta
+    correção, qualquer exceção que não fosse `ErroProvedor` subia por `rodar_ciclo` e
+    derrubava a Matriz inteira — nove Células perdidas e nenhum `execucao.json` gravado."""
+    provedor = _provedor(RuntimeError("boom"))
+    historico = _rodar(ata, ancoras_completas, provedor)
+    assert historico.tentativas == []
+    assert historico.destino_final is Destino.REPROVADO_REVISAO_HUMANA
+    assert historico.falha is not None
+    assert "boom" in historico.falha
+    assert "erro inesperado" in historico.falha
+
+
 def test_o_pedido_da_rodada_um_carrega_a_instrucao_da_correcao(
     ata: Ata, ancoras_completas: Ancoras
 ):

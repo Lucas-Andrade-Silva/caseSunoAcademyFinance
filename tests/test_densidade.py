@@ -133,3 +133,34 @@ def test_lexico_carrega_com_pelo_menos_150_termos_bem_formados() -> None:
     assert "Selic" in nucleo
     assert "CDI" in nucleo
     assert "hiato do produto" not in nucleo
+
+
+def test_conjuncao_e_nao_e_confundida_com_a_copula_e() -> None:
+    """Achado do revisor de erros (2026-09-19): sem acento, "é a"/"é o" (cópula) e "e a"/"e o"
+    (conjunção "e" + artigo) viram a mesma string — quase toda frase com dois termos do
+    Léxico marcava o primeiro como explicado só por causa do "e" que os liga."""
+    resultado = medir_densidade("A Selic e o IPCA subiram em agosto.", ExigenciaDeExplicacao.SEMPRE)
+
+    termo_selic = next(t for t in resultado.termos if t.termo == "Selic")
+    assert termo_selic.explicado is False
+    assert "Selic" in resultado.sem_explicacao
+
+
+def test_verbo_sao_nao_e_confundido_com_o_toponimo_sao() -> None:
+    """Mesma família de achado: "são" sem acento vira "sao", que também é o "São" de nome de
+    cidade — mas aqui o ponto é mais simples ainda: nenhum termo do Léxico está sendo
+    explicado, "são" é só o verbo "ser" no plural."""
+    resultado = medir_densidade("Os juros sao altos.", ExigenciaDeExplicacao.SEMPRE)
+
+    termo_juros = next(t for t in resultado.termos if t.termo == "juros")
+    assert termo_juros.explicado is False
+
+
+def test_copula_com_acento_continua_explicando_de_verdade() -> None:
+    """O outro lado da correção: "é a" (com acento) continua funcionando como marca."""
+    resultado = medir_densidade(
+        "A Selic é a taxa básica de juros do país.", ExigenciaDeExplicacao.SEMPRE
+    )
+
+    termo_selic = next(t for t in resultado.termos if t.termo == "Selic")
+    assert termo_selic.explicado is True

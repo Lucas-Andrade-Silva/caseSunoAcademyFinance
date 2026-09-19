@@ -275,6 +275,18 @@ armadilhas:
     deve_acusar: true
     por_que: "Posição recomendada assinada pela voz editorial e mantida no tempo."
 
+  - texto: "Quem investe em renda fixa, e isto não é recomendação, deveria comprar prefixados."
+    deve_acusar: true
+    por_que: >-
+      Achado do revisor de erros (2026-09-19): o span sintático de sujeito-a-ação é largo
+      (ADR 0012) e pode conter um aviso de compliance inteiro no meio; o aviso não pode
+      licenciar a Recomendação real que o envolve. Prova que o bloco `pode` só cancela a
+      camada de Léxico, nunca a de sintaxe.
+
+  - texto: "O investidor, e isto não é recomendação, deveria comprar prefixados."
+    deve_acusar: true
+    por_que: "Mesmo achado com sujeito por substantivo em vez de pronome."
+
 neutras:
   - texto: "O que isso muda para você?"
     deve_acusar: false

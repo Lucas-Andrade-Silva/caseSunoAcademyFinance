@@ -18,6 +18,8 @@ Três coisas que este módulo deliberadamente **não** faz:
 
 from __future__ import annotations
 
+import logging
+import shutil
 from pathlib import Path
 
 from suno.dominio import (
@@ -39,6 +41,7 @@ NOME_DA_FOLHA = "folha-de-contato.png"
 NOME_DO_TEXTO = "texto.md"
 NOME_DA_LEGENDA = "legenda.txt"
 NOME_DO_REGISTRO = "pacote.json"
+_REGISTRO = logging.getLogger(__name__)
 NOME_DO_VIDEO = "video.mp4"
 
 
@@ -69,12 +72,23 @@ def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audien
 def _medir_video_se_disponivel(video: Path) -> list:
     """Duração, proporção e áudio do mp4 já renderizado (ADR 0014) — sempre ligada, mas só entra
     no Pacote quando alguém rodou ``suno.cli video`` antes: este módulo não renderiza.
+
+    ``suno.video.render`` importa ``imageio_ffmpeg`` só dentro de função, então
+    ``from ... import medir_video`` nunca é o que falta sem o extra ``video`` — quem levanta o
+    ``ImportError`` é a chamada em si, dentro de ``_ffmpeg_exe()`` (achado do revisor de erros,
+    2026-09-19: o ``try`` errado guardava o import, não a chamada, e ``montar_pacote`` quebrava).
     """
+    from suno.video.render import medir_video
+
     try:
-        from suno.video.render import medir_video
-    except ImportError:  # extra "video" não instalado nesta máquina
+        return medir_video(video)
+    except ImportError:
+        _REGISTRO.warning(
+            "%s existe, mas o extra \"video\" não está instalado (uv sync --extra video); "
+            "o Pacote sai sem as medições de duração/proporção/áudio.",
+            video,
+        )
         return []
-    return medir_video(video)
 
 
 def _montar_uma(
@@ -130,15 +144,30 @@ def montar_pacote(identificador_execucao: str, pasta_execucoes: Path) -> list[Pa
     pasta_da_execucao = pasta_execucoes / identificador_execucao
     raiz = pasta_da_execucao / NOME_DA_PASTA
     pacotes: list[PacotePublicacao] = []
+    aprovadas: set[str] = set()
     for historico in execucao.celulas:
         if historico.destino_final is not Destino.APROVADO:
             continue
         celula = historico.celula_final
         if celula is None:
             continue
-        pasta_do_pacote = raiz / f"{historico.audiencia.value}-{historico.formato.value}"
-        pacotes.append(_montar_uma(execucao, celula, pasta_do_pacote, pasta_da_execucao))
+        nome = f"{historico.audiencia.value}-{historico.formato.value}"
+        aprovadas.add(nome)
+        pacotes.append(_montar_uma(execucao, celula, raiz / nome, pasta_da_execucao))
+    _remover_pacotes_obsoletos(raiz, aprovadas)
     return pacotes
+
+
+def _remover_pacotes_obsoletos(raiz: Path, aprovadas: set[str]) -> None:
+    """Uma Célula que deixou de ser aprovada (Ciclo regerou, Limiar mudou) não pode deixar o
+    Pacote velho para trás: ele apareceria na API e no H5 como pronto para publicar algo que o
+    Avaliador recusou — o inverso da regra deste módulo (achado do revisor de erros, 2026-09-19).
+    """
+    if not raiz.is_dir():
+        return
+    for pasta in raiz.iterdir():
+        if pasta.is_dir() and pasta.name not in aprovadas:
+            shutil.rmtree(pasta)
 
 
 __all__ = ["montar_pacote", "renderizar_carrossel", "folha_de_contato", "montar_legenda", "conferir_imagens"]

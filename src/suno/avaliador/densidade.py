@@ -101,6 +101,17 @@ def _normalizar(texto: str) -> str:
     return texto.lower().translate(_MAPA_ACENTOS)
 
 
+def _minusculo_com_acento(texto: str) -> str:
+    """Só ``lower()``, sem tirar acento — mesma contagem de caracteres que ``_normalizar``,
+    então os spans de frase calculados numa servem na outra. Usado só nas marcas de
+    explicação: "é a"/"são" sem acento colidem com "e a" (conjunção) e "São" (o santo de
+    nome de cidade), o que marcava frase inteira como explicada por acidente (achado do
+    revisor de erros, 2026-09-19). Marca de explicação é sempre acentuada em português
+    correto; perder o acento é o que cria a ambiguidade, não o que a resolve.
+    """
+    return texto.lower()
+
+
 # ---------------------------------------------------------------------------
 # Construção dos padrões de casamento: limite de palavra + plural simples
 # ---------------------------------------------------------------------------
@@ -148,7 +159,11 @@ def _padroes_compilados() -> tuple[tuple[re.Pattern[str], str, bool], ...]:
 # Sentenças: para decidir "mesma frase ou frase seguinte"
 # ---------------------------------------------------------------------------
 
-_QUEBRA_DE_FRASE = re.compile(r"(?<=[.!?])\s+")
+_QUEBRA_DE_FRASE = re.compile(r"(?<=[.!?])\s+|\n[ \t]*\n\s*")
+"""Pontuação normal, mais linha em branco. `Conteudo.texto_avaliavel()` junta os slides do
+Carrossel com uma linha em branco (sem `.`/`!`/`?` no meio) — sem o segundo ramo, o título
+do slide seguinte contava como "frase seguinte ao termo" e virava explicação por acidente
+(achado do revisor de erros, 2026-09-19)."""
 
 
 def _dividir_frases(texto: str) -> list[tuple[int, int]]:
@@ -176,27 +191,29 @@ _MARCAS_IMEDIATAS = ("(", ":", "—", "-")
 
 _FRASES_DE_EXPLICACAO = (
     "ou seja",
-    "isto e",
+    "isto é",
     "em outras palavras",
     "quer dizer",
-    "e a",
-    "e o",
-    "e uma",
-    "e um",
-    "sao",
+    "é a",
+    "é o",
+    "é uma",
+    "é um",
+    "são",
     "significa",
     "funciona como",
-    "e como",
+    "é como",
     "pense em",
     "imagine",
     "parecido com",
-    "uma especie de",
+    "uma espécie de",
     "chamado de",
     "conhecido como",
-    "que e",
-    "que sao",
+    "que é",
+    "que são",
 )
-"""Já normalizadas (sem acento): "é a" vira "e a", "são" vira "sao", etc."""
+"""Só minúsculas, acento preservado (achado do revisor de erros, 2026-09-19: sem acento,
+"é a"/"são" colidem com a conjunção "e a" e com "São" de topônimo, e quase toda frase com
+dois termos do Léxico marcava o primeiro como explicado por acaso)."""
 
 
 def _padrao_de_marca(marca: str) -> str:
@@ -216,7 +233,7 @@ def _tem_marca_imediata(resto_da_frase: str) -> bool:
 
 
 def _explicado(
-    texto_normalizado: str,
+    texto_com_acento: str,
     frases: list[tuple[int, int]],
     indice_frase: int,
     fim_do_termo: int,
@@ -224,16 +241,20 @@ def _explicado(
     """Mesma frase (depois do termo) ou frase seguinte têm marca de explicação.
 
     A explicação de uma frase anterior nunca conta — só o que vem depois do termo.
+    ``texto_com_acento`` é minúsculo mas com acento — as marcas de explicação dependem
+    disso para não colidir com palavras comuns (ver ``_minusculo_com_acento``); os spans
+    de frase vêm de ``_normalizar``, mas as duas versões têm o mesmo tamanho, então servem
+    nas duas.
     """
     _, fim_frase = frases[indice_frase]
-    resto_mesma_frase = texto_normalizado[fim_do_termo:fim_frase]
+    resto_mesma_frase = texto_com_acento[fim_do_termo:fim_frase]
     if _tem_marca_imediata(resto_mesma_frase):
         return True
     if _MARCA_DE_FRASE_REGEX.search(resto_mesma_frase):
         return True
     if indice_frase + 1 < len(frases):
         inicio_prox, fim_prox = frases[indice_frase + 1]
-        proxima_frase = texto_normalizado[inicio_prox:fim_prox]
+        proxima_frase = texto_com_acento[inicio_prox:fim_prox]
         if _MARCA_DE_FRASE_REGEX.search(proxima_frase):
             return True
     return False
@@ -289,6 +310,7 @@ def medir_densidade(texto: str, exigencia: ExigenciaDeExplicacao) -> ResultadoDe
         return ResultadoDensidade(proporcao=None)
 
     texto_normalizado = _normalizar(texto)
+    texto_com_acento = _minusculo_com_acento(texto)
     frases = _dividir_frases(texto_normalizado)
     inicios_de_frase = [inicio for inicio, _ in frases]
 
@@ -305,7 +327,7 @@ def medir_densidade(texto: str, exigencia: ExigenciaDeExplicacao) -> ResultadoDe
 
     for inicio, fim, nome_termo, nucleo in ocorrencias_aceitas:
         indice_frase = _indice_da_frase(inicios_de_frase, inicio)
-        explicado = _explicado(texto_normalizado, frases, indice_frase, fim)
+        explicado = _explicado(texto_com_acento, frases, indice_frase, fim)
         encontrado = TermoEncontrado(
             termo=nome_termo, posicao=inicio, explicado=explicado, nucleo=nucleo
         )

@@ -125,6 +125,7 @@ def rodar_ciclo(
     for rodada in range(TETO_DE_RODADAS + 1):
         try:
             celula = gerar_celula(ata, ancoras, audiencia, formato, provedor, rodada, correcoes)
+            laudo = avaliar(celula.conteudo, ancoras.todas(), audiencia, comite=comite)
         except ErroProvedor as erro:
             falha = (
                 f"o provedor {erro.provedor} falhou na rodada {rodada}: "
@@ -132,7 +133,15 @@ def rodar_ciclo(
             )
             _registro.warning("Célula %s:%s parou — %s", audiencia, formato, falha)
             break
-        laudo = avaliar(celula.conteudo, ancoras.todas(), audiencia, comite=comite)
+        except Exception as erro:  # noqa: BLE001 — deliberado, ver docstring do módulo
+            # Uma Célula teimosa não pode derrubar a Matriz inteira: as outras oito perderiam
+            # o trabalho junto, e `executar` só grava no fim (achado do revisor de erros,
+            # 2026-09-19 — `ProvedorFalso` documenta e aceita `BaseException` arbitrária na
+            # fila, então isto não é hipotético). O traceback completo vai ao log; o que chega
+            # ao `HistoricoCelula` é a versão sem credencial, igual ao caminho de `ErroProvedor`.
+            falha = f"erro inesperado na rodada {rodada}: {sem_credencial(str(erro))}"
+            _registro.exception("Célula %s:%s parou com erro inesperado", audiencia, formato)
+            break
         tentativas.append(Tentativa(rodada=rodada, celula=celula, laudo=laudo))
         if celula.provedor and celula.provedor not in provedores_usados:
             provedores_usados.append(celula.provedor)

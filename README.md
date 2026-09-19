@@ -30,11 +30,11 @@ toca a rede, exceto onde está escrito.
 | Passo | Unix (`sh`) | Windows (PowerShell) | Saída esperada |
 |---|---|---|---|
 | 1. Instalar `uv` | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | `winget install astral-sh.uv` | binário `uv` no PATH |
-| 2. Preparar o ambiente | `scripts/setup.sh` | `scripts\setup.ps1` | `uv sync` termina; `.env` copiado de `.env.example` |
-| 3. Rodar a suíte | `scripts/test.sh` | `scripts\test.ps1` | `N passed`, 0 falhas (número exato da última medição — 801 — em `docs/relatorio/suite.json`) |
-| 4. Rodar a demo | `scripts/demo.sh` | `scripts\demo.ps1` | `celulas=9 aprovadas=8 pendencias=1`, seguido do Pacote das Células aprovadas |
+| 2. Preparar o ambiente | `scripts/setup.sh` | `scripts\setup.ps1` | `uv sync --extra video` termina (inclui o ramo de vídeo — Entregável 5); `.env` copiado de `.env.example` |
+| 3. Rodar a suíte | `scripts/test.sh` | `scripts\test.ps1` | `N passed`, 0 falhas (número exato da última medição — 803 — em `docs/relatorio/suite.json`) |
+| 4. Rodar a demo | `scripts/demo.sh` | `scripts\demo.ps1` | `celulas=9 aprovadas=8 pendencias=1`, seguido do Pacote das Células aprovadas — grava uma execução nova em `data/execucoes/demo-ao-vivo/`, sem tocar em `data/execucoes/demo-copom-280/` |
 | 5. Construir a interface | `cd web && npm install && npm run build` | idem | `tsc --noEmit` sem erro, depois `vite build` grava `web/dist/index.html` |
-| 6. Servir a API + interface | `uv run --offline python -m suno.cli servir` | idem | `Uvicorn running on http://127.0.0.1:8000`; `/` serve a SPA construída, `/api/saude` devolve `{"ok": true, "execucoes": 1}` |
+| 6. Servir a API + interface | `uv run --offline python -m suno.cli servir` | idem | `Uvicorn running on http://127.0.0.1:8000`; `/` serve a SPA construída, `/api/saude` devolve `{"ok": true, "execucoes": 2}` — a demo versionada mais a que o passo 4 acabou de gravar |
 
 Os seis passos acima foram executados nesta máquina em 19/09/2026, na ordem acima, com a
 saída batendo com a coluna "esperada" — inclusive um teste manual de ponta a ponta

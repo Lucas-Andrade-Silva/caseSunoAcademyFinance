@@ -94,7 +94,7 @@ cases:
       explicado na primeira ocorrência, e não veio. Mesma Audiência do caso anterior, e a
       diferença é só de qual termo entrou.
 
-  - name: avancado-jargao-livre-aprova
+  - name: avancado-termos-sem-explicacao-aprova
     inputs:
       audiencia: avancado
       formato: texto_analitico

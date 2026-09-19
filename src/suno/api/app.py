@@ -10,6 +10,8 @@ ADR 0005.
 
 from __future__ import annotations
 
+import logging
+import threading
 from datetime import date, datetime
 from pathlib import Path
 
@@ -17,7 +19,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
+
+_REGISTRO = logging.getLogger(__name__)
 
 from suno import __version__
 from suno.dominio import (
@@ -191,6 +195,11 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
     """
     pasta_execucoes = Path(pasta_execucoes)
     app = FastAPI(title="Suno Content", version=__version__)
+    # H4 e H5 fazem leitura-altera-escrita em execucao.json/pacote.json. Rota `def` (não
+    # `async def`) roda no threadpool do Starlette — duas resoluções humanas chegando juntas
+    # perdiam uma sem erro nenhum (achado do revisor de erros, 2026-09-19). Uma trava por app
+    # é suficiente: o volume de escrita de H4/H5 é de poucas por execução, nunca um caminho quente.
+    trava_de_escrita = threading.Lock()
 
     app.add_middleware(
         CORSMiddleware,
@@ -204,6 +213,16 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
             return carregar_execucao(identificador, pasta_execucoes)
         except FileNotFoundError:
             raise HTTPException(404, f"execução {identificador!r} não encontrada") from None
+        except OSError:
+            # Windows recusa `"`, `*`, `?`, `<`, `>`, `|` num caminho — um identificador com
+            # esses caracteres nunca existiu, então é o mesmo 404, não um 500 (achado do
+            # revisor de erros, 2026-09-19).
+            raise HTTPException(404, f"execução {identificador!r} não encontrada") from None
+        except ValidationError:
+            # execucao.json em disco não bate mais com o domínio (escrita interrompida,
+            # versão antiga): a execução existe, mas está ilegível — 404 é enganoso, e 500
+            # some com a tela inteira; 409 diz "está lá, mas quebrado".
+            raise HTTPException(409, f"execução {identificador!r} está gravada, mas ilegível") from None
 
     @app.get("/api/atas")
     def listar_atas() -> list[AtaResumo]:
@@ -234,7 +253,15 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
     def listar_execucoes_rota() -> list[ExecucaoResumo]:
         resumos: list[ExecucaoResumo] = []
         for identificador in listar_execucoes(pasta_execucoes):
-            execucao = carregar_execucao(identificador, pasta_execucoes)
+            try:
+                execucao = carregar_execucao(identificador, pasta_execucoes)
+            except (OSError, ValidationError) as erro:
+                # Uma execução ilegível não pode derrubar a listagem inteira — a tela inicial
+                # some para todo mundo por causa de uma pasta só (achado do revisor de erros,
+                # 2026-09-19). Ela some da lista; `/api/execucoes/{id}` ainda devolve 409 para
+                # quem perguntar por ela direto.
+                _REGISTRO.warning("execução %r ilegível, fora da listagem: %s", identificador, erro)
+                continue
             aprovadas = sum(1 for h in execucao.celulas if h.destino_final is Destino.APROVADO)
             resumos.append(
                 ExecucaoResumo(
@@ -313,25 +340,27 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
 
     @app.post("/api/execucoes/{identificador}/filas/h4/{indice}/resolver")
     def resolver_pendencia(identificador: str, indice: int, corpo: DecisaoFila) -> Pendencia:
-        execucao = _execucao_ou_404(identificador)
-        if indice < 0 or indice >= len(execucao.pendencias):
-            raise HTTPException(404, f"índice {indice} fora da fila H4")
-        pendencia = execucao.pendencias[indice]
-        pendencia.resolvida = True
-        pendencia.decisao = corpo.decisao
-        gravar_execucao(execucao, pasta_execucoes)
-        return pendencia
+        with trava_de_escrita:
+            execucao = _execucao_ou_404(identificador)
+            if indice < 0 or indice >= len(execucao.pendencias):
+                raise HTTPException(404, f"índice {indice} fora da fila H4")
+            pendencia = execucao.pendencias[indice]
+            pendencia.resolvida = True
+            pendencia.decisao = corpo.decisao
+            gravar_execucao(execucao, pasta_execucoes)
+            return pendencia
 
     @app.post("/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/aprovar")
     def aprovar_pacote(identificador: str, audiencia: Audiencia, formato: Formato) -> PacotePublicacao:
-        _execucao_ou_404(identificador)
-        arquivo = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato) / NOME_DO_REGISTRO_DO_PACOTE
-        if not arquivo.exists():
-            raise HTTPException(404, "Pacote não encontrado")
-        pacote = PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8"))
-        pacote = pacote.model_copy(update={"aprovado_por_humano": True})
-        arquivo.write_text(pacote.model_dump_json(indent=2), encoding="utf-8")
-        return pacote
+        with trava_de_escrita:
+            _execucao_ou_404(identificador)
+            arquivo = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato) / NOME_DO_REGISTRO_DO_PACOTE
+            if not arquivo.exists():
+                raise HTTPException(404, "Pacote não encontrado")
+            pacote = PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8"))
+            pacote = pacote.model_copy(update={"aprovado_por_humano": True})
+            arquivo.write_text(pacote.model_dump_json(indent=2), encoding="utf-8")
+            return pacote
 
     @app.get("/api/saude")
     def saude() -> Saude:

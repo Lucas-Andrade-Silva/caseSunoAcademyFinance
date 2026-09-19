@@ -74,5 +74,7 @@ mas nunca pode resolver para o mesmo provedor usado pelo Gerador na mesma execu�
 terceiro, os três provedores do roteador ficam ocupados numa execução com o comitê ligado: não há
 reserva sobrando para 429, e é por isso que o comitê é opcional e fica desligado na demo.
 
-Com o comitê restrito a dois Formatos, o custo por Ata é de 6 Células vezes 2 juízes — 12 chamadas
-de juiz, não 18.
+Com o comitê restrito a dois Formatos, o custo por Ata é de 6 Células vezes 3 dimensões vezes 2
+juízes — 36 chamadas de juiz, não as 54 que o quórum de 2-de-3 recusado acima custaria (6 × 3 × 3).
+A implementação confirmou este número (revisor ADR-por-ADR, 2026-09-19); a versão anterior deste
+parágrafo contava só Células vezes juízes e esquecia as três dimensões, um erro do próprio ADR.

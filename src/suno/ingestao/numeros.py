@@ -218,14 +218,22 @@ _Regra = tuple[re.Pattern[str], Callable[[re.Match[str], int | None], "NumeroEnc
 
 
 def _simples(unidade: Unidade, escalar: bool = False) -> Callable[..., NumeroEncontrado | None]:
-    """Fábrica das regras em que só o grupo ``numero`` (mais escala) interessa."""
+    """Fábrica das regras em que só o grupo ``numero`` (mais escala e sinal) interessa.
+
+    O grupo ``sinal`` é opcional e só existe nos padrões que o declaram (p.p. e pb — onde a
+    direção da mudança é o que a Aderência precisa distinguir); nos outros, ``groupdict``
+    simplesmente não tem a chave, e o comportamento é o de sempre.
+    """
 
     def regra(achado: re.Match[str], _ano_padrao: int | None) -> NumeroEncontrado | None:
         escala = achado.groupdict().get("escala") if escalar else None
         valor = _com_escala(_valor_do_literal(achado.group("numero")), escala)
         if valor is None:
             return None
-        inicio = achado.start("numero")
+        sinal = achado.groupdict().get("sinal")
+        if sinal == "-":
+            valor = -valor
+        inicio = achado.start("sinal") if sinal else achado.start("numero")
         fim = achado.end("escala") if escala else achado.end("numero")
         return NumeroEncontrado(
             literal=achado.string[inicio:fim],
@@ -314,6 +322,7 @@ def _com_qualificador(
 
 
 _REGRAS: tuple[_Regra, ...] = (
+    # Data primeiro: "4 de agosto de 2026" não pode virar um placar de votação nem um ano solto.
     (
         re.compile(
             rf"\b(?P<dias>\d{{1,2}}(?:\s*(?:,|e|a)\s*\d{{1,2}})*)\s+de\s+(?P<mes>{_RE_MES})"
@@ -322,9 +331,22 @@ _REGRAS: tuple[_Regra, ...] = (
         ),
         _regra_data,
     ),
+    # Os dois qualificadores (CDI+2% / 110% do CDI) vêm antes de qualquer regra de "%" nua:
+    # cada uma reivindica o `%` primeiro, senão a regra genérica consome o número e o
+    # sinal "+"/o "do CDI" nunca chega a ser lido — achado do revisor de erros, 2026-09-19
+    # ("o CDI+2% ao ano" perdia o qualificador para a regra de "% a.a.").
     (
-        re.compile(r"\b(?P<favor>\d{1,2})\s+(?:votos?\s+)?a\s+(?P<contra>\d{1,2})\b", re.IGNORECASE),
-        _regra_votos,
+        re.compile(rf"\b(?P<indice>{_INDICE})\s*\+\s*(?P<numero>{_NUMERO})\s*%", re.IGNORECASE),
+        _com_qualificador(Unidade.PERCENTUAL, lambda a: f"{a.group('indice')}+"),
+    ),
+    (
+        re.compile(
+            rf"(?P<numero>{_NUMERO})\s*%\s+(?P<preposicao>do|da|dos|das)\s+(?P<indice>{_INDICE})\b",
+            re.IGNORECASE,
+        ),
+        _com_qualificador(
+            Unidade.PERCENTUAL, lambda a: f"{a.group('preposicao').lower()} {a.group('indice')}"
+        ),
     ),
     (
         re.compile(
@@ -332,16 +354,24 @@ _REGRAS: tuple[_Regra, ...] = (
         ),
         _simples(Unidade.PERCENTUAL_AO_ANO),
     ),
+    # `pp`/`pb`/`bps` costumam vir colados ao número ("50pb", "0,25pp"), sem espaço — entre um
+    # dígito e uma letra não há `\b` (os dois são caractere de palavra), então o `\b` à
+    # esquerda destas abreviações nunca casava esse caso (achado do revisor de erros,
+    # 2026-09-19; `\b` continua à direita, para não engolir o começo de outra palavra). O
+    # sinal opcional na frente ("+0,25 p.p." ≠ "-0,25 p.p.") é o que separa alta de corte.
     (
         re.compile(
-            rf"(?P<numero>{_NUMERO})\s*(?:p\.\s?p\.?|\bpp\b|pontos?\s+percentua(?:l|is))",
+            rf"(?:(?P<sinal>[+-])\s*)?(?P<numero>{_NUMERO})\s*"
+            r"(?:p\.\s?p\.?|pp\b|pontos?\s+percentua(?:l|is))",
             re.IGNORECASE,
         ),
         _simples(Unidade.PONTO_PERCENTUAL),
     ),
     (
         re.compile(
-            rf"(?P<numero>{_NUMERO})\s*(?:pontos?[-\s]+base|\bpb\b|\bp\.b\.|\bbps\b)", re.IGNORECASE
+            rf"(?:(?P<sinal>[+-])\s*)?(?P<numero>{_NUMERO})\s*"
+            r"(?:pontos?[-\s]+base|pb\b|p\.b\.|bps\b)",
+            re.IGNORECASE,
         ),
         _simples(Unidade.PONTOS_BASE),
     ),
@@ -359,21 +389,24 @@ _REGRAS: tuple[_Regra, ...] = (
         _simples(Unidade.REAIS, escalar=True),
     ),
     (
-        re.compile(rf"\b(?P<indice>{_INDICE})\s*\+\s*(?P<numero>{_NUMERO})\s*%", re.IGNORECASE),
-        _com_qualificador(Unidade.PERCENTUAL, lambda a: f"{a.group('indice')}+"),
-    ),
-    (
-        re.compile(
-            rf"(?P<numero>{_NUMERO})\s*%\s+(?P<preposicao>do|da|dos|das)\s+(?P<indice>{_INDICE})\b",
-            re.IGNORECASE,
-        ),
-        _com_qualificador(
-            Unidade.PERCENTUAL, lambda a: f"{a.group('preposicao').lower()} {a.group('indice')}"
-        ),
-    ),
-    (
         re.compile(rf"(?P<numero>{_NUMERO})\s*(?:%|por\s+cento)", re.IGNORECASE),
         _simples(Unidade.PERCENTUAL),
+    ),
+    # Votos por último entre os numéricos: "de 2 a 3 anos" e "3 a 4 pontos percentuais" têm a
+    # forma `N a M` que a regra de votos casava cega, antes de pp/%/ano — a que reclama a
+    # unidade certa primeiro fica com o número, e "N a M" sem unidade nenhuma depois (o
+    # placar de verdade, "7 a 0") é o que sobra (achado do revisor de erros, 2026-09-19).
+    (
+        re.compile(
+            r"\b(?P<favor>\d{1,2})\s+(?:votos?\s+)?a\s+(?P<contra>\d{1,2})\b"
+            # "2 a 3 anos"/"3 a 4 pontos" não são placar: um intervalo de verdade é seguido de
+            # unidade, um placar não é seguido de nada (ou pontuação). A reordenação acima já
+            # resolve quando a unidade casa um padrão próprio (pp/pb/%); esta negativa cobre o
+            # resto ("anos", "meses", "dias" não têm regra própria neste módulo).
+            r"(?!\s*(?:anos?|meses|dias|semanas|%|p\.\s?p\.?|pp\b|pontos?)\b)",
+            re.IGNORECASE,
+        ),
+        _regra_votos,
     ),
     (
         re.compile(rf"(?P<numero>{_NUMERO})\s+(?P<escala>{_RE_ESCALA_GRANDE})\b", re.IGNORECASE),

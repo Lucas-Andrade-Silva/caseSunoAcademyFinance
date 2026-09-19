@@ -249,3 +249,69 @@ def test_ata_do_copom_280(texto_ata: str) -> None:
     assert {5.1, 3.8, 3.2} <= projecoes
 
     assert all(texto_ata[a.inicio : a.fim] == a.literal for a in achados)
+
+
+# -- Regressões do revisor de erros (2026-09-19) --------------------------------
+
+
+@pytest.mark.parametrize(
+    ("texto", "literal", "unidade"),
+    [
+        ("O Copom cortou 999pb.", "999", Unidade.PONTOS_BASE),
+        ("elevou 42pp.", "42", Unidade.PONTO_PERCENTUAL),
+        ("caiu 50bps.", "50", Unidade.PONTOS_BASE),
+        ("subiu 0,25pp.", "0,25", Unidade.PONTO_PERCENTUAL),
+    ],
+)
+def test_pp_pb_bps_colados_ao_numero_sem_espaco(texto: str, literal: str, unidade: Unidade) -> None:
+    """Entre um dígito e uma letra não há `\\b`: o limite à esquerda destas abreviações não
+    podia exigir um, senão `999pb` nunca casava (achado Crítico)."""
+    achado = _unico(texto)
+    assert achado.literal == literal
+    assert achado.unidade is unidade
+
+
+def test_intervalo_com_unidade_nao_vira_placar_de_votacao() -> None:
+    """`N a M` só é VOTOS quando nada (ou pontuação) segue; um intervalo de verdade tem
+    unidade depois, e a unidade certa fica com o número (achado Crítico)."""
+    achados = extrair_numeros("O horizonte relevante é de 2 a 3 anos.", ano_padrao=ANO_DA_ATA)
+    assert not any(a.unidade is Unidade.VOTOS for a in achados)
+
+    achado = _unico("alta de 3 a 4 pontos percentuais")
+    assert achado.unidade is Unidade.PONTO_PERCENTUAL
+    assert achado.valor == 4.0
+
+    # O placar de verdade — nada suspeito depois — continua votos.
+    achado = _unico("Votaram 7 a 0 pela decisão.")
+    assert achado.unidade is Unidade.VOTOS
+
+
+@pytest.mark.parametrize(
+    "texto",
+    ["o CDI+2% ao ano", "O papel rende CDI+2% ao ano.", "O título paga CDI + 2% ao ano."],
+)
+def test_qualificador_cdi_nao_se_perde_para_a_regra_de_a_a(texto: str) -> None:
+    """A regra de `% a.a.` rodava antes da de `CDI+` e consumia o `%` primeiro, apagando o
+    qualificador (achado Crítico: `CDI+2%` virava `2%` nu, que casaria com qualquer Âncora
+    de 2% a.a.)."""
+    achado = _unico(texto)
+    assert achado.qualificador == "CDI+"
+    assert achado.unidade is Unidade.PERCENTUAL
+
+
+@pytest.mark.parametrize(
+    ("texto", "valor", "literal"),
+    [
+        ("O Copom elevou a taxa em +0,25 p.p.", 0.25, "+0,25"),
+        ("O Copom reduziu a taxa em -0,25 p.p.", -0.25, "-0,25"),
+        ("A taxa subiu 0,25 p.p.", 0.25, "0,25"),
+    ],
+)
+def test_sinal_de_ponto_percentual_distingue_alta_de_reducao(
+    texto: str, valor: float, literal: str
+) -> None:
+    """Sem capturar o sinal, `+0,25 p.p.` e `-0,25 p.p.` comparavam iguais — uma Célula que
+    troca "elevou" por "reduziu" passava pela Aderência do mesmo jeito (achado Importante)."""
+    achado = _unico(texto)
+    assert achado.valor == valor
+    assert achado.literal == literal

@@ -30,7 +30,11 @@ padrão existe em projetos reais de automação de carrossel, não é caminho in
 
 **Todas as imagens saem em 1080×1350 (4:5), em todas as nove Células.** Isso não é escolha
 estética: o Instagram corta todo o carrossel para igualar a proporção da primeira imagem, então
-variar entre Células degrada o post inteiro.
+variar entre Células degrada o post inteiro. Isso vale para os slides que vão para o Instagram —
+a folha de contato do Carrossel, o artefato de julgamento do juiz de visão do
+[ADR 0014](0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md) (uma grade com os
+slides da Célula, nunca publicada sozinha), fica fora desta regra por natureza e sai em outra
+proporção.
 
 Geração por modelo fica **fora do caminho crítico**. Se algum dia entrar, entra como acessório
 opcional de uma Célula específica, nunca como dependência da demo.

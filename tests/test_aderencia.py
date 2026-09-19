@@ -193,6 +193,14 @@ def test_data_de_outro_mes_nao_confere_com_a_reuniao() -> None:
     assert medida.numeros_fora_das_ancoras == ["17 de setembro de 2026"]
 
 
+def test_dia_errado_no_mesmo_mes_e_ano_nao_confere() -> None:
+    """Achado Crítico do revisor de erros (2026-09-19): "31 de agosto" não é "4 e 5 de
+    agosto" só porque caem no mesmo mês e ano — o dia errado é o número errado."""
+    medida = medir_aderencia("A reunião foi em 31 de agosto de 2026.", [REUNIAO])
+    assert medida.proporcao == 0.0
+    assert medida.numeros_fora_das_ancoras == ["31 de agosto de 2026"]
+
+
 def test_data_sem_ano_no_texto_usa_o_ano_das_ancoras() -> None:
     proxima = AncoraNumerica(
         chave=ChaveAncora.DATA_PROXIMA_REUNIAO,
