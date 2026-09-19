@@ -1,0 +1,1957 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Suno Content",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/atas": {
+      "get": {
+        "summary": "Listar Atas",
+        "operationId": "listar_atas_api_atas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AtaResumo"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Atas Api Atas Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/atas/{identificador}": {
+      "get": {
+        "summary": "Obter Ata",
+        "operationId": "obter_ata_api_atas__identificador__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ata"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes": {
+      "get": {
+        "summary": "Listar Execucoes Rota",
+        "operationId": "listar_execucoes_rota_api_execucoes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExecucaoResumo"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Execucoes Rota Api Execucoes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}": {
+      "get": {
+        "summary": "Obter Execucao",
+        "operationId": "obter_execucao_api_execucoes__identificador__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Execucao"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/ancoras": {
+      "get": {
+        "summary": "Obter Ancoras",
+        "operationId": "obter_ancoras_api_execucoes__identificador__ancoras_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ancoras"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}": {
+      "get": {
+        "summary": "Obter Celula",
+        "operationId": "obter_celula_api_execucoes__identificador__celulas__audiencia___formato__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoricoCelula"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/ancoras": {
+      "get": {
+        "summary": "Obter Ancoras Da Celula",
+        "description": "As Âncoras numéricas citadas pela Célula final — \"Âncoras ao lado da Célula\".",
+        "operationId": "obter_ancoras_da_celula_api_execucoes__identificador__celulas__audiencia___formato__ancoras_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AncoraNumerica"
+                  },
+                  "title": "Response Obter Ancoras Da Celula Api Execucoes  Identificador  Celulas  Audiencia   Formato  Ancoras Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/pacotes": {
+      "get": {
+        "summary": "Listar Pacotes",
+        "operationId": "listar_pacotes_api_execucoes__identificador__pacotes_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PacotePublicacao"
+                  },
+                  "title": "Response Listar Pacotes Api Execucoes  Identificador  Pacotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/arquivos/{caminho}": {
+      "get": {
+        "summary": "Obter Arquivo",
+        "operationId": "obter_arquivo_api_execucoes__identificador__arquivos__caminho__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "caminho",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Caminho"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/filas": {
+      "get": {
+        "summary": "Obter Filas",
+        "operationId": "obter_filas_api_execucoes__identificador__filas_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Filas"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/filas/h4/{indice}/resolver": {
+      "post": {
+        "summary": "Resolver Pendencia",
+        "operationId": "resolver_pendencia_api_execucoes__identificador__filas_h4__indice__resolver_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "indice",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Indice"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisaoFila"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pendencia"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/aprovar": {
+      "post": {
+        "summary": "Aprovar Pacote",
+        "operationId": "aprovar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__aprovar_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PacotePublicacao"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/saude": {
+      "get": {
+        "summary": "Saude",
+        "operationId": "saude_api_saude_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Saude"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AncoraNumerica": {
+        "properties": {
+          "chave": {
+            "type": "string",
+            "title": "Chave",
+            "description": "Chave canônica (ver ChaveAncora) ou livre."
+          },
+          "rotulo": {
+            "type": "string",
+            "title": "Rotulo",
+            "description": "Como um humano chamaria: 'Selic decidida'."
+          },
+          "valor_literal": {
+            "type": "string",
+            "title": "Valor Literal",
+            "description": "Exatamente como a Ata escreve: '14,00', '7 a 0', '4 e 5 de agosto de 2026'."
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor",
+            "description": "Valor numérico normalizado, quando faz sentido."
+          },
+          "unidade": {
+            "$ref": "#/components/schemas/Unidade"
+          },
+          "trecho": {
+            "type": "string",
+            "title": "Trecho",
+            "description": "A frase literal da Ata onde o número aparece."
+          },
+          "data_iso": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Iso",
+            "description": "Para unidade DATA."
+          },
+          "qualificador": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qualificador",
+            "description": "O que distingue 'CDI+2%' ('CDI+') de '110% do CDI' ('do CDI'); None na maioria."
+          }
+        },
+        "type": "object",
+        "required": [
+          "chave",
+          "rotulo",
+          "valor_literal",
+          "unidade",
+          "trecho"
+        ],
+        "title": "AncoraNumerica",
+        "description": "Um número da Ata, com valor, unidade e o trecho literal de onde veio.\n\nO Gerador copia ``valor_literal`` para dentro da Célula; o Avaliador confere por\nigualdade exata de valor e unidade. Nunca é reescrito por LLM."
+      },
+      "AncoraTextual": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador",
+            "description": "Ex. 'decisao', 'balanco_de_riscos_1'."
+          },
+          "afirmacao": {
+            "type": "string",
+            "title": "Afirmacao",
+            "description": "A afirmação, em uma frase, nas palavras da Ata."
+          },
+          "trecho": {
+            "type": "string",
+            "title": "Trecho",
+            "description": "O trecho literal da Ata que a sustenta."
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "afirmacao",
+          "trecho"
+        ],
+        "title": "AncoraTextual",
+        "description": "Uma afirmação factual em prosa, contra a qual a Aderência textual é medida."
+      },
+      "Ancoras": {
+        "properties": {
+          "ata": {
+            "type": "string",
+            "title": "Ata",
+            "description": "Identificador da Ata de origem."
+          },
+          "numericas": {
+            "items": {
+              "$ref": "#/components/schemas/AncoraNumerica"
+            },
+            "type": "array",
+            "title": "Numericas"
+          },
+          "textuais": {
+            "items": {
+              "$ref": "#/components/schemas/AncoraTextual"
+            },
+            "type": "array",
+            "title": "Textuais"
+          },
+          "extraida_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Extraida Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ata"
+        ],
+        "title": "Ancoras",
+        "description": "O resultado do estágio de extração: roda uma vez por Ata, antes da Matriz."
+      },
+      "Ata": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador",
+            "description": "Nome estável do arquivo em data/atas/, ex. 'copom-280-2026-08-05'."
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "reuniao": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reuniao",
+            "description": "Número da reunião do Copom."
+          },
+          "data_referencia": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Referencia"
+          },
+          "origem_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origem Url",
+            "description": "URL de onde o arquivo foi buscado, quando foi."
+          },
+          "arquivo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "path"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arquivo",
+            "description": "Caminho local do arquivo original."
+          },
+          "texto": {
+            "type": "string",
+            "title": "Texto",
+            "description": "Texto já extraído; é o que o Gerador lê."
+          },
+          "idioma": {
+            "type": "string",
+            "enum": [
+              "pt",
+              "en"
+            ],
+            "title": "Idioma",
+            "default": "pt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "titulo",
+          "data_referencia",
+          "texto"
+        ],
+        "title": "Ata",
+        "description": "O comunicado financeiro público que entra no sistema (ADR 0006)."
+      },
+      "AtaResumo": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "reuniao": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reuniao"
+          },
+          "data_referencia": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Referencia"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "titulo",
+          "reuniao",
+          "data_referencia"
+        ],
+        "title": "AtaResumo",
+        "description": "A Ata sem ``texto``: a listagem não carrega o comunicado inteiro por item."
+      },
+      "Audiencia": {
+        "type": "string",
+        "enum": [
+          "iniciante",
+          "intermediario",
+          "avancado"
+        ],
+        "title": "Audiencia",
+        "description": "O nível de sofisticação do leitor a quem uma Célula se destina."
+      },
+      "BlocoFala": {
+        "properties": {
+          "inicio_s": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Inicio S"
+          },
+          "fim_s": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Fim S"
+          },
+          "fala": {
+            "type": "string",
+            "title": "Fala",
+            "description": "O que é dito. Os Limiares de Flesch-BR valem sobre isto."
+          },
+          "tela": {
+            "type": "string",
+            "title": "Tela",
+            "description": "Rubrica de cena: o que aparece na tela.",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "inicio_s",
+          "fim_s",
+          "fala"
+        ],
+        "title": "BlocoFala",
+        "description": "Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho."
+      },
+      "Celula": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "conteudo": {
+            "$ref": "#/components/schemas/Conteudo"
+          },
+          "rodada": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Rodada",
+            "description": "0 = original; 1 e 2 = correções.",
+            "default": 0
+          },
+          "gerada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Gerada Em"
+          },
+          "provedor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provedor",
+            "description": "Qual provedor gerou; nunca vai ao juiz."
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "conteudo"
+        ],
+        "title": "Celula",
+        "description": "Uma saída concreta: uma Audiência num Formato, numa rodada do Ciclo de correção."
+      },
+      "ConferenciaVisual": {
+        "properties": {
+          "medicoes": {
+            "items": {
+              "$ref": "#/components/schemas/MedicaoVisual"
+            },
+            "type": "array",
+            "title": "Medicoes"
+          },
+          "juiz_visao": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParecerVisao"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ConferenciaVisual",
+        "description": "O resultado da avaliação visual do Pacote. Vai ao H5, nunca ao Laudo."
+      },
+      "Conteudo": {
+        "properties": {
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "texto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Texto",
+            "description": "Texto analítico, em Markdown."
+          },
+          "slides": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Slide"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slides"
+          },
+          "blocos": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/BlocoFala"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocos"
+          },
+          "ancoras_citadas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Ancoras Citadas",
+            "description": "Chaves das Âncoras numéricas preenchidas em molde nesta Célula."
+          }
+        },
+        "type": "object",
+        "required": [
+          "formato"
+        ],
+        "title": "Conteudo",
+        "description": "O texto de uma Célula, num dos três Formatos.\n\nExatamente um dos três campos de corpo é preenchido, conforme ``formato``.\n``texto_avaliavel()`` devolve a prosa que as métricas medem: para o Roteiro só a fala,\nnunca a rubrica de cena; para o Carrossel, título e corpo de cada slide."
+      },
+      "Correcao": {
+        "properties": {
+          "metrica": {
+            "$ref": "#/components/schemas/Metrica"
+          },
+          "valor_medido": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor Medido"
+          },
+          "faixa": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Faixa"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distancia": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distancia",
+            "description": "Quanto falta para entrar na Faixa."
+          },
+          "instrucao": {
+            "type": "string",
+            "title": "Instrucao",
+            "description": "Ex.: 'Flesch-BR medido 47,2; o Limiar da Audiência Iniciante é 50.'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metrica",
+          "valor_medido",
+          "faixa",
+          "instrucao"
+        ],
+        "title": "Correcao",
+        "description": "O que precisa mudar, com o valor medido e a distância — nunca 'melhore o texto'."
+      },
+      "Custo": {
+        "properties": {
+          "chamadas": {
+            "type": "integer",
+            "title": "Chamadas",
+            "default": 0
+          },
+          "tokens_entrada": {
+            "type": "integer",
+            "title": "Tokens Entrada",
+            "default": 0
+          },
+          "tokens_saida": {
+            "type": "integer",
+            "title": "Tokens Saida",
+            "default": 0
+          },
+          "segundos": {
+            "type": "number",
+            "title": "Segundos",
+            "default": 0.0
+          },
+          "por_provedor": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Por Provedor"
+          }
+        },
+        "type": "object",
+        "title": "Custo",
+        "description": "Quanto custou de verdade: chamadas, tokens e tempo. Entra no relatório."
+      },
+      "DecisaoFila": {
+        "properties": {
+          "decisao": {
+            "type": "string",
+            "title": "Decisao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decisao"
+        ],
+        "title": "DecisaoFila",
+        "description": "O corpo do ``POST .../resolver``: a decisão que um humano registrou em H4."
+      },
+      "DefeitoRender": {
+        "type": "string",
+        "enum": [
+          "estouro_de_caixa",
+          "contraste_baixo",
+          "dimensao_errada",
+          "numero_divergente",
+          "duracao_fora_da_faixa",
+          "sem_audio"
+        ],
+        "title": "DefeitoRender",
+        "description": "O que a camada determinística da conferência visual consegue medir."
+      },
+      "Destino": {
+        "type": "string",
+        "enum": [
+          "aprovado",
+          "reprovado_corrigivel",
+          "reprovado_revisao_humana"
+        ],
+        "title": "Destino",
+        "description": "Os três destinos de um Laudo (ADR 0013)."
+      },
+      "DimensaoSubjetiva": {
+        "type": "string",
+        "enum": [
+          "tom",
+          "clareza",
+          "coerencia"
+        ],
+        "title": "DimensaoSubjetiva",
+        "description": "As dimensões que só o comitê julga (ADR 0008)."
+      },
+      "EstadoMedida": {
+        "type": "string",
+        "enum": [
+          "medida",
+          "ausente",
+          "revisao_humana"
+        ],
+        "title": "EstadoMedida",
+        "description": "Medida calculada, sem base para calcular, ou aguardando desempate humano (H3)."
+      },
+      "Execucao": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "ata": {
+            "type": "string",
+            "title": "Ata"
+          },
+          "provedor_gerador": {
+            "type": "string",
+            "title": "Provedor Gerador"
+          },
+          "iniciada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Iniciada Em"
+          },
+          "concluida_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluida Em"
+          },
+          "ancoras": {
+            "$ref": "#/components/schemas/Ancoras"
+          },
+          "celulas": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricoCelula"
+            },
+            "type": "array",
+            "title": "Celulas"
+          },
+          "pendencias": {
+            "items": {
+              "$ref": "#/components/schemas/Pendencia"
+            },
+            "type": "array",
+            "title": "Pendencias"
+          },
+          "custo": {
+            "$ref": "#/components/schemas/Custo"
+          },
+          "comite_ligado": {
+            "type": "boolean",
+            "title": "Comite Ligado",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "ata",
+          "provedor_gerador",
+          "iniciada_em",
+          "ancoras"
+        ],
+        "title": "Execucao",
+        "description": "O único arquivo de estado de uma execução: ``data/execucoes/<id>/execucao.json``."
+      },
+      "ExecucaoResumo": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "ata": {
+            "type": "string",
+            "title": "Ata"
+          },
+          "provedor": {
+            "type": "string",
+            "title": "Provedor"
+          },
+          "iniciada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Iniciada Em"
+          },
+          "aprovadas": {
+            "type": "integer",
+            "title": "Aprovadas"
+          },
+          "total_celulas": {
+            "type": "integer",
+            "title": "Total Celulas"
+          },
+          "pendencias": {
+            "type": "integer",
+            "title": "Pendencias"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "ata",
+          "provedor",
+          "iniciada_em",
+          "aprovadas",
+          "total_celulas",
+          "pendencias"
+        ],
+        "title": "ExecucaoResumo",
+        "description": "O que a lista de execuções mostra sem abrir o Laudo de cada Célula."
+      },
+      "Faixa": {
+        "properties": {
+          "minimo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimo"
+          },
+          "maximo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximo"
+          }
+        },
+        "type": "object",
+        "title": "Faixa",
+        "description": "Intervalo fechado em ``minimo``, aberto em ``maximo``. ``None`` é sem limite daquele lado."
+      },
+      "FilaHumana": {
+        "type": "string",
+        "enum": [
+          "h3_desempate",
+          "h4_revisao",
+          "h5_aprovacao_pacote"
+        ],
+        "title": "FilaHumana",
+        "description": "Os pontos de interferência humana que a interface expõe como fila."
+      },
+      "Filas": {
+        "properties": {
+          "h3_desempate": {
+            "items": {
+              "$ref": "#/components/schemas/Pendencia"
+            },
+            "type": "array",
+            "title": "H3 Desempate",
+            "default": []
+          },
+          "h4_revisao": {
+            "items": {
+              "$ref": "#/components/schemas/Pendencia"
+            },
+            "type": "array",
+            "title": "H4 Revisao",
+            "default": []
+          },
+          "h5_aprovacao_pacote": {
+            "items": {
+              "$ref": "#/components/schemas/Pendencia"
+            },
+            "type": "array",
+            "title": "H5 Aprovacao Pacote",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "Filas",
+        "description": "As três filas humanas H3, H4 e H5, sempre listas de ``Pendencia``."
+      },
+      "Formato": {
+        "type": "string",
+        "enum": [
+          "texto_analitico",
+          "carrossel",
+          "roteiro"
+        ],
+        "title": "Formato",
+        "description": "A forma que uma Célula assume."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HistoricoCelula": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "tentativas": {
+            "items": {
+              "$ref": "#/components/schemas/Tentativa"
+            },
+            "type": "array",
+            "title": "Tentativas"
+          },
+          "destino_final": {
+            "$ref": "#/components/schemas/Destino"
+          },
+          "provedores_usados": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Provedores Usados"
+          },
+          "falha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Falha",
+            "description": "Erro de provedor que interrompeu o Ciclo antes do teto, se houve. Vai à Pendencia H4."
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "destino_final"
+        ],
+        "title": "HistoricoCelula",
+        "description": "As tentativas de uma posição da Matriz, e onde ela terminou."
+      },
+      "ImagemSlide": {
+        "properties": {
+          "indice": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Indice"
+          },
+          "caminho": {
+            "type": "string",
+            "format": "path",
+            "title": "Caminho"
+          },
+          "largura": {
+            "type": "integer",
+            "title": "Largura"
+          },
+          "altura": {
+            "type": "integer",
+            "title": "Altura"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indice",
+          "caminho",
+          "largura",
+          "altura"
+        ],
+        "title": "ImagemSlide"
+      },
+      "JulgamentoDimensao": {
+        "properties": {
+          "dimensao": {
+            "$ref": "#/components/schemas/DimensaoSubjetiva"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoMedida"
+          },
+          "votos": {
+            "items": {
+              "$ref": "#/components/schemas/VotoJuiz"
+            },
+            "type": "array",
+            "title": "Votos"
+          },
+          "consenso": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consenso"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimensao",
+          "estado"
+        ],
+        "title": "JulgamentoDimensao",
+        "description": "Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada."
+      },
+      "Laudo": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "medidas": {
+            "items": {
+              "$ref": "#/components/schemas/Medida"
+            },
+            "type": "array",
+            "title": "Medidas"
+          },
+          "destino": {
+            "$ref": "#/components/schemas/Destino"
+          },
+          "motivos": {
+            "items": {
+              "$ref": "#/components/schemas/MotivoReprovacao"
+            },
+            "type": "array",
+            "title": "Motivos"
+          },
+          "correcoes": {
+            "items": {
+              "$ref": "#/components/schemas/Correcao"
+            },
+            "type": "array",
+            "title": "Correcoes"
+          },
+          "comite": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResultadoComite"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None = comitê desligado. Nunca nota zero (ADR 0008)."
+          },
+          "avaliado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Avaliado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "medidas",
+          "destino"
+        ],
+        "title": "Laudo",
+        "description": "O resultado da avaliação de uma Célula: medidas, veredito e o que precisa mudar."
+      },
+      "MedicaoVisual": {
+        "properties": {
+          "artefato": {
+            "type": "string",
+            "title": "Artefato",
+            "description": "Caminho relativo da imagem ou do vídeo."
+          },
+          "defeito": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DefeitoRender"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None = passou."
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "detalhe": {
+            "type": "string",
+            "title": "Detalhe",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "artefato"
+        ],
+        "title": "MedicaoVisual",
+        "description": "Uma medição sobre um artefato renderizado."
+      },
+      "Medida": {
+        "properties": {
+          "metrica": {
+            "$ref": "#/components/schemas/Metrica"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoMedida",
+            "default": "medida"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor",
+            "description": "None quando ``estado`` é AUSENTE."
+          },
+          "faixa": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Faixa"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "O Limiar aplicado, se houver."
+          },
+          "atingiu": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Atingiu",
+            "description": "None quando não há base para julgar."
+          },
+          "observacoes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observacoes",
+            "description": "O que foi visto: termos sem explicação, números fora das Âncoras, a frase que recomenda."
+          }
+        },
+        "type": "object",
+        "required": [
+          "metrica"
+        ],
+        "title": "Medida",
+        "description": "Uma métrica medida numa Célula, com o Limiar aplicado e o que se observou."
+      },
+      "Metrica": {
+        "type": "string",
+        "enum": [
+          "flesch_br",
+          "densidade",
+          "aderencia",
+          "recomendacao",
+          "integridade"
+        ],
+        "title": "Metrica",
+        "description": "As cinco medidas determinísticas."
+      },
+      "MotivoReprovacao": {
+        "type": "string",
+        "enum": [
+          "flesch_br",
+          "densidade",
+          "aderencia",
+          "recomendacao",
+          "falha_de_extracao"
+        ],
+        "title": "MotivoReprovacao",
+        "description": "Enumerado, não texto livre: é o que permite contar reprovação por motivo (ADR 0013)."
+      },
+      "PacotePublicacao": {
+        "properties": {
+          "execucao": {
+            "type": "string",
+            "title": "Execucao"
+          },
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "legenda": {
+            "type": "string",
+            "title": "Legenda"
+          },
+          "hashtags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hashtags"
+          },
+          "imagens": {
+            "items": {
+              "$ref": "#/components/schemas/ImagemSlide"
+            },
+            "type": "array",
+            "title": "Imagens"
+          },
+          "folha_de_contato": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "path"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folha De Contato"
+          },
+          "video": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "path"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video"
+          },
+          "conferencia": {
+            "$ref": "#/components/schemas/ConferenciaVisual"
+          },
+          "montado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Montado Em"
+          },
+          "aprovado_por_humano": {
+            "type": "boolean",
+            "title": "Aprovado Por Humano",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "execucao",
+          "audiencia",
+          "formato",
+          "legenda"
+        ],
+        "title": "PacotePublicacao",
+        "description": "O conjunto pronto para um humano publicar, só de Célula aprovada."
+      },
+      "ParecerVisao": {
+        "properties": {
+          "parece_quebrado": {
+            "type": "boolean",
+            "title": "Parece Quebrado"
+          },
+          "observacoes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observacoes"
+          },
+          "provedor": {
+            "type": "string",
+            "title": "Provedor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parece_quebrado",
+          "provedor"
+        ],
+        "title": "ParecerVisao",
+        "description": "Resposta holística do juiz de visão sobre a folha de contato. Opcional."
+      },
+      "Pendencia": {
+        "properties": {
+          "fila": {
+            "$ref": "#/components/schemas/FilaHumana"
+          },
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          },
+          "criada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criada Em"
+          },
+          "resolvida": {
+            "type": "boolean",
+            "title": "Resolvida",
+            "default": false
+          },
+          "decisao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decisao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fila",
+          "audiencia",
+          "formato",
+          "motivo"
+        ],
+        "title": "Pendencia",
+        "description": "Uma Célula esperando decisão humana numa fila."
+      },
+      "ResultadoComite": {
+        "properties": {
+          "dimensoes": {
+            "items": {
+              "$ref": "#/components/schemas/JulgamentoDimensao"
+            },
+            "type": "array",
+            "title": "Dimensoes"
+          },
+          "provedores": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Provedores",
+            "description": "Os dois provedores usados, em ordem."
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimensoes",
+          "provedores"
+        ],
+        "title": "ResultadoComite",
+        "description": "Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação."
+      },
+      "Saude": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "execucoes": {
+            "type": "integer",
+            "title": "Execucoes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "execucoes"
+        ],
+        "title": "Saude"
+      },
+      "Slide": {
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "corpo": {
+            "type": "string",
+            "title": "Corpo"
+          },
+          "dado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dado",
+            "description": "Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "titulo",
+          "corpo"
+        ],
+        "title": "Slide",
+        "description": "Um registro do roteiro de slides do Carrossel. O Avaliador julga o texto, não a imagem."
+      },
+      "Tentativa": {
+        "properties": {
+          "rodada": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Rodada"
+          },
+          "celula": {
+            "$ref": "#/components/schemas/Celula"
+          },
+          "laudo": {
+            "$ref": "#/components/schemas/Laudo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rodada",
+          "celula",
+          "laudo"
+        ],
+        "title": "Tentativa",
+        "description": "Uma rodada do Ciclo de correção: a Célula e o Laudo que a julgou."
+      },
+      "Unidade": {
+        "type": "string",
+        "enum": [
+          "% a.a.",
+          "%",
+          "p.p.",
+          "pb",
+          "votos",
+          "data",
+          "R$",
+          "numero"
+        ],
+        "title": "Unidade",
+        "description": "Unidade de uma Âncora numérica. ``p.p.`` ≠ ``%`` e ambos ≠ ``pb`` (pesquisa §3)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VotoJuiz": {
+        "properties": {
+          "dimensao": {
+            "$ref": "#/components/schemas/DimensaoSubjetiva"
+          },
+          "nota": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Nota"
+          },
+          "justificativa": {
+            "type": "string",
+            "title": "Justificativa"
+          },
+          "provedor": {
+            "type": "string",
+            "title": "Provedor",
+            "description": "Qual provedor julgou. Nunca o que gerou a Célula."
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimensao",
+          "nota",
+          "justificativa",
+          "provedor"
+        ],
+        "title": "VotoJuiz"
+      }
+    }
+  }
+}

@@ -19,9 +19,17 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Literal, TypeAlias
+from typing import Annotated, Any, Literal, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, model_validator
+
+CaminhoPortavel = Annotated[
+    Path,
+    PlainSerializer(lambda p: p.as_posix(), return_type=str, when_used="json"),
+]
+"""Um Path que sempre serializa com `/`, nunca `\\`: execucao.json e pacote.json são lidos por
+Windows, Linux e pelo navegador (via API), e um caminho gravado com barra invertida numa máquina
+Windows quebraria em qualquer outra."""
 
 # ---------------------------------------------------------------------------
 # A Matriz: Audiência × Formato
@@ -69,7 +77,7 @@ class Ata(BaseModel):
     origem_url: str | None = Field(
         default=None, description="URL de onde o arquivo foi buscado, quando foi."
     )
-    arquivo: Path | None = Field(default=None, description="Caminho local do arquivo original.")
+    arquivo: CaminhoPortavel | None = Field(default=None, description="Caminho local do arquivo original.")
     texto: str = Field(description="Texto já extraído; é o que o Gerador lê.")
     idioma: Literal["pt", "en"] = "pt"
 
@@ -645,7 +653,7 @@ class ConferenciaVisual(BaseModel):
 
 class ImagemSlide(BaseModel):
     indice: int = Field(ge=0)
-    caminho: Path
+    caminho: CaminhoPortavel
     largura: int
     altura: int
 
@@ -659,8 +667,8 @@ class PacotePublicacao(BaseModel):
     legenda: str
     hashtags: list[str] = Field(default_factory=list)
     imagens: list[ImagemSlide] = Field(default_factory=list)
-    folha_de_contato: Path | None = None
-    video: Path | None = None
+    folha_de_contato: CaminhoPortavel | None = None
+    video: CaminhoPortavel | None = None
     conferencia: ConferenciaVisual = Field(default_factory=ConferenciaVisual)
     montado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     aprovado_por_humano: bool = False

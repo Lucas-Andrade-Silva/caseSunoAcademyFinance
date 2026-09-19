@@ -1,0 +1,28 @@
+{
+  "comando": "uv run --offline pytest -q",
+  "medido_em": "2026-09-19",
+  "testes_coletados": 801,
+  "resultado": "801 passed",
+  "tempo_segundos": 34.76,
+  "medicoes_anteriores_na_mesma_sessao": [
+    {"testes_coletados": 774, "tempo_segundos": 46.36, "nota": "antes de a Etapa 3 (Agentes 11-13) terminar"},
+    {"testes_coletados": 795, "tempo_segundos": 40.73, "nota": "Agente 11 (API, 21 testes) ja entregue"}
+  ],
+  "por_modulo_da_etapa_3": {
+    "test_api.py": {"testes": 21, "resultado": "21 passed", "tempo_segundos": 2.84},
+    "test_video.py": {"testes": 6, "resultado": "6 passed", "tempo_segundos": 11.12}
+  },
+  "evals": {
+    "comando": "uv run --offline pytest -q tests/test_evals.py tests/test_calibracao.py",
+    "testes": 64,
+    "resultado": "64 passed",
+    "tempo_segundos": 7.03,
+    "casos_de_avaliacao": 45,
+    "arquivos_de_casos": ["flesch_br.yaml", "densidade.yaml", "aderencia.yaml", "recomendacao.yaml", "integridade.yaml", "matriz.yaml"]
+  },
+  "vocabulario": {
+    "comando": "uv run --offline python scripts/vocabulario.py",
+    "achados": 0,
+    "palavras_a_evitar": 59
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "fonte": "data/canary/canary.yaml lido por suno.avaliador.recomendacao.casos_do_canary(); detecção por suno.avaliador.recomendacao.detectar_recomendacao()",
+  "comando": "uv run --offline python -c \"from suno.avaliador.recomendacao import casos_do_canary, detectar_recomendacao; ...\" (ver docs/relatorio-experimental.md, secao 1)",
+  "medido_em": "2026-09-19",
+  "armadilhas": 63,
+  "neutras": 37,
+  "fuga": 0,
+  "fuga_percentual": 0.0,
+  "falso_positivo": 0,
+  "falso_positivo_percentual": 0.0,
+  "camadas": {
+    "lexico": 39,
+    "lexico+sintaxe": 8,
+    "sintaxe": 16
+  },
+  "aviso": "canary escrito pela mesma pessoa que escreveu os padroes, no mesmo dia (relatorio do agente 3). Mede regressao, nao generalizacao — o numero que falta e o da Calibracao (H2), com Celulas geradas de verdade e rotuladas a mao."
+}

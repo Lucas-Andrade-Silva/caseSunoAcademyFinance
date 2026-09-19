@@ -1,0 +1,109 @@
+{
+  "execucao": "demo-copom-280",
+  "ata": "copom-280-2026-08-05",
+  "celulas": 9,
+  "por_motivo": {
+    "flesch_br": 4,
+    "densidade": 1,
+    "aderencia": 0,
+    "recomendacao": 0,
+    "falha_de_extracao": 0
+  },
+  "rodadas_por_celula": [
+    {
+      "audiencia": "iniciante",
+      "formato": "texto_analitico",
+      "rodadas": 2,
+      "destino_final": "aprovado",
+      "flesch_br": 92.54832495812397,
+      "faixa_nilc": "muito fácil"
+    },
+    {
+      "audiencia": "iniciante",
+      "formato": "carrossel",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": 89.14794871794871,
+      "faixa_nilc": "muito fácil"
+    },
+    {
+      "audiencia": "iniciante",
+      "formato": "roteiro",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": 92.74055343511452,
+      "faixa_nilc": "muito fácil"
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "texto_analitico",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": 33.81992884510129,
+      "faixa_nilc": "difícil"
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "carrossel",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": 32.680896057347724,
+      "faixa_nilc": "difícil"
+    },
+    {
+      "audiencia": "intermediario",
+      "formato": "roteiro",
+      "rodadas": 3,
+      "destino_final": "reprovado_revisao_humana",
+      "flesch_br": 89.58167930660889,
+      "faixa_nilc": "muito fácil"
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "texto_analitico",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": -2.718548387096746,
+      "faixa_nilc": "muito difícil"
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "carrossel",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": -3.3170125786163283,
+      "faixa_nilc": "muito difícil"
+    },
+    {
+      "audiencia": "avancado",
+      "formato": "roteiro",
+      "rodadas": 1,
+      "destino_final": "aprovado",
+      "flesch_br": -7.775161290322558,
+      "faixa_nilc": "muito difícil"
+    }
+  ],
+  "matriz_de_confusao": {
+    "iniciante": {
+      "iniciante": 3,
+      "intermediario": 0,
+      "avancado": 0
+    },
+    "intermediario": {
+      "iniciante": 1,
+      "intermediario": 2,
+      "avancado": 0
+    },
+    "avancado": {
+      "iniciante": 0,
+      "intermediario": 0,
+      "avancado": 3
+    }
+  },
+  "origem": "NILC, aguardando Calibração",
+  "kappa_alvo": [
+    0.6,
+    0.8
+  ],
+  "pendencias": 1
+}

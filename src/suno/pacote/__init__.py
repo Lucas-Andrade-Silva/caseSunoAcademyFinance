@@ -66,6 +66,17 @@ def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audien
     return None
 
 
+def _medir_video_se_disponivel(video: Path) -> list:
+    """Duração, proporção e áudio do mp4 já renderizado (ADR 0014) — sempre ligada, mas só entra
+    no Pacote quando alguém rodou ``suno.cli video`` antes: este módulo não renderiza.
+    """
+    try:
+        from suno.video.render import medir_video
+    except ImportError:  # extra "video" não instalado nesta máquina
+        return []
+    return medir_video(video)
+
+
 def _montar_uma(
     execucao: Execucao, celula: Celula, pasta_do_pacote: Path, pasta_da_execucao: Path
 ) -> PacotePublicacao:
@@ -85,6 +96,8 @@ def _montar_uma(
         (pasta_do_pacote / NOME_DO_TEXTO).write_text(celula.conteudo.texto or "", encoding="utf-8")
     else:
         video = _video_ja_renderizado(pasta_do_pacote, pasta_da_execucao, celula.audiencia)
+        if video is not None:
+            conferencia = ConferenciaVisual(medicoes=_medir_video_se_disponivel(video))
 
     (pasta_do_pacote / NOME_DA_LEGENDA).write_text(
         f"{legenda}\n\n{' '.join(hashtags)}\n", encoding="utf-8"

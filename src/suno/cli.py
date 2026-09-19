@@ -81,7 +81,9 @@ def cmd_buscar_ata(args: argparse.Namespace) -> int:
 def cmd_video(args: argparse.Namespace) -> int:
     from suno.video.render import medir_video, renderizar_video
 
-    caminho = renderizar_video(args.execucao, Audiencia(args.audiencia), _pasta_execucoes(args.execucoes))
+    caminho = renderizar_video(
+        args.execucao, Audiencia(args.audiencia), _pasta_execucoes(args.execucoes), narracao=args.narracao
+    )
     print(f"video={caminho}")
     for m in medir_video(caminho):
         print(f"  {m.detalhe} {'DEFEITO ' + m.defeito.value if m.defeito else 'ok'}")
@@ -123,6 +125,9 @@ def construir_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("video", help="renderiza o mp4 9:16 de um Roteiro aprovado (fora do grafo)")
     p.add_argument("--execucao", required=True)
     p.add_argument("--audiencia", required=True, choices=[a.value for a in Audiencia])
+    p.add_argument(
+        "--narracao", action="store_true", help="sintetiza voz pt-BR com edge-tts (precisa de rede; falha vira mp4 sem áudio)"
+    )
     p.add_argument("--execucoes", default=None)
     p.set_defaults(funcao=cmd_video)
 

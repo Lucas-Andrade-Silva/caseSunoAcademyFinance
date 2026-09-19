@@ -14,11 +14,30 @@
   ],
   "imagens": [],
   "folha_de_contato": null,
-  "video": null,
+  "video": "data/execucoes/demo-copom-280/pacote/iniciante-roteiro/video.mp4",
   "conferencia": {
-    "medicoes": [],
+    "medicoes": [
+      {
+        "artefato": "video.mp4",
+        "defeito": null,
+        "valor": 58.0,
+        "detalhe": "duração 58.0s; a faixa aceita é 5–60s"
+      },
+      {
+        "artefato": "video.mp4",
+        "defeito": null,
+        "valor": 1080.0,
+        "detalhe": "1080x1920; o vídeo precisa de 1080x1920 (9:16)"
+      },
+      {
+        "artefato": "video.mp4",
+        "defeito": "sem_audio",
+        "valor": 0.0,
+        "detalhe": "sem trilha de áudio (sem narração)"
+      }
+    ],
     "juiz_visao": null
   },
-  "montado_em": "2026-09-18T12:51:08.943615Z",
+  "montado_em": "2026-09-19T13:11:42.252190Z",
   "aprovado_por_humano": false
 }
