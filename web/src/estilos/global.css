@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* Tema claro/escuro pelo sistema: Tailwind v4 usa prefers-color-scheme por padrão
+   para a variante `dark:`, sem configuração adicional. */
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#raiz {
+  height: 100%;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+/* Estilo mínimo para o Texto analítico renderizado em Markdown (react-markdown),
+   sem depender de um plugin de tipografia. */
+.markdown :is(h1, h2, h3) {
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown p {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+.markdown ul {
+  list-style: disc;
+  list-style-position: inside;
+  margin-bottom: 0.75rem;
+}
+
+.markdown strong {
+  font-weight: 600;
+}

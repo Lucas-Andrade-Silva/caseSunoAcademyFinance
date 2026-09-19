@@ -15,42 +15,42 @@
   "imagens": [
     {
       "indice": 0,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-01.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-01.png",
       "largura": 1080,
       "altura": 1350
     },
     {
       "indice": 1,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-02.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-02.png",
       "largura": 1080,
       "altura": 1350
     },
     {
       "indice": 2,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-03.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-03.png",
       "largura": 1080,
       "altura": 1350
     },
     {
       "indice": 3,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-04.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-04.png",
       "largura": 1080,
       "altura": 1350
     },
     {
       "indice": 4,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-05.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-05.png",
       "largura": 1080,
       "altura": 1350
     },
     {
       "indice": 5,
-      "caminho": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\slide-06.png",
+      "caminho": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/slide-06.png",
       "largura": 1080,
       "altura": 1350
     }
   ],
-  "folha_de_contato": "data\\execucoes\\demo-copom-280\\pacote\\avancado-carrossel\\folha-de-contato.png",
+  "folha_de_contato": "data/execucoes/demo-copom-280/pacote/avancado-carrossel/folha-de-contato.png",
   "video": null,
   "conferencia": {
     "medicoes": [
@@ -393,6 +393,6 @@
     ],
     "juiz_visao": null
   },
-  "montado_em": "2026-09-18T12:51:09.586002Z",
+  "montado_em": "2026-09-19T13:11:43.216395Z",
   "aprovado_por_humano": false
 }
