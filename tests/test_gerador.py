@@ -306,8 +306,11 @@ def test_montar_conteudo_preenche_titulo_corpo_e_fala(ancoras_de_teste: Ancoras)
     assert conteudo.ancoras_citadas == ["selic_decidida"]
 
 
-def test_montar_conteudo_nao_preenche_a_rubrica_de_cena(ancoras_de_teste: Ancoras):
-    """``tela`` não é falado e não é medido: o molde fica lá como rubrica."""
+def test_montar_conteudo_preenche_a_rubrica_de_cena_tambem(ancoras_de_teste: Ancoras):
+    """``tela`` não é falado e não é medido pelo Flesch-BR, mas um número nela também vem das
+    Âncoras: a rubrica aparece escrita no vídeo e na interface (ADR 0011, achado do revisor
+    ADR-por-ADR de 2026-09-19 — sem isso, ``tela`` era um segundo caminho de número livre de
+    Aderência)."""
     roteiro = RespostaRoteiro(
         blocos=[
             BlocoFala(inicio_s=0, fim_s=5, fala="Foi a {{selic_decidida}}.", tela="{{selic_decidida}}"),
@@ -317,7 +320,8 @@ def test_montar_conteudo_nao_preenche_a_rubrica_de_cena(ancoras_de_teste: Ancora
     conteudo = montar_conteudo(roteiro, Formato.ROTEIRO, ancoras_de_teste)
     assert conteudo.blocos is not None
     assert conteudo.blocos[0].fala == "Foi a 14,00% a.a."
-    assert conteudo.blocos[0].tela == "{{selic_decidida}}"
+    assert conteudo.blocos[0].tela == "14,00% a.a."
+    assert "selic_decidida" in conteudo.ancoras_citadas
 
 
 def test_montar_conteudo_do_texto_analitico_monta_as_tres_partes(ancoras_de_teste: Ancoras):
@@ -479,3 +483,40 @@ def test_a_matriz_sai_na_ordem_de_matriz(ata: Ata, ancoras_de_teste: Ancoras, mo
     }
     historicos = gerar_matriz(ata, ancoras_de_teste, ProvedorFalso(filas))
     assert [(h.audiencia, h.formato) for h in historicos] == list(MATRIZ)
+
+
+def test_uma_celula_com_erro_inesperado_nao_derruba_as_outras_oito(
+    ata: Ata, ancoras_de_teste: Ancoras, monkeypatch
+):
+    """Achado do revisor de erros (2026-09-19): antes, um `RuntimeError` numa única posição da
+    Matriz subia por `futuro.result()` e matava `gerar_matriz` inteira — nove Células
+    perdidas, nenhum `execucao.json` gravado. Agora a posição envenenada volta com `falha`
+    preenchida e as outras oito, normais."""
+    monkeypatch.setattr("suno.gerador.ciclo.avaliar", _laudo_aprovado)
+    texto = json.dumps(
+        {"titulo": "t", "o_que_foi_decidido": "a", "por_que": "b", "o_que_observar_adiante": "c"}
+    )
+    carrossel = json.dumps({"slides": [{"titulo": "t", "corpo": "c"} for _ in range(5)]})
+    roteiro = json.dumps(
+        {"blocos": [{"inicio_s": 0, "fim_s": 5, "fala": "a"}, {"inicio_s": 5, "fim_s": 9, "fala": "b"}]}
+    )
+    filas: dict[str, list] = {
+        f"celula:{audiencia}:{formato}:0": [
+            {Formato.TEXTO_ANALITICO: texto, Formato.CARROSSEL: carrossel}.get(formato, roteiro)
+        ]
+        for audiencia, formato in MATRIZ
+    }
+    envenenada = f"celula:{Audiencia.AVANCADO}:{Formato.CARROSSEL}:0"
+    filas[envenenada] = [RuntimeError("boom")]
+
+    historicos = gerar_matriz(ata, ancoras_de_teste, ProvedorFalso(filas))
+
+    assert len(historicos) == len(MATRIZ)
+    envenenado = next(
+        h for h in historicos if h.audiencia is Audiencia.AVANCADO and h.formato is Formato.CARROSSEL
+    )
+    assert envenenado.falha is not None and "boom" in envenenado.falha
+    assert envenenado.tentativas == []
+    outras = [h for h in historicos if h is not envenenado]
+    assert len(outras) == 8
+    assert all(h.destino_final is Destino.APROVADO for h in outras)

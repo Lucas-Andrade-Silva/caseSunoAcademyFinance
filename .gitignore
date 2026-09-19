@@ -31,7 +31,12 @@ dist/
 web/node_modules/
 web/dist/
 
-# Saídas pesadas de execução: mp4 e PNG não versionam; execucao.json versiona.
-data/execucoes/**/*.mp4
-data/execucoes/**/*.wav
-data/execucoes/**/*.mp3
+# Só a demo versionada entra no repositório; qualquer outra execução (scripts/demo, testes
+# manuais, --provedor roteador) é scratch local, inclusive a que scripts/demo grava em
+# demo-ao-vivo/. Dentro da demo versionada, o vídeo é gravado fora do repositório (ADR 0004):
+# quem quiser vê-lo roda `suno.cli video` depois do clone.
+data/execucoes/*
+!data/execucoes/demo-copom-280
+data/execucoes/demo-copom-280/pacote/**/*.mp4
+data/execucoes/demo-copom-280/pacote/**/*.wav
+data/execucoes/demo-copom-280/pacote/**/*.mp3

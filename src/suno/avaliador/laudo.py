@@ -88,13 +88,17 @@ def avaliar(
     """
     limiares_aplicados = limiares or LIMIARES_PROVISORIOS[audiencia]
     texto = conteudo.texto_avaliavel()
+    # Aderência e Recomendação cobrem também a rubrica de cena do Roteiro (dominio.py,
+    # texto_de_conferencia): ela aparece no vídeo e na interface, e não há segundo caminho
+    # de número ou de Recomendação livre de conferência (ADR 0011; CLAUDE.md).
+    texto_conferido = conteudo.texto_de_conferencia()
 
     achados: list[_Achado] = [
         _medir_integridade(ancoras),
         _medir_flesch_br(texto, limiares_aplicados, audiencia),
         _medir_densidade(texto, limiares_aplicados, audiencia),
-        _medir_aderencia(texto, ancoras, limiares_aplicados),
-        _medir_recomendacao(texto),
+        _medir_aderencia(texto_conferido, ancoras, limiares_aplicados),
+        _medir_recomendacao(texto_conferido),
     ]
 
     medidas = [medida for medida, _, _ in achados]
@@ -184,7 +188,18 @@ def _medir_flesch_br(texto: str, limiares: Limiares, audiencia: Audiencia) -> _A
     indice = flesch_br(texto)
     faixa = limiares.flesch_br
     if indice is None:
-        # Texto sem palavra não tem índice. Ausente, nunca zero (ADR 0002).
+        # Texto sem palavra não tem índice — a Medida sai ausente, nunca zero (ADR 0002). Mas
+        # "ausente" é sobre não fabricar um número, não sobre aprovar o nada: Texto analítico,
+        # Carrossel e Roteiro sempre têm campo de texto obrigatório, então zero palavras só
+        # acontece quando o Gerador falhou (ex.: `preencher` apagou uma `{{chave}}`
+        # desconhecida e não sobrou mais nada). Isso reprova pelo mesmo motivo, com Correção,
+        # em vez de aprovar uma Célula que não diz nada (achado do revisor de erros, 2026-09-19).
+        instrucao = (
+            "A Célula saiu sem nenhuma palavra legível — não há texto para medir o Flesch-BR. "
+            "Escreva o conteúdo de verdade (provavelmente uma chave de Âncora desconhecida foi "
+            "apagada por `preencher`, deixando o campo vazio); confira que só chaves da lista "
+            "de Âncoras aparecem entre `{{ }}`."
+        )
         return (
             Medida(
                 metrica=Metrica.FLESCH_BR,
@@ -194,8 +209,14 @@ def _medir_flesch_br(texto: str, limiares: Limiares, audiencia: Audiencia) -> _A
                 atingiu=None,
                 observacoes=["Texto sem palavra: não há base para medir o Flesch-BR."],
             ),
-            None,
-            None,
+            MotivoReprovacao.FLESCH_BR,
+            Correcao(
+                metrica=Metrica.FLESCH_BR,
+                valor_medido=None,
+                faixa=faixa,
+                distancia=None,
+                instrucao=instrucao,
+            ),
         )
 
     atingiu = faixa.contem(indice)

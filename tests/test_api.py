@@ -455,6 +455,83 @@ def test_saude_conta_as_execucoes(cliente: TestClient) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Robustez: concorrência no H4 e leitura de execução ilegível
+# (achados do revisor de erros, 2026-09-19)
+# ---------------------------------------------------------------------------
+
+
+def test_seis_resolucoes_h4_concorrentes_nao_perdem_nenhuma(
+    pasta_execucoes: Path, execucao_construida: Execucao
+) -> None:
+    """Antes da trava, seis `POST .../resolver` disparados juntos perdiam quatro decisões sem
+    erro nenhum — o arquivo era lido, alterado e regravado sem exclusão mútua."""
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    seis_pendencias = [
+        Pendencia(
+            fila=FilaHumana.H4_REVISAO,
+            audiencia=Audiencia.INTERMEDIARIO,
+            formato=Formato.ROTEIRO,
+            motivo="flesch_br",
+        )
+        for _ in range(6)
+    ]
+    execucao = execucao_construida.model_copy(update={"pendencias": seis_pendencias})
+    raiz = pasta_execucoes / IDENTIFICADOR
+    raiz.mkdir(parents=True, exist_ok=True)
+    (raiz / "execucao.json").write_text(execucao.model_dump_json(indent=2), encoding="utf-8")
+    app = criar_app(pasta_execucoes)
+    cliente_local = TestClient(app)
+
+    barreira = Barrier(6)
+
+    def resolver(indice: int) -> int:
+        barreira.wait()
+        resposta = cliente_local.post(
+            f"/api/execucoes/{IDENTIFICADOR}/filas/h4/{indice}/resolver",
+            json={"decisao": f"decisão {indice}"},
+        )
+        return resposta.status_code
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        status = list(executor.map(resolver, range(6)))
+
+    assert all(codigo == 200 for codigo in status)
+    de_volta = carregar_execucao(IDENTIFICADOR, pasta_execucoes)
+    assert sum(1 for p in de_volta.pendencias if p.resolvida) == 6, "as seis sobrevivem"
+
+
+def test_execucao_ilegivel_sai_da_listagem_mas_da_409_na_leitura_direta(
+    pasta_execucoes: Path,
+) -> None:
+    """Uma escrita interrompida deixa um `execucao.json` que não bate com o domínio (o real
+    exemplo do revisor: ``{"nao": "e uma execucao"}``). Isso não pode derrubar a listagem
+    inteira nem virar 500."""
+    quebrada = pasta_execucoes / "quebrada"
+    quebrada.mkdir(parents=True)
+    (quebrada / "execucao.json").write_text('{"nao": "e uma execucao"}', encoding="utf-8")
+    app = criar_app(pasta_execucoes)
+    cliente_local = TestClient(app)
+
+    listagem = cliente_local.get("/api/execucoes")
+    assert listagem.status_code == 200
+    assert "quebrada" not in {resumo["identificador"] for resumo in listagem.json()}
+
+    direta = cliente_local.get("/api/execucoes/quebrada")
+    assert direta.status_code == 409
+
+
+def test_identificador_com_caractere_invalido_no_windows_da_404_nao_500(
+    pasta_execucoes: Path,
+) -> None:
+    app = criar_app(pasta_execucoes)
+    cliente_local = TestClient(app)
+    resposta = cliente_local.get('/api/execucoes/a"b')
+    assert resposta.status_code == 404
+
+
+# ---------------------------------------------------------------------------
 # A demo versionada — a execução que a banca vê
 # ---------------------------------------------------------------------------
 

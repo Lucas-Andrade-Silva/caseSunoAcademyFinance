@@ -435,6 +435,26 @@ def test_montar_pacote_so_atende_celula_aprovada_e_nao_toca_na_execucao(
     assert caminho_da_execucao.read_bytes() == antes, "montar o Pacote é leitura, nunca escrita"
 
 
+def test_montar_pacote_remove_pasta_de_celula_que_deixou_de_ser_aprovada(
+    execucao_em_disco: Path,
+) -> None:
+    """Achado do revisor de erros (2026-09-19): um Pacote velho de Célula que passou a
+    reprovar (Ciclo regerou, Limiar mudou) não pode sobreviver em disco — ele apareceria na
+    API e no H5 como pronto para publicar algo que o Avaliador já recusou."""
+    raiz = execucao_em_disco / IDENTIFICADOR / "pacote"
+    pasta_obsoleta = raiz / "avancado-roteiro"
+    pasta_obsoleta.mkdir(parents=True)
+    (pasta_obsoleta / "pacote.json").write_text("{}", encoding="utf-8")
+    pasta_estranha = raiz / "nao-e-uma-celula"
+    pasta_estranha.mkdir(parents=True)
+
+    montar_pacote(IDENTIFICADOR, execucao_em_disco)
+
+    assert not pasta_obsoleta.exists()
+    assert not pasta_estranha.exists()
+    assert (raiz / "iniciante-carrossel" / "pacote.json").exists()
+
+
 def test_pacote_do_carrossel_traz_imagens_folha_e_conferencia_limpa(
     execucao_em_disco: Path,
 ) -> None:

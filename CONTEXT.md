@@ -69,6 +69,26 @@ _Avoid_: threshold, corte, nota mínima, meta
 A reescrita de uma Célula reprovada, guiada pelo Laudo que a reprovou.
 _Avoid_: retry, reflection loop, refinamento, iteração
 
+**Comitê**:
+A camada opcional de dois juízes-LLM que julga Tom, Clareza e Coerência sobre o Texto
+analítico e o Carrossel de uma Célula já medida pelas métricas determinísticas. Nasce
+desligado; nunca decide o veredito do Laudo, só anexa informação a ele.
+_Avoid_: painel, comitê de avaliação, ensemble
+
+**Tom**:
+Dimensão subjetiva do Comitê: a Célula soa adequada à Audiência, sem ser condescendente
+com o Iniciante nem árida demais com o Avançado.
+_Avoid_: estilo
+
+**Clareza**:
+Dimensão subjetiva do Comitê: o texto se lê de primeira, sem exigir reler a frase.
+_Avoid_: legibilidade (reservado ao Flesch-BR), fluência
+
+**Coerência**:
+Dimensão subjetiva do Comitê: o texto lê como um argumento encadeado, não como frases
+curtas e desconexas — o caso que o Flesch-BR sozinho não pega.
+_Avoid_: consistência, coesão
+
 ### Insumos e entregas
 
 **Léxico**:

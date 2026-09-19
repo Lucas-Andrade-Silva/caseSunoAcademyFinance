@@ -22,7 +22,9 @@ este arquivo, o `CONTEXT.md` e os ADRs que lhes cabem — nunca o repositório i
 1. Nomes saem do `CONTEXT.md`. Palavras da lista _Avoid_ não aparecem em nome de classe, função,
    campo, rota, arquivo ou tabela. Exceções mandadas pelo prompt: `ingestao/pdf.py` (é o formato de
    arquivo, não a Ata) e `docs/relatorio-experimental.md` (Entregável 6).
-2. Nenhum módulo importa SDK de LLM. Só `provedores/` fala com a rede, via `httpx` ([ADR 0007]).
+2. Nenhum módulo importa SDK de LLM. Só `provedores/` fala com LLM pela rede, via `httpx`
+   ([ADR 0007]) — a única outra exceção deliberada é `ingestao/bcb.py`, o comando H1 de
+   `buscar-ata` (ADR 0006), que nenhuma execução chama sozinha.
 3. `pytest -q` passa sem `.env` e sem internet; `tests/conftest.py` derruba qualquer socket.
 4. Cada arquivo tem um dono. Quem precisa mudar arquivo alheio avisa no relatório, não edita.
 

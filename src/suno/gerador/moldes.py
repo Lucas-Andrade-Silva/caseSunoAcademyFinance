@@ -150,8 +150,10 @@ INSTRUCAO_DO_FORMATO: dict[Formato, str] = {
     ),
     Formato.ROTEIRO: (
         f"Formato Roteiro: blocos de fala cronometrados somando no máximo {SEGUNDOS_DO_ROTEIRO} "
-        "segundos. O primeiro bloco é o gancho. 'fala' é o que é dito e é o que as métricas "
-        "medem; 'tela' é a rubrica de cena e não é lido em voz alta."
+        "segundos. O primeiro bloco é o gancho. 'fala' é o que é dito e é o que a Facilidade de "
+        "leitura mede; 'tela' é a rubrica de cena, não é lida em voz alta, mas aparece escrita "
+        "no vídeo — todo número em 'tela' também entra escrevendo `{{chave}}`, do mesmo jeito "
+        "que em 'fala'."
     ),
 }
 
@@ -285,7 +287,9 @@ def montar_markdown(resposta_estruturada: RespostaTextoAnalitico) -> str:
 def montar_conteudo(
     resposta_estruturada: BaseModel, formato: Formato, ancoras: Ancoras
 ) -> Conteudo:
-    """Aplica ``preencher`` em todo campo de texto — menos na rubrica ``tela`` do Roteiro."""
+    """Aplica ``preencher`` em todo campo de texto, inclusive a rubrica ``tela`` do Roteiro:
+    ela aparece escrita no vídeo, então um número ali também vem das Âncoras, nunca da memória
+    do LLM (ADR 0011)."""
     if formato is Formato.TEXTO_ANALITICO:
         assert isinstance(resposta_estruturada, RespostaTextoAnalitico)
         campos = [
@@ -317,9 +321,15 @@ def montar_conteudo(
         return Conteudo(formato=formato, slides=slides, ancoras_citadas=usadas)
 
     assert isinstance(resposta_estruturada, RespostaRoteiro)
-    falas, usadas = _preencher_varios([bloco.fala for bloco in resposta_estruturada.blocos], ancoras)
+    falas, usadas_fala = _preencher_varios(
+        [bloco.fala for bloco in resposta_estruturada.blocos], ancoras
+    )
+    telas, usadas_tela = _preencher_varios(
+        [bloco.tela for bloco in resposta_estruturada.blocos], ancoras
+    )
+    usadas = usadas_fala + [chave for chave in usadas_tela if chave not in usadas_fala]
     blocos = [
-        BlocoFala(inicio_s=bloco.inicio_s, fim_s=bloco.fim_s, fala=falas[i], tela=bloco.tela)
+        BlocoFala(inicio_s=bloco.inicio_s, fim_s=bloco.fim_s, fala=falas[i], tela=telas[i])
         for i, bloco in enumerate(resposta_estruturada.blocos)
     ]
     return Conteudo(formato=formato, blocos=blocos, ancoras_citadas=usadas)

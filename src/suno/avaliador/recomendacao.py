@@ -453,7 +453,14 @@ def detectar_recomendacao(texto: str) -> list[Ocorrencia]:
             for inicio, fim, padrao in gerador(frase, padroes)
         ]
         for inicio, fim, padrao, camada in candidatos:
-            if _permitido(inicio, fim, permitidos):
+            # O bloco `pode` só cancela a camada de Léxico: ali o span é a frase curta e
+            # exata do gatilho, e um "pode" que a toca é ambiguidade de verdade. Na camada
+            # de sintaxe o span vai do sujeito até a ação — pode ser a frase quase inteira
+            # (ADR 0012) — então um "não é recomendação" incidental em qualquer parte dela
+            # cancelava até a Recomendação sintática mais explícita: "Você, e isto não é
+            # recomendação, deveria comprar prefixados." escapava (achado do revisor de
+            # erros, 2026-09-19). O aviso de compliance não licencia a frase inteira.
+            if camada == "lexico" and _permitido(inicio, fim, permitidos):
                 continue
             trecho = doc.text[inicio:fim]
             chave = (inicio, padrao, trecho)

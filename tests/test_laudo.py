@@ -250,9 +250,48 @@ def test_varios_numeros_fora_saem_com_a_unidade_de_cada_um() -> None:
     assert "Números sem Âncora: 15%, 0,75 p.p." in correcao.instrucao
 
 
+def test_numero_inventado_na_rubrica_de_cena_tambem_reprova_por_aderencia() -> None:
+    """Achado do revisor ADR-por-ADR (2026-09-19): a rubrica ``tela`` do Roteiro aparece
+    escrita no vídeo e na interface, mas não é lida em voz alta nem medida pelo Flesch-BR — o
+    que não quer dizer que um número inventado ali escape da conferência (ADR 0011). Antes da
+    correção, este texto media Aderência 1,0."""
+    conteudo = Conteudo(
+        formato=Formato.ROTEIRO,
+        blocos=[
+            BlocoFala(
+                inicio_s=0,
+                fim_s=5,
+                fala="A Selic caiu.",
+                tela="SELIC 19,75% a.a. — ALTA DE 375 pb",
+            )
+        ],
+    )
+    laudo = avaliar(conteudo, _ancoras(), Audiencia.INICIANTE)
+
+    assert MotivoReprovacao.ADERENCIA in laudo.motivos
+    medida = laudo.medida(Metrica.ADERENCIA)
+    assert medida is not None
+    assert any("19,75%" in observacao for observacao in medida.observacoes)
+    # Flesch-BR continua sobre a fala só: a rubrica não entra na leitura, então uma rubrica
+    # gritada em caixa alta não derruba o índice da fala curta e fácil.
+    flesch = laudo.medida(Metrica.FLESCH_BR)
+    assert flesch is not None and flesch.atingiu is True
+
+
 # ---------------------------------------------------------------------------
 # 5. Recomendação — a linha que não se cruza
 # ---------------------------------------------------------------------------
+
+
+def test_frase_que_recomenda_na_rubrica_de_cena_tambem_reprova() -> None:
+    """A mesma lacuna vale para Recomendação: a rubrica é tão pública quanto a fala."""
+    conteudo = Conteudo(
+        formato=Formato.ROTEIRO,
+        blocos=[BlocoFala(inicio_s=0, fim_s=5, fala="A Selic caiu.", tela="COMPRE AGORA")],
+    )
+    laudo = avaliar(conteudo, _ancoras(), Audiencia.INICIANTE)
+
+    assert MotivoReprovacao.RECOMENDACAO in laudo.motivos
 
 
 def test_frase_que_recomenda_reprova_e_a_correcao_cita_a_frase() -> None:
@@ -336,7 +375,12 @@ def test_texto_sem_numero_deixa_a_aderencia_ausente_e_nao_reprova() -> None:
     assert laudo.destino is Destino.APROVADO
 
 
-def test_texto_vazio_deixa_o_flesch_br_ausente_e_nunca_zero() -> None:
+def test_texto_vazio_deixa_o_flesch_br_ausente_mas_reprova() -> None:
+    """Achado do revisor de erros (2026-09-19): zero palavras nunca é "aprovado" — as três
+    Formatos sempre têm um campo de texto obrigatório, então texto vazio só acontece quando o
+    Gerador falhou (ex.: `{{chave}}` desconhecida apagada por `preencher`), nunca é uma
+    Célula legítima sem base para medir. ``valor`` continua ``None``: a Medida não fabrica um
+    zero, mas o Laudo não aprova o nada."""
     laudo = avaliar(_analitico(""), _ancoras(), Audiencia.INICIANTE)
 
     medida = laudo.medida(Metrica.FLESCH_BR)
@@ -345,7 +389,24 @@ def test_texto_vazio_deixa_o_flesch_br_ausente_e_nunca_zero() -> None:
     assert medida.valor is None
     assert medida.valor != 0
     assert medida.atingiu is None
-    assert MotivoReprovacao.FLESCH_BR not in laudo.motivos
+    assert MotivoReprovacao.FLESCH_BR in laudo.motivos
+    assert laudo.destino is Destino.REPROVADO_CORRIGIVEL
+    correcao = _correcao(laudo, Metrica.FLESCH_BR)
+    assert correcao is not None
+    assert "sem nenhuma palavra legível" in correcao.instrucao
+
+
+def test_carrossel_com_todos_os_slides_em_branco_tambem_reprova() -> None:
+    """O outro caminho para o mesmo buraco: slides com titulo/corpo vazios juntam, via
+    ``texto_avaliavel``, numa string só de quebras de linha — zero palavras, mesmo achado."""
+    conteudo = Conteudo(
+        formato=Formato.CARROSSEL,
+        slides=[Slide(titulo="", corpo="") for _ in range(5)],
+    )
+    laudo = avaliar(conteudo, _ancoras(), Audiencia.INICIANTE)
+
+    assert MotivoReprovacao.FLESCH_BR in laudo.motivos
+    assert laudo.destino is not Destino.APROVADO
 
 
 # ---------------------------------------------------------------------------

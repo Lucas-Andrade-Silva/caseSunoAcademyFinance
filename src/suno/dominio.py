@@ -274,6 +274,22 @@ class Conteudo(BaseModel):
             return "\n\n".join(f"{s.titulo}\n{s.corpo}" for s in self.slides or [])
         return "\n".join(b.fala for b in self.blocos or [])
 
+    def texto_de_conferencia(self) -> str:
+        """O texto sobre o qual Aderência e Recomendação são medidas.
+
+        Igual a ``texto_avaliavel()``, mais a rubrica de cena (``tela``) do Roteiro: ela é
+        pintada como o texto maior de cada quadro do vídeo e mostrada na interface, então um
+        número ou uma Recomendação ali é tão real quanto na fala — o ADR 0011 não abre exceção
+        para um segundo caminho de número, e a linha do CLAUDE.md não abre exceção nenhuma.
+        Flesch-BR e Densidade continuam sobre ``texto_avaliavel()`` só: a rubrica não é lida em
+        voz alta nem julgada por Audiência (ARQUITETURA.md).
+        """
+        base = self.texto_avaliavel()
+        if self.formato is not Formato.ROTEIRO:
+            return base
+        rubricas = "\n".join(b.tela for b in self.blocos or [] if b.tela)
+        return f"{base}\n{rubricas}" if rubricas else base
+
 
 class Celula(BaseModel):
     """Uma saída concreta: uma Audiência num Formato, numa rodada do Ciclo de correção."""
