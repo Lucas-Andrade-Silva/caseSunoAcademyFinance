@@ -1,9 +1,25 @@
 @import "tailwindcss";
 
-/* Tema claro/escuro pelo sistema: Tailwind v4 usa prefers-color-scheme por padrão
-   para a variante `dark:`, sem configuração adicional. */
+/* Tema só escuro, com as cores da Suno. O vermelho foi estimado de uma captura de tela do
+   app deles: o hex oficial substitui `--color-suno` quando existir. Cada `--color-*` vira
+   utilidade do Tailwind (`bg-fundo`, `text-suave`, `border-suno/45`...). */
+@theme {
+  --color-fundo: #0e0e0f;
+  --color-lateral: #141415;
+  --color-cartao: #1c1c1e;
+  --color-cartao-2: #242427;
+  --color-linha: #2c2c30;
+  --color-texto: #f3f3f4;
+  --color-suave: #8d8d93;
+  --color-suno: #ef4b3f;
+  --color-ok: #3ecf8e;
+  --color-alerta: #f5b042;
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
 html,
@@ -13,14 +29,9 @@ body,
 }
 
 body {
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
 }
 
 /* Estilo mínimo para o Texto analítico renderizado em Markdown (react-markdown),

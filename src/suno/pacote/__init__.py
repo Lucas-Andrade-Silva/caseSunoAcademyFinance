@@ -27,6 +27,7 @@ from suno.dominio import (
     Celula,
     ConferenciaVisual,
     Destino,
+    EstadoAvaliacaoTransversal,
     Execucao,
     Formato,
     ImagemSlide,
@@ -143,6 +144,12 @@ def montar_pacote(identificador_execucao: str, pasta_execucoes: Path) -> list[Pa
     execucao = _ler_execucao(identificador_execucao, pasta_execucoes)
     pasta_da_execucao = pasta_execucoes / identificador_execucao
     raiz = pasta_da_execucao / NOME_DA_PASTA
+    if (
+        execucao.ciclo_transversal is not None
+        and execucao.ciclo_transversal.estado is not EstadoAvaliacaoTransversal.APROVADA
+    ):
+        _remover_pacotes_obsoletos(raiz, set())
+        return []
     pacotes: list[PacotePublicacao] = []
     aprovadas: set[str] = set()
     for historico in execucao.celulas:

@@ -91,6 +91,13 @@ def test_a_matriz_sai_inteira_e_na_ordem(execucao: Execucao):
     assert execucao.ata == IDENTIFICADOR_DA_ATA
     assert execucao.provedor_gerador == "falso"
     assert execucao.comite_ligado is False
+    assert execucao.selecao is not None
+    assert execucao.selecao.itens == [IDENTIFICADOR_DA_ATA]
+    assert execucao.avaliacao_transversal is not None
+    assert execucao.avaliacao_transversal.total_recebido == len(MATRIZ)
+    assert execucao.ciclo_transversal is not None
+    assert execucao.ciclo_transversal.estado.value == "revisao_humana"
+    assert execucao.ciclo_transversal.julgamentos == []
 
 
 def test_as_sete_celulas_do_cenario_aprovam_na_primeira_rodada(execucao: Execucao):

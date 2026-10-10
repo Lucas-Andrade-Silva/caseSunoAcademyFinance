@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mockup · Suno Content</title><style>body{background:#0a0a0b;color:#f3f3f4;font:14px system-ui,sans-serif;margin:0;padding:28px;max-width:1180px}h2{font-size:22px;margin:0 0 6px}.subtitle{color:#8d8d93;margin-bottom:22px}.cards{display:grid;gap:26px}.card-body{padding:10px 2px 0;color:#9a9aa0;font-size:13px}.card-body h3{color:#f3f3f4;font-size:14px;margin-bottom:3px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8d8d93}.section{margin-top:22px;color:#9a9aa0}p[style]{color:#9a9aa0!important}</style></head><body>
+<h2>A lista de Saídas</h2>
+<p class="subtitle">É onde ficam registradas as Saídas, cada uma com o seu nome. Só o resumo aparece aqui. O conteúdo só aparece quando você clica no cartão e abre a Matriz. Também é uma tela para validar, sem alternativas. Os nomes e as datas são de exemplo.</p>
+
+<style>
+  .suno{--bg:#0e0e0f;--side:#141415;--card:#1c1c1e;--card2:#242427;--line:#2c2c30;--tx:#f3f3f4;--mu:#8d8d93;--red:#ef4b3f;--redbg:rgba(239,75,63,.14);--ok:#3ecf8e;--warn:#f5b042;
+    background:var(--bg);color:var(--tx);font:12.5px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;height:640px;overflow:hidden;text-align:left;border-radius:12px;border:1px solid #2c2c30}
+  .suno *{box-sizing:border-box;margin:0;padding:0}
+  .suno .sb{width:172px;background:var(--side);border-right:1px solid var(--line);padding:14px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+  .suno .logo{font-weight:700;letter-spacing:.28em;font-size:15px;padding:4px 8px 16px}
+  .suno .logo i{color:var(--red);font-style:normal;font-weight:400}
+  .suno .nv{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;color:var(--mu);font-size:13px}
+  .suno .nv::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line)}
+  .suno .nv.on{background:var(--redbg);color:var(--tx);font-weight:600}
+  .suno .nv.on::before{background:var(--red)}
+  .suno .nv b{margin-left:auto;background:var(--red);color:#fff;border-radius:9px;font-size:10px;padding:0 6px;font-weight:600}
+  .suno .mn{flex:1;min-width:0;display:flex;flex-direction:column}
+  .suno .sp{flex:1}
+  .suno .mu{color:var(--mu)}
+  .suno .top{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line)}
+  .suno .top h4{font-size:17px;font-weight:700}
+  .suno .btn{background:var(--red);color:#fff;border-radius:18px;padding:8px 18px;font-weight:700;font-size:12px;letter-spacing:.02em;white-space:nowrap}
+  .suno .fil{display:flex;align-items:center;gap:8px;padding:11px 18px}
+  .suno .busca{flex:1;max-width:320px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 11px;color:var(--mu)}
+  .suno .sel{border:1px solid var(--line);border-radius:10px;padding:6px 11px;color:var(--tx);font-size:12px}
+  .suno .sel.on{border-color:var(--red);background:var(--redbg)}
+  .suno .chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--mu);border:1px solid var(--line);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  .suno .chip.ok::before,.suno .chip.warn::before,.suno .chip.bad::before,.suno .chip.run::before{content:"";width:6px;height:6px;border-radius:50%}
+  .suno .chip.ok::before{background:var(--ok)} .suno .chip.warn::before{background:var(--warn)} .suno .chip.bad::before{background:var(--red)} .suno .chip.run::before{background:var(--red)}
+  .suno .chip.me{color:var(--tx);background:var(--card2);border-color:transparent}
+  .suno .chip.warnt{color:var(--warn);border-color:rgba(245,176,66,.4)}
+  .suno .chip.st{color:var(--tx)}
+  .suno .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:4px 18px 14px;flex:1;overflow:hidden;align-content:start}
+  .suno .sa{background:var(--card);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:7px;border:1px solid transparent;min-width:0}
+  .suno .sa:first-child{border-color:rgba(239,75,63,.45)}
+  .suno .sa .t{display:flex;align-items:flex-start;gap:8px}
+  .suno .sa h5{font-size:13.5px;font-weight:700;line-height:1.3}
+  .suno .sa .dots{margin-left:auto;color:var(--mu);letter-spacing:2px}
+  .suno .sa .mt{display:flex;gap:5px;flex-wrap:wrap}
+  .suno .mid{display:flex;align-items:center;gap:14px;margin:3px 0}
+  .suno .gl{display:grid;grid-template-columns:repeat(3,17px);grid-template-rows:repeat(3,17px);gap:4px}
+  .suno .gl i{border-radius:4px;background:transparent;border:1.5px dashed #3b3b40}
+  .suno .gl i.v{background:var(--ok);border-color:var(--ok)}
+  .suno .gl i.c{background:#5a5a60;border-color:#5a5a60}
+  .suno .gl i.a{background:var(--warn);border-color:var(--warn)}
+  .suno .gl i.r{background:var(--red);border-color:var(--red)}
+  .suno .gl i.g{background:transparent;border:1.5px solid var(--red);animation:pulsa 1.2s infinite}
+  @keyframes pulsa{50%{background:var(--redbg)}}
+  .suno .num{font-size:11.5px;color:var(--mu);line-height:1.5}
+  .suno .num b{color:var(--tx)}
+  .suno .sa .ft{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:3px}
+  .suno .pb{height:5px;border-radius:3px;background:var(--card2);position:relative;overflow:hidden}
+  .suno .pb i{position:absolute;left:0;top:0;bottom:0;width:50%;background:var(--red);border-radius:3px}
+  .suno .lg{display:flex;gap:16px;align-items:center;padding:9px 18px;border-top:1px solid var(--line);background:var(--side);color:var(--mu);font-size:11px;flex-wrap:wrap}
+  .suno .lg span{display:flex;align-items:center;gap:6px}
+  .suno .lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+</style>
+
+<div class="suno">
+  <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv">Curadoria</div><div class="nv on">Saídas <b>2</b></div></div>
+  <div class="mn">
+    <div class="top"><h4>Saídas</h4><span class="mu">6 registradas</span><div class="sp"></div><div class="btn">+ NOVA SAÍDA</div></div>
+    <div class="fil">
+      <div class="busca">Buscar pelo nome…</div>
+      <span class="sel on">Todas</span><span class="sel">Aguardando revisão <b style="color:var(--red)">2</b></span><span class="sel">Gerando</span><span class="sel">Concluídas</span>
+      <div class="sp"></div><span class="sel">Fonte ▾</span><span class="sel">Mais recentes ▾</span>
+    </div>
+    <div class="grid">
+
+      <div class="sa">
+        <div class="t"><h5>Copom 280 · pauta juros</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">Copom 280</span><span class="chip">Destaque único</span><span class="chip">Real</span></div>
+        <div class="mid">
+          <div class="gl"><i class="v"></i><i class="c"></i><i></i><i class="a"></i><i></i><i class="c"></i><i></i><i class="r"></i><i></i></div>
+          <div class="num"><b>5</b> Células<br>você aprovou <b>1</b> · 3 esperam · 1 bloqueada</div>
+        </div>
+        <div class="ft"><span class="chip warn st">Aguardando revisão</span><span class="mu" style="margin-left:auto;font-size:11px">09/10 · 14:32</span></div>
+      </div>
+
+      <div class="sa">
+        <div class="t"><h5>Fatos Relevantes da semana</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">CVM</span><span class="chip">Visão unida · 3 itens</span><span class="chip">Real</span><span class="chip warnt">não calibrado</span></div>
+        <div class="mid">
+          <div class="gl"><i class="v"></i><i class="g"></i><i class="g"></i><i></i><i></i><i></i><i class="g"></i><i></i><i></i></div>
+          <div class="num"><b>4</b> Células<br>gerando: <b>1</b> pronta, 3 a caminho</div>
+        </div>
+        <div class="pb"><i style="width:25%"></i></div>
+        <div class="ft"><span class="chip run st">Gerando…</span><span class="mu" style="margin-left:auto;font-size:11px">09/10 · 14:41</span></div>
+      </div>
+
+      <div class="sa">
+        <div class="t"><h5>Demo Copom 280 · Matriz completa</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">Copom 280</span><span class="chip">Destaque único</span><span class="chip">Demo</span></div>
+        <div class="mid">
+          <div class="gl"><i class="v"></i><i class="v"></i><i class="v"></i><i class="v"></i><i class="v"></i><i class="a"></i><i class="c"></i><i class="c"></i><i class="c"></i></div>
+          <div class="num"><b>9</b> Células<br>você aprovou <b>5</b> · 4 esperam</div>
+        </div>
+        <div class="ft"><span class="chip warn st">Aguardando revisão</span><span class="mu" style="margin-left:auto;font-size:11px">18/09 · 12:51</span></div>
+      </div>
+
+      <div class="sa">
+        <div class="t"><h5>Empresa Exemplo · aquisição</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">CVM</span><span class="chip">Destaque único</span><span class="chip">Real</span><span class="chip warnt">não calibrado</span></div>
+        <div class="mid">
+          <div class="gl"><i class="v"></i><i></i><i></i><i></i><i></i><i></i><i class="v"></i><i></i><i></i></div>
+          <div class="num"><b>2</b> Células<br>você aprovou <b>2</b></div>
+        </div>
+        <div class="ft"><span class="chip ok st">Concluída</span><span class="mu" style="margin-left:auto;font-size:11px">08/10 · 10:05</span></div>
+      </div>
+
+      <div class="sa">
+        <div class="t"><h5>Copom 279 · só iniciantes</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">Copom 279</span><span class="chip">Destaque único</span><span class="chip">Real</span></div>
+        <div class="mid">
+          <div class="gl"><i class="v"></i><i class="v"></i><i class="v"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="num"><b>3</b> Células<br>você aprovou <b>3</b></div>
+        </div>
+        <div class="ft"><span class="chip ok st">Concluída</span><span class="mu" style="margin-left:auto;font-size:11px">02/10 · 16:20</span></div>
+      </div>
+
+      <div class="sa">
+        <div class="t"><h5>Teste de Roteiro avançado</h5><span class="dots">···</span></div>
+        <div class="mt"><span class="chip me">Copom 280</span><span class="chip">Destaque único</span><span class="chip">Real</span></div>
+        <div class="mid">
+          <div class="gl"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="r"></i></div>
+          <div class="num"><b>1</b> Célula<br>parou: cota do provedor esgotada</div>
+        </div>
+        <div class="ft"><span class="chip bad st">Interrompida</span><span class="mu" style="margin-left:auto;font-size:11px">01/10 · 09:12</span></div>
+      </div>
+
+    </div>
+    <div class="lg">
+      <span class="mu">Mini-Matriz:</span>
+      <span><i style="background:var(--ok)"></i>você aprovou</span>
+      <span><i style="background:#5a5a60"></i>espera a sua decisão</span>
+      <span><i style="background:var(--warn)"></i>revisão humana</span>
+      <span><i style="background:var(--red)"></i>reprovada ou parou</span>
+      <span><i style="border:1.5px solid var(--red)"></i>gerando</span>
+      <span><i style="border:1.5px dashed #3b3b40"></i>não pedida</span>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.4rem">
+  <div class="label">O que vale notar</div>
+  <p style="color:var(--text-secondary)"><b>A mini-Matriz é a mesma 3×3</b> da Saída aberta, em miniatura: a posição de cada quadradinho é a posição da Célula. Você bate o olho e vê o que foi pedido e como está cada uma, sem abrir.</p>
+  <p style="color:var(--text-secondary);margin-top:.6rem"><b>Uma Saída interrompida</b> (cota esgotada ou servidor reiniciado no meio da geração) fica registrada e visível, em vez de sumir. Aprovar e reprovar, o <b>Exportar</b> e o <b>renomear</b> ficam no menu <b>···</b> do cartão e dentro da Saída.</p>
+  <p style="color:var(--text-secondary);margin-top:.6rem"><b>O número vermelho no menu</b> (Saídas, 2) conta as Saídas aguardando revisão, para você saber o que pede a sua atenção sem entrar na guia.</p>
+</div>
+
+</body></html>

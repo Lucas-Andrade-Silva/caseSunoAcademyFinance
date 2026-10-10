@@ -1,0 +1,167 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mockup · Suno Content</title><style>body{background:#0a0a0b;color:#f3f3f4;font:14px system-ui,sans-serif;margin:0;padding:28px;max-width:1180px}h2{font-size:22px;margin:0 0 6px}.subtitle{color:#8d8d93;margin-bottom:22px}.cards{display:grid;gap:26px}.card-body{padding:10px 2px 0;color:#9a9aa0;font-size:13px}.card-body h3{color:#f3f3f4;font-size:14px;margin-bottom:3px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8d8d93}.section{margin-top:22px;color:#9a9aa0}p[style]{color:#9a9aa0!important}</style></head><body>
+<h2>O fluxo da Curadoria, em três passos</h2>
+<p class="subtitle">Aqui não há alternativas para escolher: é o fluxo inteiro para você validar ou corrigir. Os três passos usam o mesmo menu e a mesma Matriz 3×3 que você já aprovou. Itens da CVM são de exemplo. A Ata da 280ª reunião é real.</p>
+
+<style>
+  .suno{--bg:#0e0e0f;--side:#141415;--card:#1c1c1e;--card2:#242427;--line:#2c2c30;--tx:#f3f3f4;--mu:#8d8d93;--red:#ef4b3f;--redbg:rgba(239,75,63,.14);--ok:#3ecf8e;--warn:#f5b042;
+    background:var(--bg);color:var(--tx);font:12.5px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;height:470px;overflow:hidden;text-align:left;border-radius:12px;border:1px solid #2c2c30;margin-bottom:6px}
+  .suno *{box-sizing:border-box;margin:0;padding:0}
+  .suno .sb{width:172px;background:var(--side);border-right:1px solid var(--line);padding:14px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+  .suno .logo{font-weight:700;letter-spacing:.28em;font-size:15px;padding:4px 8px 16px}
+  .suno .logo i{color:var(--red);font-style:normal;font-weight:400}
+  .suno .nv{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;color:var(--mu);font-size:13px}
+  .suno .nv::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line)}
+  .suno .nv.on{background:var(--redbg);color:var(--tx);font-weight:600}
+  .suno .nv.on::before{background:var(--red)}
+  .suno .nv b{margin-left:auto;background:var(--red);color:#fff;border-radius:9px;font-size:10px;padding:0 6px;font-weight:600}
+  .suno .mn{flex:1;min-width:0;display:flex;flex-direction:column}
+  .suno .sp{flex:1}
+  .suno .mu{color:var(--mu)}
+  .suno .btn{background:var(--red);color:#fff;border-radius:18px;padding:8px 18px;font-weight:700;font-size:12px;letter-spacing:.02em;white-space:nowrap}
+  .suno .btn.ghost{background:transparent;border:1px solid #55555b;color:var(--tx);font-weight:600}
+  .suno .chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--mu);border:1px solid var(--line);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  .suno .chip.ok::before,.suno .chip.warn::before,.suno .chip.bad::before{content:"";width:6px;height:6px;border-radius:50%}
+  .suno .chip.ok::before{background:var(--ok)} .suno .chip.warn::before{background:var(--warn)} .suno .chip.bad::before{background:var(--red)}
+  .suno .chip.me{color:var(--tx);background:var(--card2);border-color:transparent}
+  .suno .chip.warnt{color:var(--warn);border-color:rgba(245,176,66,.4)}
+  .suno .top{padding:11px 18px 0;border-bottom:1px solid var(--line)}
+  .suno .top h4{font-size:17px;font-weight:700;margin-bottom:9px}
+  .suno .stp{display:flex;gap:26px}
+  .suno .st{display:flex;align-items:center;gap:8px;padding:6px 0 9px;color:var(--mu);font-weight:600;border-bottom:3px solid transparent}
+  .suno .st i{font-style:normal;width:19px;height:19px;border-radius:50%;border:1.5px solid #4a4a50;display:flex;align-items:center;justify-content:center;font-size:10.5px}
+  .suno .st.on{color:var(--tx);border-bottom-color:var(--red)}
+  .suno .st.on i{background:var(--red);border-color:var(--red);color:#fff}
+  .suno .st.dn i{background:var(--ok);border-color:var(--ok);color:#0e0e0f}
+  .suno .body{padding:14px 18px;flex:1;overflow:hidden}
+  .suno .ft{display:flex;align-items:center;gap:10px;padding:10px 18px;border-top:1px solid var(--line);background:var(--side);flex-shrink:0}
+  /* passo 1 */
+  .suno .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .suno .sug{background:var(--card);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent}
+  .suno .sug.rec{border-color:rgba(239,75,63,.5)}
+  .suno .sug h5{font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center}
+  .suno .sug .li{display:flex;align-items:center;gap:9px;background:var(--card2);border-radius:10px;padding:7px 10px}
+  .suno .sug .li strong{font-size:12px}
+  .suno .sug .li span.d{color:var(--mu);font-size:10.5px;margin-left:auto;white-space:nowrap}
+  .suno .why{color:var(--mu);font-size:11.5px}
+  .suno .own{margin-top:12px;border:1px dashed #44444a;border-radius:13px;padding:11px 14px;display:flex;align-items:center;gap:10px;color:var(--mu)}
+  .suno .nota{color:var(--mu);font-size:11px;margin-top:10px}
+  /* passo 2/3 */
+  .suno .form{display:grid;grid-template-columns:1fr 1.15fr;gap:20px}
+  .suno .fl{font-size:10.5px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px}
+  .suno .inp{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px}
+  .suno .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .suno .opt{border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;background:var(--card)}
+  .suno .opt.on{border-color:var(--red);background:var(--redbg)}
+  .suno .opt strong{display:block;font-size:12.5px}
+  .suno .opt small{color:var(--mu);font-size:11px}
+  .suno .mx{display:grid;grid-template-columns:84px repeat(3,1fr);gap:8px;align-items:stretch}
+  .suno .mx .hh{color:var(--tx);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;text-align:center;padding:4px;border-radius:8px;background:var(--card)}
+  .suno .mx .rl{display:flex;align-items:center;font-weight:700;font-size:12px;padding:0 8px;border-radius:8px;background:var(--card)}
+  .suno .cl{border-radius:11px;min-height:58px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1.5px dashed #3b3b40;color:#5d5d63}
+  .suno .cl.on{border:1.5px solid var(--red);background:var(--redbg);color:var(--tx);font-weight:700}
+  .suno .cl.on::before{content:"✓ ";color:var(--red);margin-right:4px}
+  .suno .cl.okc{border:1.5px solid rgba(62,207,142,.5);background:rgba(62,207,142,.1);color:var(--tx);font-weight:600;flex-direction:column;gap:2px}
+  .suno .cl.run{border:1.5px solid var(--red);background:var(--redbg);color:var(--tx);font-weight:600;flex-direction:column;gap:2px}
+  .suno .cl.rev{border:1.5px solid rgba(245,176,66,.55);background:rgba(245,176,66,.09);color:var(--tx);font-weight:600;flex-direction:column;gap:2px}
+  .suno .cl small{font-weight:400;color:var(--mu);font-size:10.5px}
+  .suno .pb{height:8px;border-radius:4px;background:var(--card2);position:relative;overflow:hidden;margin:6px 0 4px}
+  .suno .pb i{position:absolute;left:0;top:0;bottom:0;width:80%;background:var(--red);border-radius:4px}
+  .suno .sm{background:var(--card);border-radius:13px;padding:12px 14px}
+  .suno .sm b{font-size:13px}
+  .suno .lbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;display:flex;align-items:center;gap:10px}
+  .suno .lbl:first-child{margin-top:0}
+</style>
+
+<!-- ================= PASSO 1 ================= -->
+<div class="label" style="margin-bottom:6px">Passo 1 · Escolher</div>
+<div class="suno">
+  <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv on">Curadoria</div><div class="nv">Saídas <b>2</b></div></div>
+  <div class="mn">
+    <div class="top"><h4>Sugestão da curadoria</h4><div class="stp"><div class="st on"><i>1</i>Escolher</div><div class="st"><i>2</i>Configurar</div><div class="st"><i>3</i>Gerando</div></div></div>
+    <div class="body">
+      <div class="two">
+        <div class="sug rec">
+          <h5>Destaque único <span class="chip ok">mais forte da semana</span></h5>
+          <div class="li"><span class="chip me">Copom</span><strong>Ata da 280ª reunião</strong><span class="d">05/08/2026</span></div>
+          <div class="why">O item mais recente e com mais Âncoras: <b style="color:var(--tx)">12</b> números e datas conferidos contra o texto da Ata.</div>
+          <div class="why">Uma única fonte: todas as Células citam os mesmos fatos.</div>
+          <div class="sp"></div>
+          <div class="btn" style="text-align:center">USAR ESTE DESTAQUE</div>
+        </div>
+        <div class="sug">
+          <h5>Visão unida <span class="chip">3 itens</span></h5>
+          <div class="li"><span class="chip me">Copom</span><strong>Ata da 280ª reunião</strong><span class="d">05/08</span></div>
+          <div class="li"><span class="chip me">CVM</span><strong>Empresa Exemplo S.A.</strong><span class="chip warnt">não calibrado</span><span class="d">08/10</span></div>
+          <div class="li"><span class="chip me">CVM</span><strong>Outra Empresa S.A.</strong><span class="chip warnt">não calibrado</span><span class="d">07/10</span></div>
+          <div class="why">Junta os mais relevantes num só conteúdo. Cada número cita a sua fonte.</div>
+          <div class="sp"></div>
+          <div class="btn ghost" style="text-align:center">USAR ESTA VISÃO</div>
+        </div>
+      </div>
+      <div class="own"><b style="color:var(--tx)">Montar a minha</b><span>Escolha os itens nas Fontes (bolinhas dos cartões) e volte aqui.</span><div class="sp"></div><span class="chip">2 selecionados</span><div class="btn ghost" style="padding:5px 14px">Usar selecionados</div></div>
+      <p class="nota">A curadoria sugere pauta de conteúdo. Nunca sugere ativo para comprar ou vender.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PASSO 2 ================= -->
+<div class="label" style="margin:22px 0 6px">Passo 2 · Configurar</div>
+<div class="suno">
+  <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv on">Curadoria</div><div class="nv">Saídas <b>2</b></div></div>
+  <div class="mn">
+    <div class="top"><h4>Configurar a Saída</h4><div class="stp"><div class="st dn"><i>✓</i>Escolher</div><div class="st on"><i>2</i>Configurar</div><div class="st"><i>3</i>Gerando</div></div></div>
+    <div class="body">
+      <div class="form">
+        <div>
+          <div class="fl">Nome da Saída</div>
+          <div class="inp">Copom 280 · pauta juros</div>
+          <div class="mu" style="font-size:11px;margin:5px 0 16px">Fonte: Ata da 280ª reunião · Destaque único</div>
+          <div class="fl">Como gerar</div>
+          <div class="seg">
+            <div class="opt"><strong>Demo</strong><small>Sem rede, respostas prontas. Disponível para esta Ata.</small></div>
+            <div class="opt on"><strong>Real</strong><small>Gemini e Groq. Usa a cota gratuita.</small></div>
+          </div>
+        </div>
+        <div>
+          <div class="fl">Quais Células? Clique nas células, nas linhas ou nas colunas</div>
+          <div class="mx">
+            <div></div><div class="hh">Texto analítico</div><div class="hh">Carrossel</div><div class="hh">Roteiro</div>
+            <div class="rl">Iniciante</div><div class="cl on">Texto</div><div class="cl on">Carrossel</div><div class="cl">Roteiro</div>
+            <div class="rl">Intermediário</div><div class="cl on">Texto</div><div class="cl">Carrossel</div><div class="cl on">Roteiro</div>
+            <div class="rl">Avançado</div><div class="cl">Texto</div><div class="cl on">Carrossel</div><div class="cl">Roteiro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ft"><span class="mu"><b style="color:var(--tx)">5 Células</b> serão geradas · sem custo, usa a cota gratuita</span><div class="sp"></div><div class="btn ghost">Voltar</div><div class="btn">GERAR</div></div>
+  </div>
+</div>
+
+<!-- ================= PASSO 3 ================= -->
+<div class="label" style="margin:22px 0 6px">Passo 3 · Gerando</div>
+<div class="suno">
+  <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv on">Curadoria</div><div class="nv">Saídas <b>3</b></div></div>
+  <div class="mn">
+    <div class="top"><h4>Gerando · Copom 280 · pauta juros</h4><div class="stp"><div class="st dn"><i>✓</i>Escolher</div><div class="st dn"><i>✓</i>Configurar</div><div class="st on"><i>3</i>Gerando</div></div></div>
+    <div class="body">
+      <div class="pb"><i></i></div>
+      <div class="mu" style="margin-bottom:12px"><b style="color:var(--tx)">4 de 5</b> concluídas (3 aprovadas, 1 foi para revisão humana) · 1 está em correção (rodada 2 de 2) · pode sair da tela, a geração continua</div>
+      <div class="mx">
+        <div></div><div class="hh">Texto analítico</div><div class="hh">Carrossel</div><div class="hh">Roteiro</div>
+        <div class="rl">Iniciante</div><div class="cl okc">Aprovada<small>1 rodada</small></div><div class="cl okc">Aprovada<small>1 rodada</small></div><div class="cl">não pedida</div>
+        <div class="rl">Intermediário</div><div class="cl run">Corrigindo…<small>rodada 2</small></div><div class="cl">não pedida</div><div class="cl rev">Revisão humana<small>3 rodadas</small></div>
+        <div class="rl">Avançado</div><div class="cl">não pedida</div><div class="cl okc">Aprovada<small>1 rodada</small></div><div class="cl">não pedida</div>
+      </div>
+    </div>
+    <div class="ft"><span class="mu">Ao terminar, a Saída aparece na guia Saídas.</span><div class="sp"></div><div class="btn ghost">Ver em Saídas</div></div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.4rem">
+  <div class="label">O que vale notar</div>
+  <p style="color:var(--text-secondary)"><b>Configurar usa a própria Matriz.</b> Duas listas de múltipla escolha (Audiências e Formatos) só conseguem montar retângulos, e você pode querer 5 combinações soltas, como no exemplo. Clicar na célula, na linha ou na coluna resolve os dois casos.</p>
+  <p style="color:var(--text-secondary);margin-top:.6rem"><b>Aviso de calibração.</b> Itens da CVM mostram <i>não calibrado</i>, porque os Limiares foram medidos só com Atas do Copom.</p>
+  <p style="color:var(--text-secondary);margin-top:.6rem"><b>Demo desligado quando não há respostas prontas.</b> Hoje só a Ata do Copom 280 tem. Para os itens da CVM, a opção Demo aparece desabilitada e explica o motivo.</p>
+</div>
+
+</body></html>

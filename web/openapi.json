@@ -125,6 +125,202 @@
             }
           }
         }
+      },
+      "patch": {
+        "summary": "Renomear Execucao",
+        "operationId": "renomear_execucao_api_execucoes__identificador__patch",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Renomeacao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecucaoResumo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/resumo": {
+      "get": {
+        "summary": "Obter Resumo",
+        "operationId": "obter_resumo_api_execucoes__identificador__resumo_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecucaoResumo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/decisao": {
+      "post": {
+        "summary": "Registrar Decisao",
+        "operationId": "registrar_decisao_api_execucoes__identificador__celulas__audiencia___formato__decisao_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedidoDeDecisao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisaoHumana"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/exportar": {
+      "get": {
+        "summary": "Exportar Execucao",
+        "operationId": "exportar_execucao_api_execucoes__identificador__exportar_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/FormatoExportacao"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/execucoes/{identificador}/ancoras": {
@@ -803,6 +999,74 @@
         "title": "Audiencia",
         "description": "O nível de sofisticação do leitor a quem uma Célula se destina."
       },
+      "AvaliacaoTransversal": {
+        "properties": {
+          "estado": {
+            "$ref": "#/components/schemas/EstadoAvaliacaoTransversal"
+          },
+          "total_esperado": {
+            "type": "integer",
+            "title": "Total Esperado",
+            "default": 9
+          },
+          "total_recebido": {
+            "type": "integer",
+            "title": "Total Recebido"
+          },
+          "total_com_conteudo": {
+            "type": "integer",
+            "title": "Total Com Conteudo"
+          },
+          "posicoes_faltantes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Posicoes Faltantes"
+          },
+          "posicoes_duplicadas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Posicoes Duplicadas"
+          },
+          "posicoes_reprovadas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Posicoes Reprovadas"
+          },
+          "referencias_invalidas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Referencias Invalidas"
+          },
+          "observacoes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Observacoes"
+          },
+          "avaliada_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Avaliada Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado",
+          "total_recebido",
+          "total_com_conteudo"
+        ],
+        "title": "AvaliacaoTransversal",
+        "description": "Conferência determinística de completude e coerência das nove Células."
+      },
       "BlocoFala": {
         "properties": {
           "inicio_s": {
@@ -1021,6 +1285,57 @@
         "title": "Correcao",
         "description": "O que precisa mudar, com o valor medido e a distância — nunca 'melhore o texto'."
       },
+      "CorrecaoTransversalAplicada": {
+        "properties": {
+          "rodada": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Rodada"
+          },
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "instrucoes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Instrucoes"
+          },
+          "historico_anterior": {
+            "$ref": "#/components/schemas/HistoricoCelula"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rodada",
+          "audiencia",
+          "formato",
+          "instrucoes",
+          "historico_anterior"
+        ],
+        "title": "CorrecaoTransversalAplicada",
+        "description": "Versão substituída e instruções enviadas de volta à persona."
+      },
+      "CriterioTransversal": {
+        "type": "string",
+        "enum": [
+          "fidelidade_dossie",
+          "coerencia_matriz",
+          "progressao_personas",
+          "adequacao_persona",
+          "consistencia_formatos",
+          "clareza_narrativa",
+          "omissao_relevante",
+          "afirmacao_sem_evidencia"
+        ],
+        "title": "CriterioTransversal"
+      },
       "Custo": {
         "properties": {
           "chamadas": {
@@ -1069,6 +1384,55 @@
         "title": "DecisaoFila",
         "description": "O corpo do ``POST .../resolver``: a decisão que um humano registrou em H4."
       },
+      "DecisaoHumana": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoDecisao"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Obrigatório quando reprovada."
+          },
+          "revisor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revisor"
+          },
+          "em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "estado"
+        ],
+        "title": "DecisaoHumana",
+        "description": "A decisão de um revisor sobre uma Célula. Sem registro, a Célula está pendente."
+      },
       "DefeitoRender": {
         "type": "string",
         "enum": [
@@ -1101,6 +1465,35 @@
         ],
         "title": "DimensaoSubjetiva",
         "description": "As dimensões que só o comitê julga (ADR 0008)."
+      },
+      "EstadoAvaliacaoTransversal": {
+        "type": "string",
+        "enum": [
+          "aprovada",
+          "revisao_humana"
+        ],
+        "title": "EstadoAvaliacaoTransversal",
+        "description": "Veredito único sobre a Matriz completa, depois dos nove ciclos individuais."
+      },
+      "EstadoDecisao": {
+        "type": "string",
+        "enum": [
+          "aprovada",
+          "reprovada"
+        ],
+        "title": "EstadoDecisao",
+        "description": "O que um humano decidiu sobre uma Célula."
+      },
+      "EstadoJulgamentoTransversal": {
+        "type": "string",
+        "enum": [
+          "aprovado",
+          "corrigivel",
+          "grave",
+          "falha"
+        ],
+        "title": "EstadoJulgamentoTransversal",
+        "description": "Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas."
       },
       "EstadoMedida": {
         "type": "string",
@@ -1143,6 +1536,17 @@
             ],
             "title": "Concluida Em"
           },
+          "selecao": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SelecaoCuradoria"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Seleção que originou o dossiê; ausente apenas em execuções antigas."
+          },
           "ancoras": {
             "$ref": "#/components/schemas/Ancoras"
           },
@@ -1167,6 +1571,42 @@
             "type": "boolean",
             "title": "Comite Ligado",
             "default": false
+          },
+          "avaliacao_transversal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AvaliacaoTransversal"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Veredito da Matriz completa; ausente apenas em execuções antigas."
+          },
+          "ciclo_transversal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResultadoCicloTransversal"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ciclo do LLM Judge e correções; ausente apenas em execuções antigas."
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome",
+            "description": "Nome dado pelo usuário à Saída; vazio vira o identificador.",
+            "default": ""
+          },
+          "decisoes": {
+            "items": {
+              "$ref": "#/components/schemas/DecisaoHumana"
+            },
+            "type": "array",
+            "title": "Decisoes",
+            "description": "Decisões humanas por Célula; posição sem registro está pendente."
           }
         },
         "type": "object",
@@ -1186,6 +1626,10 @@
             "type": "string",
             "title": "Identificador"
           },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
           "ata": {
             "type": "string",
             "title": "Ata"
@@ -1193,6 +1637,16 @@
           "provedor": {
             "type": "string",
             "title": "Provedor"
+          },
+          "modo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModoSelecao"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "iniciada_em": {
             "type": "string",
@@ -1203,6 +1657,10 @@
             "type": "integer",
             "title": "Aprovadas"
           },
+          "aprovadas_humano": {
+            "type": "integer",
+            "title": "Aprovadas Humano"
+          },
           "total_celulas": {
             "type": "integer",
             "title": "Total Celulas"
@@ -1210,20 +1668,40 @@
           "pendencias": {
             "type": "integer",
             "title": "Pendencias"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "aguardando_revisao",
+              "concluida"
+            ],
+            "title": "Status"
+          },
+          "posicoes": {
+            "items": {
+              "$ref": "#/components/schemas/PosicaoResumo"
+            },
+            "type": "array",
+            "title": "Posicoes"
           }
         },
         "type": "object",
         "required": [
           "identificador",
+          "nome",
           "ata",
           "provedor",
+          "modo",
           "iniciada_em",
           "aprovadas",
+          "aprovadas_humano",
           "total_celulas",
-          "pendencias"
+          "pendencias",
+          "status",
+          "posicoes"
         ],
         "title": "ExecucaoResumo",
-        "description": "O que a lista de execuções mostra sem abrir o Laudo de cada Célula."
+        "description": "O que a lista de Saídas mostra sem abrir o Laudo de cada Célula."
       },
       "Faixa": {
         "properties": {
@@ -1304,6 +1782,25 @@
         ],
         "title": "Formato",
         "description": "A forma que uma Célula assume."
+      },
+      "FormatoExportacao": {
+        "type": "string",
+        "enum": [
+          "json",
+          "md",
+          "zip"
+        ],
+        "title": "FormatoExportacao"
+      },
+      "GravidadeProblemaTransversal": {
+        "type": "string",
+        "enum": [
+          "baixa",
+          "media",
+          "alta",
+          "grave"
+        ],
+        "title": "GravidadeProblemaTransversal"
       },
       "HTTPValidationError": {
         "properties": {
@@ -1431,6 +1928,54 @@
         ],
         "title": "JulgamentoDimensao",
         "description": "Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada."
+      },
+      "JulgamentoTransversal": {
+        "properties": {
+          "rodada": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Rodada"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoJulgamentoTransversal"
+          },
+          "problemas": {
+            "items": {
+              "$ref": "#/components/schemas/ProblemaTransversal"
+            },
+            "type": "array",
+            "title": "Problemas"
+          },
+          "provedor": {
+            "type": "string",
+            "title": "Provedor"
+          },
+          "falha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Falha"
+          },
+          "avaliado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Avaliado Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rodada",
+          "estado",
+          "provedor"
+        ],
+        "title": "JulgamentoTransversal",
+        "description": "Uma resposta auditável do LLM Judge, inclusive quando o provedor falha."
       },
       "Laudo": {
         "properties": {
@@ -1605,6 +2150,15 @@
         "title": "Metrica",
         "description": "As cinco medidas determinísticas."
       },
+      "ModoSelecao": {
+        "type": "string",
+        "enum": [
+          "unida",
+          "separada"
+        ],
+        "title": "ModoSelecao",
+        "description": "Como os itens aprovados pela curadoria humana alimentam a Matriz."
+      },
       "MotivoReprovacao": {
         "type": "string",
         "enum": [
@@ -1721,6 +2275,41 @@
         "title": "ParecerVisao",
         "description": "Resposta holística do juiz de visão sobre a folha de contato. Opcional."
       },
+      "PedidoDeDecisao": {
+        "properties": {
+          "estado": {
+            "$ref": "#/components/schemas/EstadoDecisao"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          },
+          "revisor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revisor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado"
+        ],
+        "title": "PedidoDeDecisao",
+        "description": "O corpo do ``POST .../decisao``: aprovar ou reprovar uma Célula."
+      },
       "Pendencia": {
         "properties": {
           "fila": {
@@ -1768,6 +2357,140 @@
         "title": "Pendencia",
         "description": "Uma Célula esperando decisão humana numa fila."
       },
+      "PosicaoResumo": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "destino": {
+            "$ref": "#/components/schemas/Destino"
+          },
+          "decisao": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstadoDecisao"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloqueada": {
+            "type": "boolean",
+            "title": "Bloqueada"
+          },
+          "sem_conteudo": {
+            "type": "boolean",
+            "title": "Sem Conteudo"
+          },
+          "revisao_comite": {
+            "type": "boolean",
+            "title": "Revisao Comite"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "destino",
+          "decisao",
+          "bloqueada",
+          "sem_conteudo",
+          "revisao_comite"
+        ],
+        "title": "PosicaoResumo",
+        "description": "Uma posição da Matriz, no mínimo que a tela precisa para colorir e rotular."
+      },
+      "ProblemaTransversal": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "gravidade": {
+            "$ref": "#/components/schemas/GravidadeProblemaTransversal"
+          },
+          "criterio": {
+            "$ref": "#/components/schemas/CriterioTransversal"
+          },
+          "evidencia": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Evidencia"
+          },
+          "correcao": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Correcao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato",
+          "gravidade",
+          "criterio",
+          "evidencia",
+          "correcao"
+        ],
+        "title": "ProblemaTransversal",
+        "description": "Problema subjetivo localizado pelo Judge em uma Célula concreta."
+      },
+      "Renomeacao": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome"
+        ],
+        "title": "Renomeacao",
+        "description": "O corpo do ``PATCH /api/execucoes/{id}``."
+      },
+      "ResultadoCicloTransversal": {
+        "properties": {
+          "estado": {
+            "$ref": "#/components/schemas/EstadoAvaliacaoTransversal"
+          },
+          "avaliacao_deterministica": {
+            "$ref": "#/components/schemas/AvaliacaoTransversal"
+          },
+          "julgamentos": {
+            "items": {
+              "$ref": "#/components/schemas/JulgamentoTransversal"
+            },
+            "type": "array",
+            "title": "Julgamentos"
+          },
+          "correcoes_aplicadas": {
+            "items": {
+              "$ref": "#/components/schemas/CorrecaoTransversalAplicada"
+            },
+            "type": "array",
+            "title": "Correcoes Aplicadas"
+          },
+          "motivo_final": {
+            "type": "string",
+            "title": "Motivo Final"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado",
+          "avaliacao_deterministica",
+          "motivo_final"
+        ],
+        "title": "ResultadoCicloTransversal",
+        "description": "Estado final depois das regras fixas e do LLM Judge."
+      },
       "ResultadoComite": {
         "properties": {
           "dimensoes": {
@@ -1811,6 +2534,28 @@
           "execucoes"
         ],
         "title": "Saude"
+      },
+      "SelecaoCuradoria": {
+        "properties": {
+          "modo": {
+            "$ref": "#/components/schemas/ModoSelecao"
+          },
+          "itens": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Itens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "modo",
+          "itens"
+        ],
+        "title": "SelecaoCuradoria",
+        "description": "Regra determinística da seleção: unida aceita vários itens; separada, um."
       },
       "Slide": {
         "properties": {

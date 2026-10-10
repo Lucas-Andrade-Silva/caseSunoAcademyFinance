@@ -183,6 +183,15 @@ def _bloco_de_correcoes(correcoes: list[Correcao]) -> str:
     )
 
 
+def _bloco_transversal(orientacoes: list[str]) -> str:
+    linhas = "\n".join(f"- {orientacao}" for orientacao in orientacoes)
+    return (
+        "Correções do avaliador transversal para esta Célula:\n"
+        f"{linhas}\n"
+        "Reescreva a Célula inteira. Preserve todos os fatos e Âncoras que já estavam certos."
+    )
+
+
 def montar_pedido(
     ata_texto: str,
     ancoras: Ancoras,
@@ -190,6 +199,7 @@ def montar_pedido(
     formato: Formato,
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
+    orientacoes_transversais: list[str] | None = None,
 ) -> PedidoLLM:
     """O pedido de uma Célula. Em ``rodada > 0``, as ``correcoes`` entram como valor medido."""
     sistema = "\n\n".join(
@@ -220,6 +230,8 @@ def montar_pedido(
     ]
     if rodada > 0 and correcoes:
         partes_do_usuario.append(_bloco_de_correcoes(correcoes))
+    if orientacoes_transversais:
+        partes_do_usuario.append(_bloco_transversal(orientacoes_transversais))
     return PedidoLLM(
         papel=PapelLLM.GERADOR,
         rotulo=f"celula:{audiencia}:{formato}:{rodada}",

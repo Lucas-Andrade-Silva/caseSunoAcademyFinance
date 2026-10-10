@@ -48,7 +48,8 @@ from suno.dominio import (
     Tentativa,
     Unidade,
 )
-from suno.gerador.execucao import carregar_execucao
+from suno.gerador.execucao import carregar_execucao, gravar_execucao
+from tests.construtores_de_execucao import execucao_de_teste, historico_de_texto
 
 IDENTIFICADOR = "copom-280-2026-08-05-0001"
 
@@ -560,3 +561,181 @@ def test_a_demo_versionada_sobe_na_api_e_bate_com_o_disco() -> None:
     pacotes = cliente_local.get(f"/api/execucoes/{identificador}/pacotes")
     assert pacotes.status_code == 200
     assert len(pacotes.json()) == 8, "oito Células aprovadas na demo ganham Pacote"
+
+
+# ---------------------------------------------------------------------------
+# 9 — a revisão humana: resumo, renomear, decisão e exportar
+# ---------------------------------------------------------------------------
+
+
+def test_resumo_traz_nome_status_e_posicoes(cliente: TestClient) -> None:
+    resposta = cliente.get(f"/api/execucoes/{IDENTIFICADOR}/resumo")
+
+    assert resposta.status_code == 200
+    resumo = resposta.json()
+    assert resumo["nome"] == IDENTIFICADOR
+    assert resumo["status"] == "aguardando_revisao"
+    assert resumo["modo"] is None
+    assert resumo["aprovadas_humano"] == 0
+    posicoes = {(p["audiencia"], p["formato"]): p for p in resumo["posicoes"]}
+    assert set(posicoes) == {("iniciante", "carrossel"), ("intermediario", "roteiro")}
+    assert posicoes[("iniciante", "carrossel")]["destino"] == "aprovado"
+    assert posicoes[("iniciante", "carrossel")]["decisao"] is None
+    assert posicoes[("intermediario", "roteiro")]["destino"] == "reprovado_revisao_humana"
+    assert posicoes[("intermediario", "roteiro")]["bloqueada"] is False
+
+
+def test_lista_traz_o_resumo_com_posicoes(cliente: TestClient) -> None:
+    (resumo,) = cliente.get("/api/execucoes").json()
+
+    assert resumo["nome"] == IDENTIFICADOR
+    assert len(resumo["posicoes"]) == 2
+    assert resumo["status"] == "aguardando_revisao"
+
+
+def test_resumo_de_execucao_inexistente_da_404(cliente: TestClient) -> None:
+    assert cliente.get("/api/execucoes/nao-existe/resumo").status_code == 404
+
+
+def test_renomear_grava_e_a_lista_mostra_o_novo_nome(
+    cliente: TestClient, execucao_em_disco: Path
+) -> None:
+    resposta = cliente.patch(
+        f"/api/execucoes/{IDENTIFICADOR}", json={"nome": "  Copom 280 · pauta juros  "}
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["nome"] == "Copom 280 · pauta juros"
+    assert carregar_execucao(IDENTIFICADOR, execucao_em_disco).nome == "Copom 280 · pauta juros"
+    assert cliente.get("/api/execucoes").json()[0]["nome"] == "Copom 280 · pauta juros"
+
+
+def test_renomear_com_nome_vazio_da_422(cliente: TestClient) -> None:
+    resposta = cliente.patch(f"/api/execucoes/{IDENTIFICADOR}", json={"nome": "   "})
+    assert resposta.status_code == 422
+
+
+def test_renomear_com_nome_longo_demais_da_422(cliente: TestClient) -> None:
+    resposta = cliente.patch(f"/api/execucoes/{IDENTIFICADOR}", json={"nome": "x" * 121})
+    assert resposta.status_code == 422
+
+
+def test_renomear_execucao_inexistente_da_404(cliente: TestClient) -> None:
+    resposta = cliente.patch("/api/execucoes/nao-existe", json={"nome": "qualquer"})
+    assert resposta.status_code == 404
+
+
+def test_aprovar_celula_grava_a_decisao_e_resolve_a_pendencia(
+    cliente: TestClient, execucao_em_disco: Path
+) -> None:
+    resposta = cliente.post(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/intermediario/roteiro/decisao",
+        json={"estado": "aprovada", "revisor": "Ana"},
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["estado"] == "aprovada"
+    em_disco = carregar_execucao(IDENTIFICADOR, execucao_em_disco)
+    assert len(em_disco.decisoes) == 1
+    assert em_disco.decisoes[0].revisor == "Ana"
+    assert em_disco.pendencias[0].resolvida is True
+    resumo = cliente.get(f"/api/execucoes/{IDENTIFICADOR}/resumo").json()
+    assert resumo["aprovadas_humano"] == 1
+
+
+def test_reprovar_sem_motivo_da_422(cliente: TestClient) -> None:
+    resposta = cliente.post(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/iniciante/carrossel/decisao",
+        json={"estado": "reprovada"},
+    )
+    assert resposta.status_code == 422
+
+
+def test_decisao_em_celula_inexistente_da_404(cliente: TestClient) -> None:
+    resposta = cliente.post(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/avancado/texto_analitico/decisao",
+        json={"estado": "aprovada"},
+    )
+    assert resposta.status_code == 404
+
+
+def test_celula_com_recomendacao_responde_409_e_nao_grava(pasta_execucoes: Path) -> None:
+    historico = historico_de_texto(
+        Audiencia.AVANCADO,
+        Destino.REPROVADO_REVISAO_HUMANA,
+        (MotivoReprovacao.RECOMENDACAO,),
+    )
+    gravar_execucao(execucao_de_teste(historico), pasta_execucoes)
+    cliente_local = TestClient(criar_app(pasta_execucoes))
+
+    resposta = cliente_local.post(
+        "/api/execucoes/exec-teste/celulas/avancado/texto_analitico/decisao",
+        json={"estado": "aprovada"},
+    )
+
+    assert resposta.status_code == 409
+    assert "Recomendação" in resposta.json()["detail"]
+    assert carregar_execucao("exec-teste", pasta_execucoes).decisoes == []
+    resumo = cliente_local.get("/api/execucoes/exec-teste/resumo").json()
+    assert resumo["posicoes"][0]["bloqueada"] is True
+    assert resumo["status"] == "concluida"
+
+
+def test_exportar_json_md_e_zip(cliente: TestClient) -> None:
+    esperados = {
+        "json": "application/json",
+        "md": "text/markdown",
+        "zip": "application/zip",
+    }
+    for formato, media_type in esperados.items():
+        resposta = cliente.get(
+            f"/api/execucoes/{IDENTIFICADOR}/exportar", params={"formato": formato}
+        )
+
+        assert resposta.status_code == 200, formato
+        assert resposta.headers["content-type"].startswith(media_type), formato
+        assert f'filename="{IDENTIFICADOR}.{formato}"' in resposta.headers["content-disposition"]
+
+
+def test_exportar_markdown_traz_o_nome_e_as_celulas(cliente: TestClient) -> None:
+    resposta = cliente.get(
+        f"/api/execucoes/{IDENTIFICADOR}/exportar", params={"formato": "md"}
+    )
+
+    assert resposta.text.startswith(f"# {IDENTIFICADOR}")
+    assert "## Iniciante · Carrossel" in resposta.text
+    assert "## Intermediário · Roteiro" in resposta.text
+
+
+def test_exportar_formato_invalido_da_422(cliente: TestClient) -> None:
+    resposta = cliente.get(
+        f"/api/execucoes/{IDENTIFICADOR}/exportar", params={"formato": "pdf"}
+    )
+    assert resposta.status_code == 422
+
+
+def test_exportar_execucao_inexistente_da_404(cliente: TestClient) -> None:
+    resposta = cliente.get("/api/execucoes/nao-existe/exportar", params={"formato": "json"})
+    assert resposta.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# 10 — a SPA: rota interna do React Router não pode dar 404 ao atualizar a página
+# ---------------------------------------------------------------------------
+
+
+def test_rota_interna_da_spa_devolve_o_index_html(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "index.html").write_text("<html>spa de teste</html>", encoding="utf-8")
+    monkeypatch.setattr("suno.api.app.PASTA_DA_SPA", tmp_path)
+    cliente_spa = TestClient(criar_app(tmp_path / "execucoes"))
+
+    interna = cliente_spa.get("/saidas/abc/celulas/iniciante/carrossel")
+    raiz = cliente_spa.get("/")
+    api_inexistente = cliente_spa.get("/api/nao-existe")
+
+    assert interna.status_code == 200
+    assert "spa de teste" in interna.text
+    assert raiz.status_code == 200
+    assert api_inexistente.status_code == 404

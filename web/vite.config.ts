@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vitest/config" />
 // ADR 0005: FastAPI serve `web/dist`; em dev, o proxy evita CORS contra a API na 8000.
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -16,9 +17,9 @@ export default defineConfig({
       manifest: {
         name: "Suno Content",
         short_name: "Suno Content",
-        description: "Matriz de Células, Laudos e filas humanas do Suno Content.",
-        theme_color: "#0f172a",
-        background_color: "#0f172a",
+        description: "Painel de revisão do conteúdo gerado pelo Suno Content.",
+        theme_color: "#0e0e0f",
+        background_color: "#0e0e0f",
         display: "standalone",
         start_url: "/",
         icons: [
@@ -28,6 +29,10 @@ export default defineConfig({
       },
     }),
   ],
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+  },
   server: {
     proxy: {
       "/api": {

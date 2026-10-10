@@ -39,6 +39,11 @@ export type ConferenciaVisual = components["schemas"]["ConferenciaVisual"];
 export type MedicaoVisual = components["schemas"]["MedicaoVisual"];
 export type ParecerVisao = components["schemas"]["ParecerVisao"];
 export type Saude = components["schemas"]["Saude"];
+export type PosicaoResumo = components["schemas"]["PosicaoResumo"];
+export type DecisaoHumana = components["schemas"]["DecisaoHumana"];
+export type EstadoDecisao = components["schemas"]["EstadoDecisao"];
+export type FormatoExportacao = components["schemas"]["FormatoExportacao"];
+export type StatusSaida = ExecucaoResumo["status"];
 
 export const AUDIENCIAS: readonly Audiencia[] = ["iniciante", "intermediario", "avancado"];
 export const FORMATOS: readonly Formato[] = ["texto_analitico", "carrossel", "roteiro"];
@@ -60,11 +65,19 @@ async function extrair<T>(
   if (resultado.data !== undefined) {
     return resultado.data;
   }
-  const detalhe =
-    resultado.error !== undefined && resultado.error !== null
-      ? JSON.stringify(resultado.error)
-      : resultado.response.statusText;
-  throw new ErroApi(resultado.response.status, detalhe);
+  throw new ErroApi(
+    resultado.response.status,
+    detalheDoErro(resultado.error, resultado.response.statusText),
+  );
+}
+
+/** O FastAPI responde `{"detail": "..."}`: a tela mostra a frase, não o JSON. */
+function detalheDoErro(erro: unknown, alternativa: string): string {
+  if (erro && typeof erro === "object" && "detail" in erro) {
+    const detalhe = (erro as { detail: unknown }).detail;
+    if (typeof detalhe === "string") return detalhe;
+  }
+  return erro === undefined || erro === null ? alternativa : JSON.stringify(erro);
 }
 
 export function listarAtas(): Promise<AtaResumo[]> {
@@ -168,4 +181,38 @@ export function urlDoArquivo(identificador: string, caminhoArmazenado: string): 
   const posicao = normalizado.indexOf(prefixo);
   const relativo = posicao === -1 ? normalizado : normalizado.slice(posicao + prefixo.length);
   return `/api/execucoes/${encodeURIComponent(identificador)}/arquivos/${relativo}`;
+}
+
+export function obterResumo(identificador: string): Promise<ExecucaoResumo> {
+  return extrair(
+    api.GET("/api/execucoes/{identificador}/resumo", { params: { path: { identificador } } }),
+  );
+}
+
+export function renomearExecucao(identificador: string, nome: string): Promise<ExecucaoResumo> {
+  return extrair(
+    api.PATCH("/api/execucoes/{identificador}", {
+      params: { path: { identificador } },
+      body: { nome },
+    }),
+  );
+}
+
+export function registrarDecisao(
+  identificador: string,
+  audiencia: Audiencia,
+  formato: Formato,
+  corpo: { estado: EstadoDecisao; motivo: string | null; revisor: string | null },
+): Promise<DecisaoHumana> {
+  return extrair(
+    api.POST("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/decisao", {
+      params: { path: { identificador, audiencia, formato } },
+      body: corpo,
+    }),
+  );
+}
+
+/** Endereço do download; o navegador baixa direto, sem passar pelo cliente tipado. */
+export function urlDeExportacao(identificador: string, formato: FormatoExportacao): string {
+  return `/api/execucoes/${encodeURIComponent(identificador)}/exportar?formato=${formato}`;
 }

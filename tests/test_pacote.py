@@ -27,6 +27,7 @@ from suno.dominio import (
     LARGURA_SLIDE,
     AncoraNumerica,
     Ancoras,
+    AvaliacaoTransversal,
     Audiencia,
     BlocoFala,
     Celula,
@@ -34,6 +35,7 @@ from suno.dominio import (
     Correcao,
     DefeitoRender,
     Destino,
+    EstadoAvaliacaoTransversal,
     Execucao,
     Formato,
     HistoricoCelula,
@@ -45,6 +47,7 @@ from suno.dominio import (
     PapelLLM,
     ParecerVisao,
     PedidoLLM,
+    ResultadoCicloTransversal,
     Slide,
     Tentativa,
     Unidade,
@@ -433,6 +436,30 @@ def test_montar_pacote_so_atende_celula_aprovada_e_nao_toca_na_execucao(
     assert not (raiz / "avancado-roteiro").exists()
 
     assert caminho_da_execucao.read_bytes() == antes, "montar o Pacote é leitura, nunca escrita"
+
+
+def test_matriz_reprovada_pelo_ciclo_transversal_nao_vira_pacote(
+    execucao_em_disco: Path,
+) -> None:
+    arquivo = execucao_em_disco / IDENTIFICADOR / "execucao.json"
+    execucao = Execucao.model_validate_json(arquivo.read_text(encoding="utf-8"))
+    avaliacao = AvaliacaoTransversal(
+        estado=EstadoAvaliacaoTransversal.APROVADA,
+        total_recebido=9,
+        total_com_conteudo=9,
+    )
+    ciclo = ResultadoCicloTransversal(
+        estado=EstadoAvaliacaoTransversal.REVISAO_HUMANA,
+        avaliacao_deterministica=avaliacao,
+        motivo_final="o LLM Judge encontrou problema grave",
+    )
+    arquivo.write_text(
+        execucao.model_copy(update={"ciclo_transversal": ciclo}).model_dump_json(indent=2),
+        encoding="utf-8",
+    )
+
+    assert montar_pacote(IDENTIFICADOR, execucao_em_disco) == []
+    assert not (execucao_em_disco / IDENTIFICADOR / "pacote").exists()
 
 
 def test_montar_pacote_remove_pasta_de_celula_que_deixou_de_ser_aprovada(

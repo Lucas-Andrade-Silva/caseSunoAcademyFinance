@@ -58,6 +58,30 @@ MATRIZ: tuple[tuple[Audiencia, Formato], ...] = tuple(
 """As nove combinações. A ordem é estável e é a ordem de gravação em disco."""
 
 
+class ModoSelecao(StrEnum):
+    """Como os itens aprovados pela curadoria humana alimentam a Matriz."""
+
+    UNIDA = "unida"
+    SEPARADA = "separada"
+
+
+class SelecaoCuradoria(BaseModel):
+    """Regra determinística da seleção: unida aceita vários itens; separada, um."""
+
+    modo: ModoSelecao
+    itens: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _quantidade_conforme_modo(self) -> SelecaoCuradoria:
+        if any(not item.strip() for item in self.itens):
+            raise ValueError("a seleção não aceita identificador vazio")
+        if len(set(self.itens)) != len(self.itens):
+            raise ValueError("a seleção não aceita item repetido")
+        if self.modo is ModoSelecao.SEPARADA and len(self.itens) != 1:
+            raise ValueError("a seleção separada exige exatamente um item")
+        return self
+
+
 # ---------------------------------------------------------------------------
 # A Ata
 # ---------------------------------------------------------------------------
@@ -572,6 +596,30 @@ class Pendencia(BaseModel):
     decisao: str | None = None
 
 
+class EstadoDecisao(StrEnum):
+    """O que um humano decidiu sobre uma Célula."""
+
+    APROVADA = "aprovada"
+    REPROVADA = "reprovada"
+
+
+class DecisaoHumana(BaseModel):
+    """A decisão de um revisor sobre uma Célula. Sem registro, a Célula está pendente."""
+
+    audiencia: Audiencia
+    formato: Formato
+    estado: EstadoDecisao
+    motivo: str | None = Field(default=None, description="Obrigatório quando reprovada.")
+    revisor: str | None = None
+    em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @model_validator(mode="after")
+    def _reprovada_exige_motivo(self) -> DecisaoHumana:
+        if self.estado is EstadoDecisao.REPROVADA and not (self.motivo or "").strip():
+            raise ValueError("reprovar exige motivo")
+        return self
+
+
 class Custo(BaseModel):
     """Quanto custou de verdade: chamadas, tokens e tempo. Entra no relatório."""
 
@@ -582,6 +630,122 @@ class Custo(BaseModel):
     por_provedor: dict[str, int] = Field(default_factory=dict)
 
 
+class EstadoAvaliacaoTransversal(StrEnum):
+    """Veredito único sobre a Matriz completa, depois dos nove ciclos individuais."""
+
+    APROVADA = "aprovada"
+    REVISAO_HUMANA = "revisao_humana"
+
+
+class AvaliacaoTransversal(BaseModel):
+    """Conferência determinística de completude e coerência das nove Células."""
+
+    estado: EstadoAvaliacaoTransversal
+    total_esperado: int = len(MATRIZ)
+    total_recebido: int
+    total_com_conteudo: int
+    posicoes_faltantes: list[str] = Field(default_factory=list)
+    posicoes_duplicadas: list[str] = Field(default_factory=list)
+    posicoes_reprovadas: list[str] = Field(default_factory=list)
+    referencias_invalidas: list[str] = Field(default_factory=list)
+    observacoes: list[str] = Field(default_factory=list)
+    avaliada_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class EstadoJulgamentoTransversal(StrEnum):
+    """Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas."""
+
+    APROVADO = "aprovado"
+    CORRIGIVEL = "corrigivel"
+    GRAVE = "grave"
+    FALHA = "falha"
+
+
+class GravidadeProblemaTransversal(StrEnum):
+    BAIXA = "baixa"
+    MEDIA = "media"
+    ALTA = "alta"
+    GRAVE = "grave"
+
+
+class CriterioTransversal(StrEnum):
+    FIDELIDADE_DOSSIE = "fidelidade_dossie"
+    COERENCIA_MATRIZ = "coerencia_matriz"
+    PROGRESSAO_PERSONAS = "progressao_personas"
+    ADEQUACAO_PERSONA = "adequacao_persona"
+    CONSISTENCIA_FORMATOS = "consistencia_formatos"
+    CLAREZA_NARRATIVA = "clareza_narrativa"
+    OMISSAO_RELEVANTE = "omissao_relevante"
+    AFIRMACAO_SEM_EVIDENCIA = "afirmacao_sem_evidencia"
+
+
+class ProblemaTransversal(BaseModel):
+    """Problema subjetivo localizado pelo Judge em uma Célula concreta."""
+
+    audiencia: Audiencia
+    formato: Formato
+    gravidade: GravidadeProblemaTransversal
+    criterio: CriterioTransversal
+    evidencia: str = Field(min_length=1)
+    correcao: str = Field(min_length=1)
+
+
+class JulgamentoTransversal(BaseModel):
+    """Uma resposta auditável do LLM Judge, inclusive quando o provedor falha."""
+
+    rodada: int = Field(ge=0, le=2)
+    estado: EstadoJulgamentoTransversal
+    problemas: list[ProblemaTransversal] = Field(default_factory=list)
+    provedor: str
+    falha: str | None = None
+    avaliado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @model_validator(mode="after")
+    def _estado_coerente(self) -> JulgamentoTransversal:
+        if self.estado is EstadoJulgamentoTransversal.FALHA:
+            if not self.falha or self.problemas:
+                raise ValueError("falha do Judge exige mensagem e não carrega problemas")
+            return self
+        if self.falha:
+            raise ValueError("julgamento respondido não carrega falha de provedor")
+        if self.estado is EstadoJulgamentoTransversal.APROVADO and self.problemas:
+            raise ValueError("Judge aprovado não carrega problemas")
+        if self.estado is not EstadoJulgamentoTransversal.APROVADO and not self.problemas:
+            raise ValueError("Judge corrigível ou grave precisa localizar problema")
+        return self
+
+
+class CorrecaoTransversalAplicada(BaseModel):
+    """Versão substituída e instruções enviadas de volta à persona."""
+
+    rodada: int = Field(ge=0, le=1)
+    audiencia: Audiencia
+    formato: Formato
+    instrucoes: list[str] = Field(min_length=1)
+    historico_anterior: HistoricoCelula
+
+
+class ResultadoCicloTransversal(BaseModel):
+    """Estado final depois das regras fixas e do LLM Judge."""
+
+    estado: EstadoAvaliacaoTransversal
+    avaliacao_deterministica: AvaliacaoTransversal
+    julgamentos: list[JulgamentoTransversal] = Field(default_factory=list)
+    correcoes_aplicadas: list[CorrecaoTransversalAplicada] = Field(default_factory=list)
+    motivo_final: str
+
+    @model_validator(mode="after")
+    def _aprovacao_exige_as_duas_camadas(self) -> ResultadoCicloTransversal:
+        if self.estado is EstadoAvaliacaoTransversal.APROVADA:
+            if self.avaliacao_deterministica.estado is not EstadoAvaliacaoTransversal.APROVADA:
+                raise ValueError("ciclo não aprova Matriz reprovada deterministicamente")
+            if not self.julgamentos or (
+                self.julgamentos[-1].estado is not EstadoJulgamentoTransversal.APROVADO
+            ):
+                raise ValueError("ciclo aprovado exige aprovação final do LLM Judge")
+        return self
+
+
 class Execucao(BaseModel):
     """O único arquivo de estado de uma execução: ``data/execucoes/<id>/execucao.json``."""
 
@@ -590,16 +754,48 @@ class Execucao(BaseModel):
     provedor_gerador: str
     iniciada_em: datetime
     concluida_em: datetime | None = None
+    selecao: SelecaoCuradoria | None = Field(
+        default=None,
+        description="Seleção que originou o dossiê; ausente apenas em execuções antigas.",
+    )
     ancoras: Ancoras
     celulas: list[HistoricoCelula] = Field(default_factory=list)
     pendencias: list[Pendencia] = Field(default_factory=list)
     custo: Custo = Field(default_factory=Custo)
     comite_ligado: bool = False
+    avaliacao_transversal: AvaliacaoTransversal | None = Field(
+        default=None,
+        description="Veredito da Matriz completa; ausente apenas em execuções antigas.",
+    )
+    ciclo_transversal: ResultadoCicloTransversal | None = Field(
+        default=None,
+        description="Ciclo do LLM Judge e correções; ausente apenas em execuções antigas.",
+    )
+    nome: str = Field(
+        default="",
+        description="Nome dado pelo usuário à Saída; vazio vira o identificador.",
+    )
+    decisoes: list[DecisaoHumana] = Field(
+        default_factory=list,
+        description="Decisões humanas por Célula; posição sem registro está pendente.",
+    )
+
+    @model_validator(mode="after")
+    def _nome_padrao(self) -> Execucao:
+        if not self.nome.strip():
+            self.nome = self.identificador
+        return self
 
     def historico(self, audiencia: Audiencia, formato: Formato) -> HistoricoCelula | None:
         for h in self.celulas:
             if h.audiencia is audiencia and h.formato is formato:
                 return h
+        return None
+
+    def decisao_de(self, audiencia: Audiencia, formato: Formato) -> DecisaoHumana | None:
+        for decisao in self.decisoes:
+            if decisao.audiencia is audiencia and decisao.formato is formato:
+                return decisao
         return None
 
     def contagem_por_motivo(self) -> dict[MotivoReprovacao, int]:

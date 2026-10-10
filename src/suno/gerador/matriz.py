@@ -1,6 +1,6 @@
-"""As nove Células geram em paralelo. Em sequência, uma Ata leva minutos e a demo morre esperando.
+"""Três geradores de persona produzem as nove Células em paralelo.
 
-ADR 0010.
+ADR 0010, 0015.
 
 Paralelismo aqui é um ``ThreadPoolExecutor`` e nada mais: as nove posições da Matriz são
 independentes — nenhuma lê o resultado da outra — então não há sequência a decidir, e sim
@@ -17,15 +17,25 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
-from suno.dominio import MATRIZ, Ancoras, Ata, Audiencia, Formato, HistoricoCelula
-from suno.gerador.ciclo import rodar_ciclo
+from suno.dominio import (
+    MATRIZ,
+    Ancoras,
+    Ata,
+    Audiencia,
+    Formato,
+    HistoricoCelula,
+    ModoSelecao,
+    SelecaoCuradoria,
+)
+from suno.gerador.curador import DossieCurado
+from suno.gerador.personas import AGENTES_GERADORES
 from suno.provedores.base import Provedor
 
 if TYPE_CHECKING:
     from suno.comite import Comite
 
-TRABALHADORES = len(MATRIZ)
-"""Uma thread por posição da Matriz: nove."""
+TRABALHADORES = len(AGENTES_GERADORES)
+"""Um trabalhador por gerador especializado: três."""
 
 
 def gerar_matriz(
@@ -35,15 +45,29 @@ def gerar_matriz(
     *,
     comite: "Comite | None" = None,
 ) -> list[HistoricoCelula]:
-    """As nove posições da Matriz, cada uma com o seu Ciclo, na ordem de ``MATRIZ``."""
+    """Compatibilidade: monta um dossiê de fonte única e gera a Matriz."""
+    dossie = DossieCurado(
+        ata=ata,
+        ancoras=ancoras,
+        selecao=SelecaoCuradoria(modo=ModoSelecao.SEPARADA, itens=[ata.identificador]),
+    )
+    return gerar_matriz_do_dossie(dossie, provedor, comite=comite)
+
+
+def gerar_matriz_do_dossie(
+    dossie: DossieCurado,
+    provedor: Provedor,
+    *,
+    comite: "Comite | None" = None,
+) -> list[HistoricoCelula]:
+    """Os três geradores recebem o mesmo dossiê e devolvem a Matriz na ordem fixa."""
     prontos: dict[tuple[Audiencia, Formato], HistoricoCelula] = {}
     with ThreadPoolExecutor(max_workers=TRABALHADORES) as executor:
         futuros = {
-            executor.submit(
-                rodar_ciclo, ata, ancoras, audiencia, formato, provedor, comite=comite
-            ): (audiencia, formato)
-            for audiencia, formato in MATRIZ
+            executor.submit(agente.gerar, dossie, provedor, comite=comite): agente.audiencia
+            for agente in AGENTES_GERADORES
         }
-        for futuro, posicao in futuros.items():
-            prontos[posicao] = futuro.result()
+        for futuro in futuros:
+            for historico in futuro.result():
+                prontos[(historico.audiencia, historico.formato)] = historico
     return [prontos[posicao] for posicao in MATRIZ]

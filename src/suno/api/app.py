@@ -17,29 +17,37 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
+from starlette.exceptions import HTTPException as ErroHttpDoStarlette
+from starlette.types import Scope
 
 _REGISTRO = logging.getLogger(__name__)
 
 from suno import __version__
+from suno.api.resumo import PosicaoResumo, StatusSaida, montar_posicoes, status_da_saida
 from suno.dominio import (
     Ancoras,
     AncoraNumerica,
     Ata,
     Audiencia,
+    DecisaoHumana,
     Destino,
+    EstadoDecisao,
     EstadoMedida,
     Execucao,
     FilaHumana,
     Formato,
     HistoricoCelula,
+    ModoSelecao,
     PacotePublicacao,
     Pendencia,
 )
+from suno.exportacao import FormatoExportacao, exportar
 from suno.gerador.execucao import carregar_execucao, gravar_execucao, listar_execucoes
 from suno.ingestao.pdf import carregar_ata
+from suno.revisao import CelulaNaoEncontrada, DecisaoBloqueada, DecisaoInvalida, decidir
 
 PASTA_ATAS = Path("data/atas")
 """Mesma pasta fixa de ``suno.cli.PASTA_ATAS``: a API só lê Ata versionada em disco."""
@@ -68,15 +76,20 @@ class AtaResumo(BaseModel):
 
 
 class ExecucaoResumo(BaseModel):
-    """O que a lista de execuções mostra sem abrir o Laudo de cada Célula."""
+    """O que a lista de Saídas mostra sem abrir o Laudo de cada Célula."""
 
     identificador: str
+    nome: str
     ata: str
     provedor: str
+    modo: ModoSelecao | None
     iniciada_em: datetime
     aprovadas: int
+    aprovadas_humano: int
     total_celulas: int
     pendencias: int
+    status: StatusSaida
+    posicoes: list[PosicaoResumo]
 
 
 class Saude(BaseModel):
@@ -96,6 +109,23 @@ class DecisaoFila(BaseModel):
     """O corpo do ``POST .../resolver``: a decisão que um humano registrou em H4."""
 
     decisao: str
+
+
+class Renomeacao(BaseModel):
+    """O corpo do ``PATCH /api/execucoes/{id}``."""
+
+    nome: str
+
+
+class PedidoDeDecisao(BaseModel):
+    """O corpo do ``POST .../decisao``: aprovar ou reprovar uma Célula."""
+
+    estado: EstadoDecisao
+    motivo: str | None = None
+    revisor: str | None = None
+
+
+NOME_MAXIMO = 120
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +216,42 @@ def _fila_h5(pacotes: list[PacotePublicacao]) -> list[Pendencia]:
     return pendencias
 
 
+def _resumo_da_execucao(execucao: Execucao) -> ExecucaoResumo:
+    posicoes = montar_posicoes(execucao)
+    return ExecucaoResumo(
+        identificador=execucao.identificador,
+        nome=execucao.nome,
+        ata=execucao.ata,
+        provedor=execucao.provedor_gerador,
+        modo=execucao.selecao.modo if execucao.selecao is not None else None,
+        iniciada_em=execucao.iniciada_em,
+        aprovadas=sum(1 for h in execucao.celulas if h.destino_final is Destino.APROVADO),
+        aprovadas_humano=sum(1 for d in execucao.decisoes if d.estado is EstadoDecisao.APROVADA),
+        total_celulas=len(execucao.celulas),
+        pendencias=len(execucao.pendencias),
+        status=status_da_saida(posicoes),
+        posicoes=posicoes,
+    )
+
+
+class _SpaEstatica(StaticFiles):
+    """Serve ``web/dist`` e cai em ``index.html`` para rota do React Router (ex. ``/saidas/abc``).
+
+    ``StaticFiles(html=True)`` só devolve ``index.html`` para o diretório raiz: atualizar a
+    página numa rota interna dava 404. Rota de API que não existe continua sendo 404 de verdade.
+    """
+
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        try:
+            return await super().get_response(path, scope)
+        except ErroHttpDoStarlette as erro:
+            # No Windows o Starlette entrega o caminho com barra invertida ("api\nao-existe").
+            e_da_api = path.replace("\\", "/").startswith("api/")
+            if erro.status_code == 404 and not e_da_api:
+                return await super().get_response("index.html", scope)
+            raise
+
+
 def criar_app(pasta_execucoes: Path) -> FastAPI:
     """Monta a API com a pasta de execuções injetada — nada global (ADR 0005).
 
@@ -262,23 +328,65 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
                 # quem perguntar por ela direto.
                 _REGISTRO.warning("execução %r ilegível, fora da listagem: %s", identificador, erro)
                 continue
-            aprovadas = sum(1 for h in execucao.celulas if h.destino_final is Destino.APROVADO)
-            resumos.append(
-                ExecucaoResumo(
-                    identificador=execucao.identificador,
-                    ata=execucao.ata,
-                    provedor=execucao.provedor_gerador,
-                    iniciada_em=execucao.iniciada_em,
-                    aprovadas=aprovadas,
-                    total_celulas=len(execucao.celulas),
-                    pendencias=len(execucao.pendencias),
-                )
-            )
+            resumos.append(_resumo_da_execucao(execucao))
         return resumos
 
     @app.get("/api/execucoes/{identificador}")
     def obter_execucao(identificador: str) -> Execucao:
         return _execucao_ou_404(identificador)
+
+    @app.get("/api/execucoes/{identificador}/resumo")
+    def obter_resumo(identificador: str) -> ExecucaoResumo:
+        return _resumo_da_execucao(_execucao_ou_404(identificador))
+
+    @app.patch("/api/execucoes/{identificador}")
+    def renomear_execucao(identificador: str, corpo: Renomeacao) -> ExecucaoResumo:
+        nome = corpo.nome.strip()
+        if not nome:
+            raise HTTPException(422, "o nome não pode ficar vazio")
+        if len(nome) > NOME_MAXIMO:
+            raise HTTPException(422, f"o nome passa de {NOME_MAXIMO} caracteres")
+        with trava_de_escrita:
+            execucao = _execucao_ou_404(identificador)
+            execucao.nome = nome
+            gravar_execucao(execucao, pasta_execucoes)
+            return _resumo_da_execucao(execucao)
+
+    @app.post("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/decisao")
+    def registrar_decisao(
+        identificador: str, audiencia: Audiencia, formato: Formato, corpo: PedidoDeDecisao
+    ) -> DecisaoHumana:
+        with trava_de_escrita:
+            execucao = _execucao_ou_404(identificador)
+            try:
+                decisao = decidir(
+                    execucao,
+                    audiencia,
+                    formato,
+                    corpo.estado,
+                    motivo=corpo.motivo,
+                    revisor=corpo.revisor,
+                )
+            except CelulaNaoEncontrada as erro:
+                raise HTTPException(404, str(erro)) from None
+            except DecisaoBloqueada as erro:
+                raise HTTPException(409, str(erro)) from None
+            except DecisaoInvalida as erro:
+                raise HTTPException(422, str(erro)) from None
+            gravar_execucao(execucao, pasta_execucoes)
+            return decisao
+
+    @app.get("/api/execucoes/{identificador}/exportar")
+    def exportar_execucao(identificador: str, formato: FormatoExportacao) -> Response:
+        execucao = _execucao_ou_404(identificador)
+        conteudo, media_type, nome_do_arquivo = exportar(
+            execucao, pasta_execucoes / identificador, formato
+        )
+        return Response(
+            content=conteudo,
+            media_type=media_type,
+            headers={"Content-Disposition": f'attachment; filename="{nome_do_arquivo}"'},
+        )
 
     @app.get("/api/execucoes/{identificador}/ancoras")
     def obter_ancoras(identificador: str) -> Ancoras:
@@ -367,6 +475,6 @@ def criar_app(pasta_execucoes: Path) -> FastAPI:
         return Saude(ok=True, execucoes=len(listar_execucoes(pasta_execucoes)))
 
     if (PASTA_DA_SPA / "index.html").exists():
-        app.mount("/", StaticFiles(directory=PASTA_DA_SPA, html=True), name="spa")
+        app.mount("/", _SpaEstatica(directory=PASTA_DA_SPA, html=True), name="spa")
 
     return app

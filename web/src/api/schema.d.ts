@@ -69,6 +69,58 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /** Renomear Execucao */
+        patch: operations["renomear_execucao_api_execucoes__identificador__patch"];
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/resumo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Resumo */
+        get: operations["obter_resumo_api_execucoes__identificador__resumo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/decisao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Registrar Decisao */
+        post: operations["registrar_decisao_api_execucoes__identificador__celulas__audiencia___formato__decisao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/exportar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exportar Execucao */
+        get: operations["exportar_execucao_api_execucoes__identificador__exportar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -386,6 +438,37 @@ export interface components {
          */
         Audiencia: "iniciante" | "intermediario" | "avancado";
         /**
+         * AvaliacaoTransversal
+         * @description Conferência determinística de completude e coerência das nove Células.
+         */
+        AvaliacaoTransversal: {
+            estado: components["schemas"]["EstadoAvaliacaoTransversal"];
+            /**
+             * Total Esperado
+             * @default 9
+             */
+            total_esperado: number;
+            /** Total Recebido */
+            total_recebido: number;
+            /** Total Com Conteudo */
+            total_com_conteudo: number;
+            /** Posicoes Faltantes */
+            posicoes_faltantes?: string[];
+            /** Posicoes Duplicadas */
+            posicoes_duplicadas?: string[];
+            /** Posicoes Reprovadas */
+            posicoes_reprovadas?: string[];
+            /** Referencias Invalidas */
+            referencias_invalidas?: string[];
+            /** Observacoes */
+            observacoes?: string[];
+            /**
+             * Avaliada Em
+             * Format: date-time
+             */
+            avaliada_em?: string;
+        };
+        /**
          * BlocoFala
          * @description Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho.
          */
@@ -486,6 +569,24 @@ export interface components {
             instrucao: string;
         };
         /**
+         * CorrecaoTransversalAplicada
+         * @description Versão substituída e instruções enviadas de volta à persona.
+         */
+        CorrecaoTransversalAplicada: {
+            /** Rodada */
+            rodada: number;
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+            /** Instrucoes */
+            instrucoes: string[];
+            historico_anterior: components["schemas"]["HistoricoCelula"];
+        };
+        /**
+         * CriterioTransversal
+         * @enum {string}
+         */
+        CriterioTransversal: "fidelidade_dossie" | "coerencia_matriz" | "progressao_personas" | "adequacao_persona" | "consistencia_formatos" | "clareza_narrativa" | "omissao_relevante" | "afirmacao_sem_evidencia";
+        /**
          * Custo
          * @description Quanto custou de verdade: chamadas, tokens e tempo. Entra no relatório.
          */
@@ -524,6 +625,27 @@ export interface components {
             decisao: string;
         };
         /**
+         * DecisaoHumana
+         * @description A decisão de um revisor sobre uma Célula. Sem registro, a Célula está pendente.
+         */
+        DecisaoHumana: {
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+            estado: components["schemas"]["EstadoDecisao"];
+            /**
+             * Motivo
+             * @description Obrigatório quando reprovada.
+             */
+            motivo?: string | null;
+            /** Revisor */
+            revisor?: string | null;
+            /**
+             * Em
+             * Format: date-time
+             */
+            em?: string;
+        };
+        /**
          * DefeitoRender
          * @description O que a camada determinística da conferência visual consegue medir.
          * @enum {string}
@@ -541,6 +663,24 @@ export interface components {
          * @enum {string}
          */
         DimensaoSubjetiva: "tom" | "clareza" | "coerencia";
+        /**
+         * EstadoAvaliacaoTransversal
+         * @description Veredito único sobre a Matriz completa, depois dos nove ciclos individuais.
+         * @enum {string}
+         */
+        EstadoAvaliacaoTransversal: "aprovada" | "revisao_humana";
+        /**
+         * EstadoDecisao
+         * @description O que um humano decidiu sobre uma Célula.
+         * @enum {string}
+         */
+        EstadoDecisao: "aprovada" | "reprovada";
+        /**
+         * EstadoJulgamentoTransversal
+         * @description Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas.
+         * @enum {string}
+         */
+        EstadoJulgamentoTransversal: "aprovado" | "corrigivel" | "grave" | "falha";
         /**
          * EstadoMedida
          * @description Medida calculada, sem base para calcular, ou aguardando desempate humano (H3).
@@ -565,6 +705,8 @@ export interface components {
             iniciada_em: string;
             /** Concluida Em */
             concluida_em?: string | null;
+            /** @description Seleção que originou o dossiê; ausente apenas em execuções antigas. */
+            selecao?: components["schemas"]["SelecaoCuradoria"] | null;
             ancoras: components["schemas"]["Ancoras"];
             /** Celulas */
             celulas?: components["schemas"]["HistoricoCelula"][];
@@ -576,18 +718,36 @@ export interface components {
              * @default false
              */
             comite_ligado: boolean;
+            /** @description Veredito da Matriz completa; ausente apenas em execuções antigas. */
+            avaliacao_transversal?: components["schemas"]["AvaliacaoTransversal"] | null;
+            /** @description Ciclo do LLM Judge e correções; ausente apenas em execuções antigas. */
+            ciclo_transversal?: components["schemas"]["ResultadoCicloTransversal"] | null;
+            /**
+             * Nome
+             * @description Nome dado pelo usuário à Saída; vazio vira o identificador.
+             * @default
+             */
+            nome: string;
+            /**
+             * Decisoes
+             * @description Decisões humanas por Célula; posição sem registro está pendente.
+             */
+            decisoes?: components["schemas"]["DecisaoHumana"][];
         };
         /**
          * ExecucaoResumo
-         * @description O que a lista de execuções mostra sem abrir o Laudo de cada Célula.
+         * @description O que a lista de Saídas mostra sem abrir o Laudo de cada Célula.
          */
         ExecucaoResumo: {
             /** Identificador */
             identificador: string;
+            /** Nome */
+            nome: string;
             /** Ata */
             ata: string;
             /** Provedor */
             provedor: string;
+            modo: components["schemas"]["ModoSelecao"] | null;
             /**
              * Iniciada Em
              * Format: date-time
@@ -595,10 +755,19 @@ export interface components {
             iniciada_em: string;
             /** Aprovadas */
             aprovadas: number;
+            /** Aprovadas Humano */
+            aprovadas_humano: number;
             /** Total Celulas */
             total_celulas: number;
             /** Pendencias */
             pendencias: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "aguardando_revisao" | "concluida";
+            /** Posicoes */
+            posicoes: components["schemas"]["PosicaoResumo"][];
         };
         /**
          * Faixa
@@ -643,6 +812,16 @@ export interface components {
          * @enum {string}
          */
         Formato: "texto_analitico" | "carrossel" | "roteiro";
+        /**
+         * FormatoExportacao
+         * @enum {string}
+         */
+        FormatoExportacao: "json" | "md" | "zip";
+        /**
+         * GravidadeProblemaTransversal
+         * @enum {string}
+         */
+        GravidadeProblemaTransversal: "baixa" | "media" | "alta" | "grave";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -691,6 +870,26 @@ export interface components {
             votos?: components["schemas"]["VotoJuiz"][];
             /** Consenso */
             consenso?: number | null;
+        };
+        /**
+         * JulgamentoTransversal
+         * @description Uma resposta auditável do LLM Judge, inclusive quando o provedor falha.
+         */
+        JulgamentoTransversal: {
+            /** Rodada */
+            rodada: number;
+            estado: components["schemas"]["EstadoJulgamentoTransversal"];
+            /** Problemas */
+            problemas?: components["schemas"]["ProblemaTransversal"][];
+            /** Provedor */
+            provedor: string;
+            /** Falha */
+            falha?: string | null;
+            /**
+             * Avaliado Em
+             * Format: date-time
+             */
+            avaliado_em?: string;
         };
         /**
          * Laudo
@@ -767,6 +966,12 @@ export interface components {
          */
         Metrica: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "integridade";
         /**
+         * ModoSelecao
+         * @description Como os itens aprovados pela curadoria humana alimentam a Matriz.
+         * @enum {string}
+         */
+        ModoSelecao: "unida" | "separada";
+        /**
          * MotivoReprovacao
          * @description Enumerado, não texto livre: é o que permite contar reprovação por motivo (ADR 0013).
          * @enum {string}
@@ -816,6 +1021,17 @@ export interface components {
             provedor: string;
         };
         /**
+         * PedidoDeDecisao
+         * @description O corpo do ``POST .../decisao``: aprovar ou reprovar uma Célula.
+         */
+        PedidoDeDecisao: {
+            estado: components["schemas"]["EstadoDecisao"];
+            /** Motivo */
+            motivo?: string | null;
+            /** Revisor */
+            revisor?: string | null;
+        };
+        /**
          * Pendencia
          * @description Uma Célula esperando decisão humana numa fila.
          */
@@ -839,6 +1055,58 @@ export interface components {
             decisao?: string | null;
         };
         /**
+         * PosicaoResumo
+         * @description Uma posição da Matriz, no mínimo que a tela precisa para colorir e rotular.
+         */
+        PosicaoResumo: {
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+            destino: components["schemas"]["Destino"];
+            decisao: components["schemas"]["EstadoDecisao"] | null;
+            /** Bloqueada */
+            bloqueada: boolean;
+            /** Sem Conteudo */
+            sem_conteudo: boolean;
+            /** Revisao Comite */
+            revisao_comite: boolean;
+        };
+        /**
+         * ProblemaTransversal
+         * @description Problema subjetivo localizado pelo Judge em uma Célula concreta.
+         */
+        ProblemaTransversal: {
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+            gravidade: components["schemas"]["GravidadeProblemaTransversal"];
+            criterio: components["schemas"]["CriterioTransversal"];
+            /** Evidencia */
+            evidencia: string;
+            /** Correcao */
+            correcao: string;
+        };
+        /**
+         * Renomeacao
+         * @description O corpo do ``PATCH /api/execucoes/{id}``.
+         */
+        Renomeacao: {
+            /** Nome */
+            nome: string;
+        };
+        /**
+         * ResultadoCicloTransversal
+         * @description Estado final depois das regras fixas e do LLM Judge.
+         */
+        ResultadoCicloTransversal: {
+            estado: components["schemas"]["EstadoAvaliacaoTransversal"];
+            avaliacao_deterministica: components["schemas"]["AvaliacaoTransversal"];
+            /** Julgamentos */
+            julgamentos?: components["schemas"]["JulgamentoTransversal"][];
+            /** Correcoes Aplicadas */
+            correcoes_aplicadas?: components["schemas"]["CorrecaoTransversalAplicada"][];
+            /** Motivo Final */
+            motivo_final: string;
+        };
+        /**
          * ResultadoComite
          * @description Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação.
          */
@@ -857,6 +1125,15 @@ export interface components {
             ok: boolean;
             /** Execucoes */
             execucoes: number;
+        };
+        /**
+         * SelecaoCuradoria
+         * @description Regra determinística da seleção: unida aceita vários itens; separada, um.
+         */
+        SelecaoCuradoria: {
+            modo: components["schemas"]["ModoSelecao"];
+            /** Itens */
+            itens: string[];
         };
         /**
          * Slide
@@ -1013,6 +1290,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Execucao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renomear_execucao_api_execucoes__identificador__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Renomeacao"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoResumo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_resumo_api_execucoes__identificador__resumo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecucaoResumo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registrar_decisao_api_execucoes__identificador__celulas__audiencia___formato__decisao_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+                audiencia: components["schemas"]["Audiencia"];
+                formato: components["schemas"]["Formato"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoDeDecisao"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisaoHumana"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exportar_execucao_api_execucoes__identificador__exportar_get: {
+        parameters: {
+            query: {
+                formato: components["schemas"]["FormatoExportacao"];
+            };
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

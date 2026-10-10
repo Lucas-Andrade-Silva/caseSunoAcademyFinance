@@ -10,6 +10,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence
 
 from suno.dominio import Ancora, Audiencia, Conteudo, Laudo, Limiares
+from suno.avaliador.juiz_transversal import AgenteAvaliadorTransversal
+from suno.avaliador.transversal import avaliar_matriz
 
 if TYPE_CHECKING:
     from suno.comite import Comite
@@ -33,4 +35,4 @@ def avaliar(
     return _avaliar(conteudo, ancoras, audiencia, limiares=limiares, comite=comite)
 
 
-__all__ = ["avaliar"]
+__all__ = ["AgenteAvaliadorTransversal", "avaliar", "avaliar_matriz"]
