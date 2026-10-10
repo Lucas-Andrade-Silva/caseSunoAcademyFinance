@@ -24,17 +24,21 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from suno.dominio import (
+    MATRIZ,
     Custo,
     Destino,
+    EstadoAvaliacaoTransversal,
     Execucao,
     FilaHumana,
     HistoricoCelula,
     Pendencia,
     PedidoLLM,
+    ResultadoCicloTransversal,
     RespostaLLM,
 )
-from suno.gerador.extracao import extrair_ancoras
-from suno.gerador.matriz import gerar_matriz
+from suno.gerador.curador import AgenteCurador
+from suno.gerador.matriz import gerar_matriz_do_dossie
+from suno.gerador.orquestracao import rodar_ciclo_transversal
 from suno.ingestao.pdf import carregar_ata
 from suno.provedores.base import Provedor, ProvedorBase
 from suno.provedores.roteador import provedor_por_nome
@@ -163,6 +167,31 @@ def _pendencias(celulas: list[HistoricoCelula]) -> list[Pendencia]:
     ]
 
 
+def _pendencias_transversais(ciclo: ResultadoCicloTransversal) -> list[Pendencia]:
+    """Problema do Judge entra na H4 por Célula, sem duplicar falha determinística."""
+    if ciclo.estado is EstadoAvaliacaoTransversal.APROVADA:
+        return []
+    if ciclo.avaliacao_deterministica.estado is not EstadoAvaliacaoTransversal.APROVADA:
+        return []
+
+    ultimo = ciclo.julgamentos[-1] if ciclo.julgamentos else None
+    posicoes = (
+        {(problema.audiencia, problema.formato) for problema in ultimo.problemas}
+        if ultimo is not None and ultimo.problemas
+        else set(MATRIZ)
+    )
+    return [
+        Pendencia(
+            fila=FilaHumana.H4_REVISAO,
+            audiencia=audiencia,
+            formato=formato,
+            motivo=ciclo.motivo_final,
+        )
+        for audiencia, formato in MATRIZ
+        if (audiencia, formato) in posicoes
+    ]
+
+
 def _respostas_prontas_da_ata(identificador: str) -> Path | None:
     """Sem arquivo, o ``ProvedorFalso`` nasce vazio e o ``FilaVazia`` diz o que falta."""
     caminho = PASTA_RESPOSTAS_PRONTAS / f"{identificador}.json"
@@ -212,9 +241,13 @@ def executar(
     prontas = _respostas_prontas_da_ata(ata.identificador) if provedor == "falso" else None
     contado = ProvedorContado(provedor_por_nome(provedor, respostas_prontas=prontas))
 
-    ancoras = extrair_ancoras(ata, contado)
+    dossie = AgenteCurador(contado).preparar(ata)
     juizes = _comite_de_ambiente(contado.nome, ligado=comite)
-    celulas = gerar_matriz(ata, ancoras, contado, comite=juizes)
+    celulas = gerar_matriz_do_dossie(dossie, contado, comite=juizes)
+    celulas, ciclo_transversal = rodar_ciclo_transversal(
+        dossie, celulas, contado, comite=juizes
+    )
+    avaliacao_transversal = ciclo_transversal.avaliacao_deterministica
 
     concluida_em = datetime.now(timezone.utc)
     padrao = f"{ata.identificador}-{provedor}-{iniciada_em.strftime('%Y%m%d-%H%M%S')}"
@@ -224,11 +257,14 @@ def executar(
         provedor_gerador=provedor,
         iniciada_em=iniciada_em,
         concluida_em=concluida_em,
-        ancoras=ancoras,
+        selecao=dossie.selecao,
+        ancoras=dossie.ancoras,
         celulas=celulas,
-        pendencias=_pendencias(celulas),
+        pendencias=[*_pendencias(celulas), *_pendencias_transversais(ciclo_transversal)],
         custo=contado.custo(time.perf_counter() - relogio),
         comite_ligado=juizes is not None,
+        avaliacao_transversal=avaliacao_transversal,
+        ciclo_transversal=ciclo_transversal,
     )
     gravar_execucao(execucao, Path(pasta_execucoes))
     return execucao

@@ -51,6 +51,13 @@ def cmd_executar(args: argparse.Namespace) -> int:
     aprovadas = sum(1 for h in execucao.celulas if h.destino_final.value == "aprovado")
     print(f"execucao={execucao.identificador} ata={execucao.ata} provedor={execucao.provedor_gerador}")
     print(f"celulas={len(execucao.celulas)} aprovadas={aprovadas} pendencias={len(execucao.pendencias)}")
+    if execucao.ciclo_transversal is not None:
+        print(
+            "matriz="
+            f"{execucao.ciclo_transversal.estado.value} "
+            f"julgamentos={len(execucao.ciclo_transversal.julgamentos)} "
+            f"correcoes={len(execucao.ciclo_transversal.correcoes_aplicadas)}"
+        )
     for h in execucao.celulas:
         laudo = h.laudo_final
         motivos = ",".join(m.value for m in laudo.motivos) if laudo else ""

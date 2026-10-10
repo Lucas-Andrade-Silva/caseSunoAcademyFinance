@@ -125,9 +125,9 @@ inviável; o `CLAUDE.md` resume os cinco, e cada um tem um ADR:
 | Avaliação | DeepEval ou Ragas | `pydantic-evals` | [0003](docs/adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md) |
 | Vídeo | avatar sintético (fora do escopo) | composição determinística em CPU, fora do grafo | [0004](docs/adr/0004-renderizacao-de-video-fora-do-grafo.md) |
 | Interface | Streamlit, FastAPI+React ou Gradio | React + Vite + Tailwind sobre FastAPI, cliente TS gerado do OpenAPI | [0005](docs/adr/0005-interface-em-react-vite-sobre-fastapi.md) |
-| Orquestração | LangGraph ou Pydantic AI, multiagente | sequência fixa de chamadas, sem agente, sem MCP | [0010](docs/adr/0010-gerador-nao-e-agente-com-tools-nem-usa-mcp.md) |
+| Orquestração | LangGraph ou Pydantic AI, multiagente | 1 curador + 3 geradores + regras fixas + LLM Judge transversal; fluxo limitado, sem MCP | [0015](docs/adr/0015-papeis-especializados-em-fluxo-deterministico.md), [0016](docs/adr/0016-llm-judge-transversal-com-retorno-seletivo.md) |
 
-As catorze decisões estruturais completas estão em [docs/adr/](docs/adr/); o porquê de
+As dezesseis decisões estruturais completas estão em [docs/adr/](docs/adr/); o porquê de
 cada uma nunca é repetido fora de lá. O que foi verificado contra fonte primária antes de
 qualquer decisão — cotas, licenças, URLs testadas, ferramentas mortas — está em
 [docs/research/viabilidade-tecnica.md](docs/research/viabilidade-tecnica.md).

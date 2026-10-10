@@ -160,17 +160,26 @@ planilha, feitos antes.
 
 ## Os dois módulos
 
-**Gerador** ingere a Ata, extrai as Âncoras e produz as nove Células — uma por combinação de
-Audiência (Iniciante, Intermediário, Avançado) e Formato (Texto analítico, Carrossel, Roteiro) —
-em paralelo. Em sequência a demo morre esperando; em paralelo, minutos. É uma sequência fixa de
-chamadas estruturadas, não um agente com tools nem um loop ReAct, e não usa MCP — não há decisão
-dinâmica de "o que fazer a seguir" a resolver
-([ADR 0010](adr/0010-gerador-nao-e-agente-com-tools-nem-usa-mcp.md)).
+**Geração** usa um curador para preparar o dossiê factual e três geradores especializados:
+Iniciante, Intermediário e Avançado. Cada gerador produz Texto analítico, Carrossel e Roteiro;
+o código garante as nove posições e a ordem. Cada Célula passa pelas regras determinísticas e
+volta ao seu gerador quando falha em integridade, Flesch-BR, Léxico/Densidade, Aderência ou
+Recomendação. Só uma Matriz aprovada nessa etapa chega ao LLM Judge transversal.
 
-**Avaliador** recebe `(Conteúdo, Âncora[], Audiência)` de uma Célula e devolve um Laudo. Por
-padrão roda sem LLM e sem rede — é isso que o mantém testável em CI desde o dia 1, com texto
-colado à mão, sem esperar o Gerador existir. O contrato entre os dois módulos é essa única
-assinatura; nada mais atravessa a costura
+O Judge confere fidelidade, coerência entre Células, progressão das personas e consistência entre
+Formatos. Problema corrigível regenera apenas as Células apontadas, que passam novamente pelas
+regras fixas antes de outro julgamento. Há no máximo duas correções transversais. Problema grave,
+falha do provedor ou esgotamento vai para H4. Todas as versões substituídas ficam no JSON de
+auditoria; Pacote publicável só nasce quando o ciclo completo aprova
+([ADR 0015](adr/0015-papeis-especializados-em-fluxo-deterministico.md),
+[ADR 0016](adr/0016-llm-judge-transversal-com-retorno-seletivo.md)).
+
+"Agente" significa papel especializado com contrato fixo, não loop ReAct ou tool calling. O fluxo
+continua sem LangGraph ou MCP.
+
+**Avaliador individual** recebe `(Conteúdo, Âncora[], Audiência)` de uma Célula e devolve um
+Laudo. Ele roda sem LLM e sem rede. O LLM aparece somente depois dessa aprovação, no Judge
+transversal. O contrato entre geração e regras individuais continua sendo essa assinatura
 ([ADR 0001](adr/0001-gerador-e-avaliador-como-modulos-separados.md)).
 
 ## O estágio de extração

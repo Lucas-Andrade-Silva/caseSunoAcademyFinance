@@ -82,9 +82,18 @@ def gerar_celula(
     provedor: Provedor,
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
+    orientacoes_transversais: list[str] | None = None,
 ) -> Celula:
     """Uma chamada estruturada ao provedor. Sem ferramenta, sem decisão dinâmica (ADR 0010)."""
-    pedido = montar_pedido(ata.texto, ancoras, audiencia, formato, rodada, correcoes)
+    pedido = montar_pedido(
+        ata.texto,
+        ancoras,
+        audiencia,
+        formato,
+        rodada,
+        correcoes,
+        orientacoes_transversais,
+    )
     modelo = MODELO_POR_FORMATO[formato]
     resposta_estruturada = provedor.completar_estruturado(pedido, modelo)
     conteudo = montar_conteudo(resposta_estruturada, formato, ancoras)
@@ -114,6 +123,7 @@ def rodar_ciclo(
     provedor: Provedor,
     *,
     comite: "Comite | None" = None,
+    orientacoes_transversais: list[str] | None = None,
 ) -> HistoricoCelula:
     """Gera, avalia e corrige uma posição da Matriz até o teto de duas rodadas (ADR 0013)."""
     tentativas: list[Tentativa] = []
@@ -124,7 +134,16 @@ def rodar_ciclo(
 
     for rodada in range(TETO_DE_RODADAS + 1):
         try:
-            celula = gerar_celula(ata, ancoras, audiencia, formato, provedor, rodada, correcoes)
+            celula = gerar_celula(
+                ata,
+                ancoras,
+                audiencia,
+                formato,
+                provedor,
+                rodada,
+                correcoes,
+                orientacoes_transversais,
+            )
             laudo = avaliar(celula.conteudo, ancoras.todas(), audiencia, comite=comite)
         except ErroProvedor as erro:
             falha = (

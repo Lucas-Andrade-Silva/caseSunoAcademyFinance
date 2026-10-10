@@ -104,3 +104,14 @@ _Avoid_: dataset, golden set, baseline, amostra
 O conjunto pronto para um humano publicar: vídeo, legenda, hashtags e imagens de uma
 Célula aprovada.
 _Avoid_: post, bundle, export, entrega
+
+### A interface
+
+**Saída**:
+Uma execução vista pela interface: tem um nome dado pelo usuário, registra quais Células
+foram pedidas e o que foi decidido sobre cada uma. No código é a `Execucao`; "Saída" é só o
+rótulo de tela.
+
+**Decisão humana**:
+Aprovar ou reprovar uma Célula, registrada com motivo (obrigatório ao reprovar) e o nome do
+revisor. Não vale para a Célula cujo Laudo detectou Recomendação: essa não pode ser aprovada.

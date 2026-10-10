@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mockup · Suno Content</title><style>body{background:#0a0a0b;color:#f3f3f4;font:14px system-ui,sans-serif;margin:0;padding:28px;max-width:1180px}h2{font-size:22px;margin:0 0 6px}.subtitle{color:#8d8d93;margin-bottom:22px}.cards{display:grid;gap:26px}.card-body{padding:10px 2px 0;color:#9a9aa0;font-size:13px}.card-body h3{color:#f3f3f4;font-size:14px;margin-bottom:3px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8d8d93}.section{margin-top:22px;color:#9a9aa0}p[style]{color:#9a9aa0!important}</style></head><body>
+<h2>Como abre uma Célula?</h2>
+<p class="subtitle">Você clicou em <b>Iniciante × Carrossel</b> na Matriz. Esta é a tela de trabalho: ler o conteúdo, conferir o Laudo e as Âncoras, e decidir. O conteúdo, as métricas e as Âncoras vêm da execução real <b>demo-copom-280</b>.</p>
+
+<style>
+  .suno{--bg:#0e0e0f;--side:#141415;--card:#1c1c1e;--card2:#242427;--line:#2c2c30;--tx:#f3f3f4;--mu:#8d8d93;--red:#ef4b3f;--redbg:rgba(239,75,63,.14);--ok:#3ecf8e;--warn:#f5b042;
+    background:var(--bg);color:var(--tx);font:12.5px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;height:610px;overflow:hidden;text-align:left;position:relative}
+  .suno *{box-sizing:border-box;margin:0;padding:0}
+  .suno .sb{width:172px;background:var(--side);border-right:1px solid var(--line);padding:14px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+  .suno .logo{font-weight:700;letter-spacing:.28em;font-size:15px;padding:4px 8px 16px}
+  .suno .logo i{color:var(--red);font-style:normal;font-weight:400}
+  .suno .nv{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;color:var(--mu);font-size:13px}
+  .suno .nv::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line)}
+  .suno .nv.on{background:var(--redbg);color:var(--tx);font-weight:600}
+  .suno .nv.on::before{background:var(--red)}
+  .suno .nv b{margin-left:auto;background:var(--red);color:#fff;border-radius:9px;font-size:10px;padding:0 6px;font-weight:600}
+  .suno .mn{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+  .suno .sp{flex:1}
+  .suno .mu{color:var(--mu)}
+  .suno .btn{background:var(--red);color:#fff;border-radius:18px;padding:8px 18px;font-weight:700;font-size:12px;letter-spacing:.02em;white-space:nowrap}
+  .suno .btn.ghost{background:transparent;border:1px solid #55555b;color:var(--tx);font-weight:600}
+  .suno .chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--mu);border:1px solid var(--line);border-radius:10px;padding:1px 8px;white-space:nowrap}
+  .suno .chip.ok::before,.suno .chip.warn::before,.suno .chip.bad::before{content:"";width:6px;height:6px;border-radius:50%}
+  .suno .chip.ok::before{background:var(--ok)} .suno .chip.bad::before{background:var(--red)}
+  .suno .chip.me{color:var(--tx);background:var(--card2);border-color:transparent}
+  .suno .chip.dado{color:#ff8b82;border-color:rgba(239,75,63,.4);font-size:9.5px}
+  /* slide */
+  .suno .sd{background:linear-gradient(165deg,#34191a,#1b1011);border-radius:11px;padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0;border:1px solid #3a2323}
+  .suno .sd .n{font-size:9.5px;color:#c98f8a;font-weight:700;letter-spacing:.06em}
+  .suno .sd strong{font-size:12.5px;line-height:1.25}
+  .suno .sd p{font-size:10.5px;color:#d6c3c1;line-height:1.38}
+  .suno .sd .chip{margin-top:auto;align-self:flex-start}
+  /* barra de decisão */
+  .suno .dec{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line);background:var(--side);flex-shrink:0}
+  .suno .dec .ok{display:flex;align-items:center;gap:6px;color:var(--mu);font-size:11.5px}
+  .suno .dec .ok b{color:var(--ok)}
+  /* A: gaveta */
+  .suno .bgm{position:absolute;inset:0;padding:14px 16px;opacity:.38;filter:blur(.3px)}
+  .suno .bgm .row{display:grid;grid-template-columns:70px repeat(3,1fr);gap:8px;margin-bottom:8px}
+  .suno .bgm .row div{background:var(--card);border-radius:10px;height:54px}
+  .suno .bgm .row div.hl{outline:2px solid var(--red)}
+  .suno .bgm .row div.e{background:transparent;border:1px dashed var(--line)}
+  .suno .bgm .row div.l{background:transparent}
+  .suno .dr{position:absolute;top:0;right:0;bottom:0;width:66%;background:var(--bg);border-left:1px solid var(--line);box-shadow:-18px 0 40px rgba(0,0,0,.55);display:flex;flex-direction:column}
+  .suno .dr .hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .suno .dr .hd .ar{border:1px solid var(--line);border-radius:8px;padding:0 8px;color:var(--mu)}
+  .suno .dr .hd h4{font-size:15px;font-weight:700}
+  .suno .dr .hd .x{color:var(--mu);font-size:16px}
+  .suno .tbs{display:flex;gap:20px;padding:0 16px;border-bottom:1px solid var(--line)}
+  .suno .tbs div{padding:9px 0;color:var(--mu);font-weight:600;font-size:12.5px;border-bottom:3px solid transparent}
+  .suno .tbs div.on{color:var(--tx);border-bottom-color:var(--red)}
+  .suno .dr .bd{padding:14px 16px;flex:1;overflow:hidden}
+  .suno .strip3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .suno .strip3 .sd{height:196px}
+  /* B: página */
+  .suno .pg{display:flex;flex-direction:column;flex:1;min-height:0}
+  .suno .top{padding:11px 18px 10px;border-bottom:1px solid var(--line)}
+  .suno .bc{color:var(--mu);font-size:11.5px;margin-bottom:4px}
+  .suno .tl{display:flex;align-items:center;gap:10px}
+  .suno .tl h4{font-size:17px;font-weight:700}
+  .suno .cols{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;padding:13px 18px;flex:1;min-height:0;overflow:hidden}
+  .suno .pn{background:var(--card);border-radius:13px;padding:12px 13px}
+  .suno .pn h5{font-size:12.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .suno .g6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .suno .g6 .sd{height:158px;padding:8px}
+  .suno .g6 .sd p{font-size:9.8px}
+  .suno .mt{display:grid;grid-template-columns:96px 1fr 70px;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:11.5px}
+  .suno .mt:first-of-type{border-top:0}
+  .suno .bar{height:6px;border-radius:3px;background:var(--card2);position:relative}
+  .suno .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ok)}
+  .suno .mt .v{text-align:right;font-variant-numeric:tabular-nums}
+  .suno .an{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:11.5px;align-items:baseline}
+  .suno .an:first-of-type{border-top:0}
+  .suno .an b{width:112px;flex-shrink:0;font-weight:600}
+  .suno .an span{color:var(--mu)}
+  .suno .an em{font-style:normal;color:var(--tx);font-weight:700;margin-left:auto;white-space:nowrap}
+  .suno .pk{display:flex;align-items:center;gap:12px}
+</style>
+
+<div class="cards" style="grid-template-columns:1fr">
+
+  <!-- ============ A: gaveta ============ -->
+  <div class="card" data-choice="a-gaveta" onclick="toggleSelect(this)">
+    <div class="suno">
+      <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv">Curadoria</div><div class="nv on">Saídas <b>2</b></div></div>
+      <div class="mn">
+        <!-- Matriz ao fundo -->
+        <div class="bgm">
+          <div class="row"><div class="l" style="height:20px"></div><div class="l" style="height:20px"></div><div class="l" style="height:20px"></div><div class="l" style="height:20px"></div></div>
+          <div class="row"><div class="l"></div><div></div><div class="hl"></div><div></div></div>
+          <div class="row"><div class="l"></div><div></div><div></div><div class="hl" style="outline-color:#f5b042"></div></div>
+          <div class="row"><div class="l"></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="dr">
+          <div class="hd"><span class="ar">‹</span><span class="ar">›</span><h4>Iniciante · Carrossel</h4><span class="chip ok">Laudo: aprovada</span><span class="chip">1 rodada</span><div class="sp"></div><span class="x">✕</span></div>
+          <div class="tbs"><div class="on">Conteúdo</div><div>Laudo</div><div>Âncoras <span class="chip" style="margin-left:4px">5</span></div><div>Pacote</div></div>
+          <div class="bd">
+            <div class="mu" style="margin-bottom:8px">6 slides · da Ata da 280ª reunião · lido da execução <b style="color:var(--tx)">demo-copom-280</b></div>
+            <div class="strip3">
+              <div class="sd"><span class="n">1 / 6</span><strong>O juro do país caiu</strong><p>O Copom é o grupo que define o juro básico do Brasil. Ele acabou de baixar esse juro.</p><span class="chip dado">selic_decidida</span></div>
+              <div class="sd"><span class="n">2 / 6</span><strong>Quanto ficou</strong><p>A taxa Selic, que é o juro base do país, foi para 14,00% a.a., segundo o comunicado. A decisão saiu em 4 e 5 de agosto de 2026.</p><span class="chip dado">selic_decidida</span></div>
+              <div class="sd"><span class="n">3 / 6</span><strong>Foi decisão de todos</strong><p>O placar ficou em 7 a 0. Ou seja: ninguém votou contra.</p><span class="chip dado">placar_votacao</span></div>
+            </div>
+            <p class="mu" style="margin-top:9px">Arraste para ver os slides 4 a 6.</p>
+          </div>
+          <div class="dec"><span class="ok"><b>●</b> Compliance ok · sem Recomendação</span><div class="sp"></div><div class="btn ghost">Reprovar…</div><div class="btn">APROVAR</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Gaveta lateral</h3><p>A Célula desliza por cima da Matriz, que continua visível e apagada atrás, com a Célula aberta destacada. As setas <b>‹ ›</b> passam para a Célula vizinha sem voltar à Matriz. Laudo, Âncoras e Pacote ficam em abas. Você nunca perde onde estava, mas o espaço é menor: ao ler um texto longo, a gaveta aperta.</p></div>
+  </div>
+
+  <!-- ============ B: página ============ -->
+  <div class="card" data-choice="b-pagina" onclick="toggleSelect(this)">
+    <div class="suno">
+      <div class="sb"><div class="logo"><i>(</i> SUNO <i>)</i></div><div class="nv">Fontes</div><div class="nv">Curadoria</div><div class="nv on">Saídas <b>2</b></div></div>
+      <div class="mn"><div class="pg">
+        <div class="top">
+          <div class="bc">Saídas › Copom 280 · pauta juros › Iniciante · Carrossel</div>
+          <div class="tl"><h4>Iniciante · Carrossel</h4><span class="chip ok">Laudo: aprovada</span><span class="chip">1 rodada</span><div class="sp"></div><span class="mu">‹ Célula anterior · próxima ›</span></div>
+        </div>
+        <div class="cols">
+          <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+            <div class="pn"><h5>Conteúdo <span class="mu" style="font-weight:400">6 slides</span></h5>
+              <div class="g6">
+                <div class="sd"><span class="n">1 / 6</span><strong>O juro do país caiu</strong><p>O Copom é o grupo que define o juro básico do Brasil. Ele acabou de baixar esse juro.</p><span class="chip dado">selic_decidida</span></div>
+                <div class="sd"><span class="n">2 / 6</span><strong>Quanto ficou</strong><p>A taxa Selic foi para 14,00% a.a., segundo o comunicado. A decisão saiu em 4 e 5 de agosto de 2026.</p><span class="chip dado">selic_decidida</span></div>
+                <div class="sd"><span class="n">3 / 6</span><strong>Foi decisão de todos</strong><p>O placar ficou em 7 a 0. Ou seja: ninguém votou contra.</p><span class="chip dado">placar_votacao</span></div>
+                <div class="sd"><span class="n">4 / 6</span><strong>Por que baixou</strong><p>A inflação é a alta geral dos preços. Ela ainda está alta. Mas já sobe menos do que subia.</p></div>
+                <div class="sd"><span class="n">5 / 6</span><strong>O que esperam dos preços</strong><p>A conta do governo é de 5,1% neste ano. No ano que vem, cai para 3,8%.</p><span class="chip dado">ipca_projecao…</span></div>
+                <div class="sd"><span class="n">6 / 6</span><strong>No seu bolso</strong><p>Juro menor deixa o crédito mais barato. E faz a poupança render menos.</p></div>
+              </div>
+            </div>
+            <div class="pn pk"><h5 style="margin:0">Pacote de publicação</h5><span class="mu">vídeo · legenda · hashtags · imagens</span><span class="chip">não montado</span><div class="sp"></div><div class="btn ghost" style="padding:5px 13px">Montar Pacote</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+            <div class="pn"><h5>Laudo <span class="chip ok">aprovada</span></h5>
+              <div class="mt"><span>Integridade</span><div class="bar"><i style="width:100%"></i></div><span class="v">1,00 <span class="mu">/ ≥ 1,00</span></span></div>
+              <div class="mt"><span>Flesch-BR</span><div class="bar"><i style="width:89%"></i></div><span class="v">89,1 <span class="mu">/ ≥ 50</span></span></div>
+              <div class="mt"><span>Densidade</span><div class="bar"><i style="width:3%"></i></div><span class="v">0,029</span></div>
+              <div class="mt"><span>Aderência</span><div class="bar"><i style="width:100%"></i></div><span class="v">1,00 <span class="mu">/ ≥ 1,00</span></span></div>
+              <div class="mt"><span>Recomendação</span><div class="bar"><i style="width:0"></i></div><span class="v">0 <span class="mu">/ ≤ 1</span></span></div>
+            </div>
+            <div class="pn"><h5>Âncoras citadas <span class="chip">5</span></h5>
+              <div class="an"><b>Selic decidida</b><span>“…reduzir a taxa básica de juros para 14,00% a.a.…”</span><em>14,00 % a.a.</em></div>
+              <div class="an"><b>Placar da votação</b><span>“Votaram por essa decisão os seguintes membros…”</span><em>7 a 0</em></div>
+              <div class="an"><b>Data da reunião</b><span>trecho da Ata</span><em>4 e 5 ago 2026</em></div>
+              <div class="an"><b>IPCA, ano corrente</b><span>trecho da Ata</span><em>5,1 %</em></div>
+            </div>
+          </div>
+        </div>
+        <div class="dec"><span class="ok"><b>●</b> Compliance ok · sem Recomendação</span><div class="sp"></div><div class="btn ghost">Reprovar…</div><div class="btn">APROVAR</div></div>
+      </div></div>
+    </div>
+    <div class="card-body"><h3>B · Página inteira, duas colunas</h3><p>A Célula ocupa a tela. O conteúdo fica à esquerda, e o Laudo e as Âncoras ficam à direita, sempre visíveis, sem abas: você confere o número do slide contra a Âncora com os olhos, sem trocar de aba. O Pacote fica embaixo. A barra de decisão é fixa no rodapé. Perde o contexto da Matriz, e é preciso voltar para trocar de Célula (há ‹ › para a vizinha).</p></div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:1.5rem">
+  <div class="label">Minha recomendação</div>
+  <p style="color:var(--text-secondary)">A <b>B</b>. Seu trabalho aqui é conferir: o número do slide bate com a Âncora? o Laudo está limpo? Isso pede o conteúdo, o Laudo e as Âncoras na mesma vista. Com a Matriz já escolhida para a Saída, a gaveta repetiria o que ela mostra. Mas a gaveta (A) é melhor se você abre muitas Células em sequência.</p>
+  <p style="color:var(--text-secondary);margin-top:.75rem"><b>Um ponto a decidir depois:</b> o botão <i>Montar Pacote</i> exige que a API dispare mais um tipo de job (hoje o Pacote só sai pelo terminal). Mantive no mockup para você ver onde ele ficaria.</p>
+</div>
+
+</body></html>
