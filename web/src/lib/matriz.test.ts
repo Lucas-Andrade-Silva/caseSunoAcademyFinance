@@ -10,6 +10,7 @@ import {
   larguraDaBarra,
   maisRecentesPrimeiro,
   normalizarBusca,
+  progressoDoAndamento,
   vizinhas,
   type PosicaoParaTela,
 } from "./matriz";
@@ -266,5 +267,103 @@ describe("vizinhas e chaveDaPosicao", () => {
 
   it("a chave junta Audiência e Formato", () => {
     expect(chaveDaPosicao("iniciante", "carrossel")).toBe("iniciante:carrossel");
+  });
+});
+
+describe("Célula que ainda está sendo gerada", () => {
+  const viva = (etapa: string) => posicao({ destino: null, sem_conteudo: true, etapa });
+
+  it("cada etapa vira o estado que a mini-Matriz pinta", () => {
+    expect(estadoDaPosicao(viva("aguardando"))).toBe("na_fila");
+    expect(estadoDaPosicao(viva("gerando"))).toBe("gerando");
+    expect(estadoDaPosicao(viva("corrigindo"))).toBe("corrigindo");
+    expect(estadoDaPosicao(viva("aprovada"))).toBe("aguardando");
+    expect(estadoDaPosicao(viva("revisao_humana"))).toBe("revisao");
+  });
+
+  it("se a Saída parou, a Célula que não terminou fica vermelha", () => {
+    for (const status of ["interrompida", "falhou"]) {
+      expect(estadoDaPosicao(viva("aguardando"), status)).toBe("reprovada");
+      expect(estadoDaPosicao(viva("gerando"), status)).toBe("reprovada");
+      expect(estadoDaPosicao(viva("corrigindo"), status)).toBe("reprovada");
+    }
+  });
+
+  it("a Célula que já terminou antes de a Saída parar mantém o estado", () => {
+    expect(estadoDaPosicao(viva("aprovada"), "interrompida")).toBe("aguardando");
+    expect(estadoDaPosicao(viva("revisao_humana"), "falhou")).toBe("revisao");
+  });
+
+  it("em geração normal o status da Saída não muda nada", () => {
+    expect(estadoDaPosicao(viva("gerando"), "gerando")).toBe("gerando");
+  });
+
+  it("os chips dizem o que está acontecendo", () => {
+    expect(chipsDaPosicao(viva("aguardando")).laudo).toEqual({ texto: "Na fila", tom: "neutro" });
+    expect(chipsDaPosicao(viva("gerando")).laudo).toEqual({ texto: "Gerando…", tom: "alerta" });
+    expect(chipsDaPosicao(viva("corrigindo")).laudo).toEqual({
+      texto: "Corrigindo…",
+      tom: "alerta",
+    });
+    expect(chipsDaPosicao(viva("aprovada")).laudo).toEqual({ texto: "Laudo ok", tom: "ok" });
+    expect(chipsDaPosicao(viva("revisao_humana")).laudo).toEqual({
+      texto: "Revisão humana",
+      tom: "alerta",
+    });
+  });
+
+  it("Célula em geração não conta como esperando decisão", () => {
+    expect(contarPosicoes([viva("gerando"), viva("aprovada")]).aguardando).toBe(0);
+  });
+});
+
+describe("progressoDoAndamento", () => {
+  it("conta as Células terminadas, aprovadas ou em revisão humana", () => {
+    const celulas = [
+      { etapa: "aprovada" },
+      { etapa: "revisao_humana" },
+      { etapa: "gerando" },
+      { etapa: "aguardando" },
+    ];
+    expect(progressoDoAndamento(celulas)).toEqual({ terminadas: 2, total: 4, percentual: 50 });
+  });
+
+  it("arredonda o percentual", () => {
+    const celulas = [{ etapa: "aprovada" }, { etapa: "gerando" }, { etapa: "gerando" }];
+    expect(progressoDoAndamento(celulas).percentual).toBe(33);
+  });
+
+  it("sem Células o percentual é zero", () => {
+    expect(progressoDoAndamento([])).toEqual({ terminadas: 0, total: 0, percentual: 0 });
+  });
+
+  it("tudo terminado dá cem", () => {
+    expect(progressoDoAndamento([{ etapa: "aprovada" }, { etapa: "aprovada" }]).percentual).toBe(
+      100,
+    );
+  });
+});
+
+describe("filtro por grupo de status", () => {
+  const saidas = [
+    { nome: "a", identificador: "a", ata: "x", status: "gerando" },
+    { nome: "b", identificador: "b", ata: "x", status: "na_fila" },
+    { nome: "c", identificador: "c", ata: "x", status: "interrompida" },
+    { nome: "d", identificador: "d", ata: "x", status: "falhou" },
+    { nome: "e", identificador: "e", ata: "x", status: "concluida" },
+  ];
+
+  it("em geração junta o que está na fila e o que está gerando", () => {
+    const resultado = filtrarSaidas(saidas, { busca: "", status: "em_geracao" });
+    expect(resultado.map((s) => s.identificador)).toEqual(["a", "b"]);
+  });
+
+  it("com problema junta interrompidas e as que falharam", () => {
+    const resultado = filtrarSaidas(saidas, { busca: "", status: "com_problema" });
+    expect(resultado.map((s) => s.identificador)).toEqual(["c", "d"]);
+  });
+
+  it("Saída em geração não conta como aguardando revisão", () => {
+    expect(contarAguardando(saidas)).toBe(0);
   });
 });

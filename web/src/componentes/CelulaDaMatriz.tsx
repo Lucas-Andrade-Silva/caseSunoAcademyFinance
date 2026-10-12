@@ -17,7 +17,7 @@ export default function CelulaDaMatriz({
   return (
     <Link
       to={`/saidas/${encodeURIComponent(identificador)}/celulas/${posicao.audiencia}/${posicao.formato}`}
-      className="flex min-h-[64px] flex-col justify-center gap-1.5 rounded-xl bg-cartao p-3 transition hover:ring-1 hover:ring-suno/50"
+      className="flex min-h-[64px] flex-col justify-center gap-1.5 overflow-hidden rounded-xl bg-cartao p-1.5 transition sm:p-3 hover:ring-1 hover:ring-suno/50"
     >
       <span className="sr-only">
         {rotuloAudiencia(posicao.audiencia)} · {rotuloFormato(posicao.formato)}

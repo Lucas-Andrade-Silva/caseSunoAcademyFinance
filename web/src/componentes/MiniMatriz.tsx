@@ -8,6 +8,9 @@ const COR_DO_QUADRADO: Record<EstadoPosicao, string> = {
   aguardando: "border-[#5a5a60] bg-[#5a5a60]",
   revisao: "border-alerta bg-alerta",
   reprovada: "border-suno bg-suno",
+  na_fila: "border-[#5a5a60]",
+  gerando: "border-suno animate-pulse",
+  corrigindo: "border-alerta animate-pulse",
 };
 
 const TEXTO_DO_ESTADO: Record<EstadoPosicao, string> = {
@@ -15,9 +18,19 @@ const TEXTO_DO_ESTADO: Record<EstadoPosicao, string> = {
   aguardando: "espera a sua decisão",
   revisao: "revisão humana",
   reprovada: "reprovada ou parou",
+  na_fila: "na fila",
+  gerando: "gerando",
+  corrigindo: "em correção",
 };
 
-export default function MiniMatriz({ posicoes }: { posicoes: PosicaoResumo[] }) {
+/** `status` é o da Saída: numa Saída interrompida, a Célula que não terminou aparece parada. */
+export default function MiniMatriz({
+  posicoes,
+  status,
+}: {
+  posicoes: PosicaoResumo[];
+  status?: string;
+}) {
   const porPosicao = new Map(posicoes.map((p) => [chaveDaPosicao(p.audiencia, p.formato), p]));
   return (
     <div
@@ -28,10 +41,9 @@ export default function MiniMatriz({ posicoes }: { posicoes: PosicaoResumo[] }) 
       {AUDIENCIAS.flatMap((audiencia) =>
         FORMATOS.map((formato) => {
           const posicao = porPosicao.get(chaveDaPosicao(audiencia, formato));
-          const classe = posicao
-            ? COR_DO_QUADRADO[estadoDaPosicao(posicao)]
-            : "border-dashed border-[#3b3b40]";
-          const titulo = posicao ? TEXTO_DO_ESTADO[estadoDaPosicao(posicao)] : "não pedida";
+          const estado = posicao ? estadoDaPosicao(posicao, status) : null;
+          const classe = estado ? COR_DO_QUADRADO[estado] : "border-dashed border-[#3b3b40]";
+          const titulo = estado ? TEXTO_DO_ESTADO[estado] : "não pedida";
           return (
             <span
               key={`${audiencia}:${formato}`}
@@ -51,6 +63,7 @@ export function LegendaMiniMatriz() {
     { classe: "border-[#5a5a60] bg-[#5a5a60]", texto: "espera a sua decisão" },
     { classe: "border-alerta bg-alerta", texto: "revisão humana" },
     { classe: "border-suno bg-suno", texto: "reprovada ou parou" },
+    { classe: "border-suno animate-pulse", texto: "gerando" },
     { classe: "border-dashed border-[#3b3b40]", texto: "não pedida" },
   ];
   return (

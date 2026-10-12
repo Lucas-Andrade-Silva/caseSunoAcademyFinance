@@ -113,8 +113,8 @@ def _casa_data(achado: NumeroEncontrado, ancora: AncoraNumerica) -> bool:
         # grupo `dias`) — não há "mês e ano sem dia" chegando aqui para desambiguar. Um
         # `data_iso` presente que não bate é um dia diferente, ponto: "31 de agosto de 2026"
         # não pode casar com a Âncora "4 e 5 de agosto de 2026" só por caírem no mesmo mês
-        # (achado Crítico do revisor de erros, 2026-09-19 — `mes_e_ano_no_literal` existe
-        # para o caso de ano solto, abaixo, não para mascarar um dia errado).
+        # (achado Crítico do revisor de erros, 2026-09-19). O caso de ano solto é tratado
+        # abaixo e não pode mascarar um dia errado.
         return achado.data_iso == ancora.data_iso
     # Ano solto: casa com qualquer Âncora de data do mesmo ano.
     return achado.ano == ancora.data_iso.year

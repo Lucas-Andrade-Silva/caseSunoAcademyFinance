@@ -58,6 +58,18 @@ MATRIZ: tuple[tuple[Audiencia, Formato], ...] = tuple(
 """As nove combinações. A ordem é estável e é a ordem de gravação em disco."""
 
 
+class PosicaoDaMatriz(BaseModel):
+    """Uma posição da Matriz em JSON (o pedido e a API). O pipeline usa a tupla de ``MATRIZ``."""
+
+    model_config = ConfigDict(frozen=True)
+
+    audiencia: Audiencia
+    formato: Formato
+
+    def como_tupla(self) -> tuple[Audiencia, Formato]:
+        return (self.audiencia, self.formato)
+
+
 class ModoSelecao(StrEnum):
     """Como os itens aprovados pela curadoria humana alimentam a Matriz."""
 
@@ -87,6 +99,17 @@ class SelecaoCuradoria(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class CategoriaDaAta(StrEnum):
+    """A que Origem a Ata pertence. Só o Copom tem Limiares, Léxico e Âncoras essenciais calibrados."""
+
+    COPOM = "copom"
+    COMUNICADO_RELEVANTE = "comunicado_relevante"
+    RELEASE = "release"
+    IMPORTADA = "importada"
+    UNIDA = "unida"
+    """A Visão unida: várias Atas reunidas num só dossiê, com as chaves de Âncora prefixadas."""
+
+
 class Ata(BaseModel):
     """O comunicado financeiro público que entra no sistema (ADR 0006)."""
 
@@ -104,6 +127,18 @@ class Ata(BaseModel):
     arquivo: CaminhoPortavel | None = Field(default=None, description="Caminho local do arquivo original.")
     texto: str = Field(description="Texto já extraído; é o que o Gerador lê.")
     idioma: Literal["pt", "en"] = "pt"
+    categoria: CategoriaDaAta = Field(
+        default=CategoriaDaAta.COPOM,
+        description="Ata sem categoria (as anteriores à interface) vale Copom.",
+    )
+    origem: str = Field(
+        default="copom",
+        description="Identificador da Origem no catálogo (data/fontes/catalogo.json).",
+    )
+    partes: list[str] = Field(
+        default_factory=list,
+        description="Só na Visão unida: os identificadores das Atas reunidas, na ordem (a1, a2…).",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -152,6 +187,38 @@ CHAVES_ESSENCIAIS: frozenset[str] = frozenset(
     }
 )
 """Sem estas, a extração está degradada e a Célula reprova por ``falha de extração``."""
+
+CHAVE_DATA_DO_COMUNICADO = "data_do_comunicado"
+CHAVE_NUMERO_PRINCIPAL = "numero_principal"
+
+CHAVES_ESSENCIAIS_GENERICAS: frozenset[str] = frozenset(
+    {CHAVE_DATA_DO_COMUNICADO, CHAVE_NUMERO_PRINCIPAL}
+)
+"""O que toda Ata fora do Copom precisa ter: uma data e um número com unidade, ambos por regra fixa.
+
+Limiares e Léxico foram medidos só com Atas do Copom: quem usa este conjunto leva o selo
+"não calibrado". Quais chaves valem de fato é decisão da pessoa dona do Avaliador.
+"""
+
+
+def chaves_essenciais_da(categoria: CategoriaDaAta) -> frozenset[str]:
+    """O conjunto essencial da categoria: o do Copom, ou o genérico para as demais."""
+    return CHAVES_ESSENCIAIS if categoria is CategoriaDaAta.COPOM else CHAVES_ESSENCIAIS_GENERICAS
+
+
+def chaves_essenciais_da_ata(ata: Ata) -> frozenset[str]:
+    """O conjunto essencial desta Ata. Na Visão unida é o genérico de **cada parte**, prefixado.
+
+    Se uma das Atas reunidas não tem data e número com unidade, a Matriz inteira reprova por
+    falha de extração: reunir um comunicado sem o que conferir não dá conteúdo conferível.
+    """
+    if ata.categoria is not CategoriaDaAta.UNIDA:
+        return chaves_essenciais_da(ata.categoria)
+    return frozenset(
+        f"a{posicao}_{chave}"
+        for posicao in range(1, len(ata.partes) + 1)
+        for chave in CHAVES_ESSENCIAIS_GENERICAS
+    )
 
 
 class AncoraNumerica(BaseModel):
@@ -237,24 +304,230 @@ class Ancoras(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class TipoSlide(StrEnum):
+    """O papel do slide no Carrossel; cada um tem seu template HTML (ADR 0020)."""
+
+    HOOK = "hook"
+    PONTO = "ponto"
+    CITACAO = "citacao"
+    CTA = "cta"
+
+
+class ComposicaoCarrossel(StrEnum):
+    """A composição visual escolhida pela direção de arte, separada do papel narrativo."""
+
+    EDITORIAL = "editorial"
+    MINIMALISTA = "minimalista"
+    INFOGRAFICO = "infografico"
+    COMPARATIVO = "comparativo"
+    ESTATISTICO = "estatistico"
+    NARRATIVO = "narrativo"
+
+
+class IntensidadeVisual(StrEnum):
+    BAIXA = "baixa"
+    MEDIA = "media"
+    ALTA = "alta"
+
+
+class EstadoAnaliseVisual(StrEnum):
+    NAO_SOLICITADA = "nao_solicitada"
+    PENDENTE = "pendente"
+    CONCLUIDA = "concluida"
+    ERRO = "erro"
+
+
+class AnaliseVisualReferencia(BaseModel):
+    """Padrões estruturais aproveitáveis sem copiar a identidade de outra publicação."""
+
+    posicao_do_titulo: str
+    proeminencia_do_titulo: str
+    densidade_textual: str
+    uso_de_imagem: str
+    tipo_de_fundo: str
+    elementos_visuais: list[str] = Field(default_factory=list)
+    estrutura_do_conteudo: list[str] = Field(default_factory=list)
+
+
+class ReferenciaVisual(BaseModel):
+    """Uma referência curada que orienta uma composição do catálogo fechado."""
+
+    identificador: str
+    titulo: str
+    tema: str
+    composicao: ComposicaoCarrossel
+    descricao: str
+    instrucao_de_design: str
+    analise: AnaliseVisualReferencia
+    aprovada: bool = True
+    origem: str = "Suno — referência interna"
+    imagem_disponivel: bool = False
+    estado_analise: EstadoAnaliseVisual = EstadoAnaliseVisual.NAO_SOLICITADA
+    provedor_analise: str | None = None
+    mensagem_analise: str | None = None
+
+
+class EscolhaDeLayout(BaseModel):
+    """Por que uma composição foi aplicada a um slide do Carrossel."""
+
+    indice: int = Field(ge=0)
+    composicao: ComposicaoCarrossel
+    pontuacao: int
+    motivos: tuple[str, ...] = ()
+    referencia_visual: str | None = None
+    intensidade_visual: IntensidadeVisual = IntensidadeVisual.MEDIA
+
+
+class DirecaoDeArteCarrossel(BaseModel):
+    """Plano efetivamente renderizado, com diversidade mensurável e auditável."""
+
+    escolhas: list[EscolhaDeLayout] = Field(default_factory=list)
+    distribuicao: dict[str, int] = Field(default_factory=dict)
+    historico_considerado: list[ComposicaoCarrossel] = Field(default_factory=list)
+    repeticoes_consecutivas: int = Field(default=0, ge=0)
+    origem_do_plano: Literal["ia", "deterministico", "curadoria"] = "deterministico"
+    provedor: str | None = None
+    motivo_fallback: str | None = None
+
+
 class Slide(BaseModel):
     """Um registro do roteiro de slides do Carrossel. O Avaliador julga o texto, não a imagem."""
 
+    tipo: TipoSlide = Field(
+        default=TipoSlide.PONTO,
+        description="hook no primeiro slide, cta no último, ponto ou citacao no meio.",
+    )
     titulo: str
     corpo: str
+    destaque: str | None = Field(
+        default=None,
+        description="Uma expressão do título a realçar; precisa aparecer literalmente nele.",
+    )
     dado: str | None = Field(
         default=None,
         description="Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009).",
     )
 
 
+class DuracaoDoVideo(StrEnum):
+    """A duração que a pessoa escolhe para o vídeo, em segundos. O valor é o texto do número
+    porque ``StrEnum`` serializa como string; ``segundos`` é o inteiro."""
+
+    S40 = "40"
+    S60 = "60"
+    S90 = "90"
+    S120 = "120"
+    S180 = "180"
+
+    @property
+    def segundos(self) -> int:
+        return int(self.value)
+
+
+class TipoDeCena(StrEnum):
+    """O layout de uma cena do Roteiro no design system (``suno.video.design``)."""
+
+    GANCHO = "gancho"
+    DADO_GRANDE = "dado_grande"
+    TEXTO_DESTAQUE = "texto_destaque"
+    LISTA = "lista"
+    COMPARACAO = "comparacao"
+    CITACAO = "citacao"
+    ENCERRAMENTO = "encerramento"
+
+
+class IconeDeCena(StrEnum):
+    """Os ícones do catálogo. O LLM escolhe um nome; o desenho vive no design system."""
+
+    JUROS = "juros"
+    INFLACAO = "inflacao"
+    GRAFICO_ALTA = "grafico_alta"
+    GRAFICO_QUEDA = "grafico_queda"
+    GRAFICO_ESTAVEL = "grafico_estavel"
+    CALENDARIO = "calendario"
+    BANCO = "banco"
+    BOLSO = "bolso"
+    ALERTA = "alerta"
+    LUPA = "lupa"
+    DOCUMENTO = "documento"
+    BALANCA = "balanca"
+    RELOGIO = "relogio"
+    PERGUNTA = "pergunta"
+    CHECK = "check"
+
+
+class TransicaoDeEntrada(StrEnum):
+    """Como a cena entra, vista da cena anterior. A primeira cena entra sempre em ``corte``."""
+
+    CORTE = "corte"
+    FADE = "fade"
+    DESLIZAR_ESQUERDA = "deslizar_esquerda"
+    DESLIZAR_CIMA = "deslizar_cima"
+    ZOOM = "zoom"
+
+
+class AnimacaoDoTexto(StrEnum):
+    """Como o texto da tela aparece."""
+
+    APARECER = "aparecer"
+    FADE = "fade"
+    DESLIZAR_BAIXO = "deslizar_baixo"
+    POP = "pop"
+    DIGITAR = "digitar"
+
+
+class EfeitoDeCena(StrEnum):
+    """O único efeito contínuo da cena; ``nenhum`` é a escolha sóbria, e a mais comum."""
+
+    NENHUM = "nenhum"
+    ZOOM_LENTO = "zoom_lento"
+    PULSO = "pulso"
+    SUBLINHADO = "sublinhado"
+    CONTAGEM = "contagem"
+
+
+class SomDeCena(StrEnum):
+    """Os sons do catálogo, sintetizados em código (nenhum arquivo de áudio é versionado)."""
+
+    WHOOSH = "whoosh"
+    POP = "pop"
+    CLIQUE = "clique"
+    DING = "ding"
+    SWELL = "swell"
+
+
 class BlocoFala(BaseModel):
-    """Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho."""
+    """Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho.
+
+    Além da fala e da rubrica, o bloco carrega a **direção de cena**: tudo o que a edição precisa
+    para executá-lo, escolhido de catálogos fechados (``suno.video.design``). Todos os campos
+    de direção têm padrão — um Roteiro gravado antes deles continua válido.
+    """
 
     inicio_s: float = Field(ge=0)
     fim_s: float = Field(gt=0)
     fala: str = Field(description="O que é dito. Os Limiares de Flesch-BR valem sobre isto.")
     tela: str = Field(default="", description="Rubrica de cena: o que aparece na tela.")
+    cena: TipoDeCena = Field(
+        default=TipoDeCena.TEXTO_DESTAQUE, description="O layout da cena, do catálogo."
+    )
+    icone: IconeDeCena | None = Field(default=None, description="Um ícone do catálogo, se houver.")
+    entrada: TransicaoDeEntrada = Field(
+        default=TransicaoDeEntrada.CORTE, description="Como esta cena entra."
+    )
+    texto_anima: AnimacaoDoTexto = Field(
+        default=AnimacaoDoTexto.FADE, description="Como o texto da tela aparece."
+    )
+    texto_entra_em_s: float = Field(
+        default=0.0, ge=0, description="Segundos depois do início da cena em que o texto aparece."
+    )
+    efeito: EfeitoDeCena = Field(default=EfeitoDeCena.NENHUM)
+    som_de_entrada: SomDeCena | None = Field(
+        default=None, description="Som que acompanha a transição de entrada."
+    )
+    som_de_efeito: SomDeCena | None = Field(
+        default=None, description="Som que marca o texto ou o efeito da cena."
+    )
 
     @model_validator(mode="after")
     def _fim_depois_do_inicio(self) -> BlocoFala:
@@ -275,6 +548,10 @@ class Conteudo(BaseModel):
     texto: str | None = Field(default=None, description="Texto analítico, em Markdown.")
     slides: list[Slide] | None = None
     blocos: list[BlocoFala] | None = None
+    duracao_alvo_s: int | None = Field(
+        default=None,
+        description="Roteiro: a duração que a pessoa escolheu (40, 60, 90, 120 ou 180 s).",
+    )
     ancoras_citadas: list[str] = Field(
         default_factory=list,
         description="Chaves das Âncoras numéricas preenchidas em molde nesta Célula.",
@@ -645,6 +922,9 @@ class AvaliacaoTransversal(BaseModel):
     total_recebido: int
     total_com_conteudo: int
     posicoes_faltantes: list[str] = Field(default_factory=list)
+    posicoes_inesperadas: list[str] = Field(
+        default_factory=list, description="Células que chegaram sem terem sido pedidas."
+    )
     posicoes_duplicadas: list[str] = Field(default_factory=list)
     posicoes_reprovadas: list[str] = Field(default_factory=list)
     referencias_invalidas: list[str] = Field(default_factory=list)
@@ -696,7 +976,7 @@ class JulgamentoTransversal(BaseModel):
     rodada: int = Field(ge=0, le=2)
     estado: EstadoJulgamentoTransversal
     problemas: list[ProblemaTransversal] = Field(default_factory=list)
-    provedor: str
+    provedor: str = ""
     falha: str | None = None
     avaliado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -779,12 +1059,43 @@ class Execucao(BaseModel):
         default_factory=list,
         description="Decisões humanas por Célula; posição sem registro está pendente.",
     )
+    pedido: list[PosicaoDaMatriz] = Field(
+        default_factory=list,
+        description="Posições da Matriz que foram pedidas; vazio (execução antiga) significa as nove.",
+    )
+    categoria: CategoriaDaAta = Field(
+        default=CategoriaDaAta.COPOM,
+        description="Categoria da Ata de origem; fora do Copom, a Saída é não calibrada.",
+    )
+    composicao_visual: ComposicaoCarrossel | None = Field(
+        default=None,
+        description="Família visual escolhida na curadoria para os Carrosséis desta Saída.",
+    )
+    referencia_visual: str | None = Field(
+        default=None,
+        description="Referência aprovada escolhida na curadoria; ausente em Saídas antigas.",
+    )
 
     @model_validator(mode="after")
     def _nome_padrao(self) -> Execucao:
         if not self.nome.strip():
             self.nome = self.identificador
         return self
+
+    @model_validator(mode="after")
+    def _pedido_sem_repeticao_e_em_ordem(self) -> Execucao:
+        posicoes = [p.como_tupla() for p in self.pedido]
+        if len(set(posicoes)) != len(posicoes):
+            raise ValueError("o pedido não aceita posição repetida")
+        ordem = {posicao: indice for indice, posicao in enumerate(MATRIZ)}
+        self.pedido = sorted(self.pedido, key=lambda p: ordem[p.como_tupla()])
+        return self
+
+    def posicoes_pedidas(self) -> tuple[tuple[Audiencia, Formato], ...]:
+        """As posições que esta execução devia gerar, na ordem de ``MATRIZ``."""
+        if not self.pedido:
+            return MATRIZ
+        return tuple(p.como_tupla() for p in self.pedido)
 
     def historico(self, audiencia: Audiencia, formato: Formato) -> HistoricoCelula | None:
         for h in self.celulas:
@@ -798,6 +1109,43 @@ class Execucao(BaseModel):
                 return decisao
         return None
 
+    def celula_liberada(self, audiencia: Audiencia, formato: Formato) -> bool:
+        """A Célula pode gerar Pacote: o Laudo aprovou, ou um revisor humano a aprovou (H4)."""
+        historico = self.historico(audiencia, formato)
+        if historico is not None and historico.destino_final is Destino.APROVADO:
+            return True
+        decisao = self.decisao_de(audiencia, formato)
+        return (
+            historico is not None
+            and historico.celula_final is not None
+            and decisao is not None
+            and decisao.estado is EstadoDecisao.APROVADA
+        )
+
+    def matriz_liberada(self) -> bool:
+        """O ciclo transversal aprovou a Matriz, ou só a reprovação deterministica de Células a
+        segurava e um revisor humano aprovou cada uma delas.
+
+        Falta, sobra ou repetição de posição, referência inválida e reprovação do LLM Judge não
+        se resolvem aprovando Célula: nesses casos a Matriz continua bloqueada.
+        """
+        ciclo = self.ciclo_transversal
+        if ciclo is None or ciclo.estado is EstadoAvaliacaoTransversal.APROVADA:
+            return True
+        det = ciclo.avaliacao_deterministica
+        estrutura_ok = not (
+            det.posicoes_faltantes
+            or det.posicoes_inesperadas
+            or det.posicoes_duplicadas
+            or det.referencias_invalidas
+        )
+        if not estrutura_ok or not det.posicoes_reprovadas or ciclo.julgamentos:
+            return False
+        return all(
+            self.celula_liberada(Audiencia(posicao.split(":")[0]), Formato(posicao.split(":")[1]))
+            for posicao in det.posicoes_reprovadas
+        )
+
     def contagem_por_motivo(self) -> dict[MotivoReprovacao, int]:
         contagem: dict[MotivoReprovacao, int] = {m: 0 for m in MotivoReprovacao}
         for h in self.celulas:
@@ -805,6 +1153,71 @@ class Execucao(BaseModel):
                 for motivo in t.laudo.motivos:
                     contagem[motivo] += 1
         return contagem
+
+
+# ---------------------------------------------------------------------------
+# O andamento de uma geração em segundo plano (ADR 0017)
+# ---------------------------------------------------------------------------
+
+
+class EtapaDaCelula(StrEnum):
+    """Onde uma Célula está enquanto a Matriz é gerada."""
+
+    AGUARDANDO = "aguardando"
+    GERANDO = "gerando"
+    CORRIGINDO = "corrigindo"
+    APROVADA = "aprovada"
+    REVISAO_HUMANA = "revisao_humana"
+
+
+class FaseDaExecucao(StrEnum):
+    """Onde a execução inteira está."""
+
+    EXTRAINDO_ANCORAS = "extraindo_ancoras"
+    GERANDO_CELULAS = "gerando_celulas"
+    AVALIANDO_MATRIZ = "avaliando_matriz"
+    GRAVANDO = "gravando"
+
+
+class EstadoDoAndamento(StrEnum):
+    """O estado do job. ``interrompida`` é o job que o servidor perdeu ao reiniciar."""
+
+    NA_FILA = "na_fila"
+    GERANDO = "gerando"
+    CONCLUIDA = "concluida"
+    INTERROMPIDA = "interrompida"
+    FALHOU = "falhou"
+
+
+class AndamentoDaCelula(BaseModel):
+    audiencia: Audiencia
+    formato: Formato
+    etapa: EtapaDaCelula = EtapaDaCelula.AGUARDANDO
+    rodada: int = Field(default=0, ge=0)
+
+
+class Andamento(BaseModel):
+    """``andamento.json``, ao lado de ``execucao.json``, que só é gravado ao fim do pipeline."""
+
+    identificador: str
+    nome: str
+    ata: str
+    provedor: str
+    comite: bool = False
+    categoria: CategoriaDaAta = CategoriaDaAta.COPOM
+    atas: list[str] = Field(
+        default_factory=list,
+        description="Os identificadores das Atas usadas: uma, ou de 2 a 5 na Visão unida.",
+    )
+    estado: EstadoDoAndamento
+    fase: FaseDaExecucao | None = None
+    celulas: list[AndamentoDaCelula] = Field(default_factory=list)
+    erro: str | None = Field(default=None, description="Sem credencial; vai para a tela.")
+    criado_em: datetime
+    atualizado_em: datetime
+    concluido_em: datetime | None = None
+    composicao_visual: ComposicaoCarrossel | None = None
+    referencia_visual: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -841,9 +1254,12 @@ class MedicaoVisual(BaseModel):
 
 
 class ParecerVisao(BaseModel):
-    """Resposta holística do juiz de visão sobre a folha de contato. Opcional."""
+    """Resposta do Eval visual sobre a folha de contato. Nunca aprova sozinho."""
 
     parece_quebrado: bool
+    legibilidade: Literal["boa", "atencao", "ruim"] = "boa"
+    coerencia_visual: Literal["boa", "atencao", "ruim"] = "boa"
+    aderencia_marca: Literal["boa", "atencao", "ruim"] = "boa"
     observacoes: list[str] = Field(default_factory=list)
     provedor: str
 
@@ -853,6 +1269,7 @@ class ConferenciaVisual(BaseModel):
 
     medicoes: list[MedicaoVisual] = Field(default_factory=list)
     juiz_visao: ParecerVisao | None = None
+    mensagem_juiz_visao: str | None = None
 
     @property
     def defeitos(self) -> list[MedicaoVisual]:
@@ -870,6 +1287,15 @@ class ImagemSlide(BaseModel):
     altura: int
 
 
+class FeedbackVisualHumano(BaseModel):
+    """A decisão H5: sinal de uso real, separado do parecer automático do Eval."""
+
+    aprovado: bool = True
+    revisor: str | None = None
+    observacao: str | None = None
+    em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class PacotePublicacao(BaseModel):
     """O conjunto pronto para um humano publicar, só de Célula aprovada."""
 
@@ -882,8 +1308,10 @@ class PacotePublicacao(BaseModel):
     folha_de_contato: CaminhoPortavel | None = None
     video: CaminhoPortavel | None = None
     conferencia: ConferenciaVisual = Field(default_factory=ConferenciaVisual)
+    direcao_de_arte: DirecaoDeArteCarrossel | None = None
     montado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     aprovado_por_humano: bool = False
+    feedback_visual_humano: FeedbackVisualHumano | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -897,6 +1325,8 @@ class PapelLLM(StrEnum):
     GERADOR = "gerador"
     JUIZ = "juiz"
     JUIZ_VISAO = "juiz_visao"
+    DIRETOR_ARTE = "diretor_arte"
+    ANALISTA_VISUAL = "analista_visual"
 
 
 class Mensagem(BaseModel):
@@ -904,7 +1334,7 @@ class Mensagem(BaseModel):
 
     autor: Literal["sistema", "usuario"]
     texto: str
-    imagem_png: bytes | None = Field(default=None, description="Só para JUIZ_VISAO.")
+    imagem_png: bytes | None = Field(default=None, description="Só para papéis multimodais.")
 
 
 class PedidoLLM(BaseModel):

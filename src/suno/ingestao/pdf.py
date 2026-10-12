@@ -15,7 +15,7 @@ from typing import Any
 
 import pypdf
 
-from suno.dominio import Ata
+from suno.dominio import Ata, CategoriaDaAta
 
 _ASSINATURA = b"%PDF"
 # 'copom-<numero>-<aaaa>-<mm>-<dd>', o padrão de nome usado em data/atas/.
@@ -113,6 +113,8 @@ def carregar_ata(caminho: Path) -> Ata:
         arquivo=arquivo_original,
         texto=texto,
         idioma=metadados.get("idioma", "pt"),
+        categoria=metadados.get("categoria", CategoriaDaAta.COPOM),
+        origem=metadados.get("origem", "copom"),
     )
 
 

@@ -8,8 +8,26 @@ saída com métricas objetivas antes de considerá-la pronta.
 ### O documento e suas saídas
 
 **Ata**:
-O comunicado financeiro público que entra no sistema. Por padrão, uma ata do Copom.
+O comunicado financeiro público que entra no sistema. Por padrão, uma ata do Copom; também vale
+um comunicado relevante da CVM ou um documento importado, cada um com a sua **categoria**.
 _Avoid_: documento, fonte, input, PDF
+
+**Origem**:
+De onde as Atas vêm: o Copom (BCB), os Fatos Relevantes da CVM, os Releases de Resultados da B3
+(ainda "em breve") e os documentos importados. Pode ser ligada ou desligada. Na tela se chama
+"Fonte", e cada Ata dela é um "item": esses dois são só rótulo de tela, como "Saída".
+
+**Destaque único** e **Visão unida**:
+As duas sugestões da curadoria. O Destaque único é uma Ata só (a mais recente que consegue gerar):
+todas as Células citam os mesmos fatos. A Visão unida junta de duas a cinco Atas num só conteúdo,
+com cada número citando o comunicado de onde vem; só gera no modo Real e leva o selo
+**não calibrado**. No código são os modos `separada` e `unida` da seleção.
+
+**Categoria da Ata**:
+`copom`, `comunicado_relevante`, `release`, `importada` ou `unida` (a Visão unida). Decide o conjunto de Âncoras
+essenciais: o Copom exige a decisão, a data e o placar; as demais, uma data e um número com
+unidade. Fora do Copom a Saída leva o selo **não calibrado**, porque Limiares e Léxico foram
+medidos só com Atas do Copom.
 
 **Âncora**:
 Uma afirmação factual extraída da Ata — um número, uma data, uma decisão — que toda
@@ -25,6 +43,17 @@ _Avoid_: persona, público, nível, perfil
 A forma que uma saída assume. São três: **Texto analítico**, **Carrossel** e
 **Roteiro**.
 _Avoid_: mídia, tipo, canal
+
+**Direção de cena**:
+O que a edição precisa para executar um bloco do Roteiro: layout, ícone, transição, animação e
+momento do texto, efeito e sons, escolhidos de um catálogo fechado. Não é texto: o único texto
+na tela é a rubrica `tela`.
+_Avoid_: storyboard, efeitos livres
+
+**Plano de edição**:
+O JSON versionado (para avatar sintético) e a tabela legível que descrevem, cena a cena, o vídeo
+de um Roteiro aprovado. Derivado do Roteiro; não passa pelo Avaliador.
+_Avoid_: prompt do vídeo, script do avatar
 
 **Célula**:
 Uma saída concreta, para uma Audiência num Formato. "Iniciante × Carrossel" é uma
@@ -115,3 +144,7 @@ rótulo de tela.
 **Decisão humana**:
 Aprovar ou reprovar uma Célula, registrada com motivo (obrigatório ao reprovar) e o nome do
 revisor. Não vale para a Célula cujo Laudo detectou Recomendação: essa não pode ser aprovada.
+
+**Pedido**:
+As Células que a pessoa marcou na Matriz antes de gerar: de uma a nove, em combinações soltas.
+Fica gravado na Saída. Sem pedido gravado (execução antiga), valem as nove.

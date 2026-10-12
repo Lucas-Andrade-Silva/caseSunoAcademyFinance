@@ -365,11 +365,16 @@ def test_aprovar_pacote_grava_e_a_leitura_seguinte_confirma(
     assert antes[0]["aprovado_por_humano"] is False
 
     resposta = cliente.post(
-        f"/api/execucoes/{IDENTIFICADOR}/pacotes/iniciante/carrossel/aprovar"
+        f"/api/execucoes/{IDENTIFICADOR}/pacotes/iniciante/carrossel/aprovar",
+        json={"revisor": "Ana", "observacao": "Carrossel pronto para publicação"},
     )
 
     assert resposta.status_code == 200
     assert resposta.json()["aprovado_por_humano"] is True
+    assert resposta.json()["feedback_visual_humano"]["revisor"] == "Ana"
+    assert resposta.json()["feedback_visual_humano"]["observacao"] == (
+        "Carrossel pronto para publicação"
+    )
 
     depois = cliente.get(f"/api/execucoes/{IDENTIFICADOR}/pacotes").json()
     assert depois[0]["aprovado_por_humano"] is True
@@ -452,7 +457,8 @@ def test_openapi_contem_os_schemas_do_dominio(cliente: TestClient) -> None:
 def test_saude_conta_as_execucoes(cliente: TestClient) -> None:
     resposta = cliente.get("/api/saude")
     assert resposta.status_code == 200
-    assert resposta.json() == {"ok": True, "execucoes": 1}
+    # A suíte roda sem chave de provedor no ambiente (conftest): o modo Real não está disponível.
+    assert resposta.json() == {"ok": True, "execucoes": 1, "real_disponivel": False}
 
 
 # ---------------------------------------------------------------------------
@@ -623,6 +629,46 @@ def test_renomear_com_nome_longo_demais_da_422(cliente: TestClient) -> None:
 def test_renomear_execucao_inexistente_da_404(cliente: TestClient) -> None:
     resposta = cliente.patch("/api/execucoes/nao-existe", json={"nome": "qualquer"})
     assert resposta.status_code == 404
+
+
+def test_excluir_apaga_a_pasta_e_some_da_lista(
+    cliente: TestClient, execucao_em_disco: Path
+) -> None:
+    resposta = cliente.delete(f"/api/execucoes/{IDENTIFICADOR}")
+
+    assert resposta.status_code == 204
+    assert not (execucao_em_disco / IDENTIFICADOR).exists()
+    assert cliente.get("/api/execucoes").json() == []
+
+
+def test_excluir_execucao_inexistente_da_404(cliente: TestClient) -> None:
+    assert cliente.delete("/api/execucoes/nao-existe").status_code == 404
+
+
+def test_baixar_pacote_devolve_zip_com_slides_e_legenda(
+    cliente: TestClient, execucao_em_disco: Path
+) -> None:
+    pasta = execucao_em_disco / IDENTIFICADOR / "pacote" / "iniciante-carrossel"
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta / "slide-01.png").write_bytes(b"png")
+    (pasta / "legenda.txt").write_text("legenda #tag", encoding="utf-8")
+    (pasta / "pacote.json").write_text("{}", encoding="utf-8")
+
+    resposta = cliente.get(f"/api/execucoes/{IDENTIFICADOR}/pacotes/iniciante/carrossel/baixar")
+
+    assert resposta.status_code == 200
+    assert resposta.headers["content-type"] == "application/zip"
+    import io
+    import zipfile
+
+    assert sorted(zipfile.ZipFile(io.BytesIO(resposta.content)).namelist()) == [
+        "legenda.txt",
+        "slide-01.png",
+    ]
+    assert (
+        cliente.get(f"/api/execucoes/{IDENTIFICADOR}/pacotes/avancado/roteiro/baixar").status_code
+        == 404
+    )
 
 
 def test_aprovar_celula_grava_a_decisao_e_resolve_a_pendencia(

@@ -21,7 +21,6 @@ dependencies = [
     "pyyaml==6.0.3",
     "matplotlib==3.11.1",              # ADR 0009
     "pillow==12.3.0",                  # ADR 0009, 0014
-    "numpy==2.5.3",
     "fastapi==0.136.3",                # ADR 0005
     "uvicorn==0.48.0",
 ]
@@ -36,6 +35,9 @@ dev = [
 video = [
     "imageio-ffmpeg==0.6.0",
     "edge-tts==7.2.8",
+]
+coleta = [
+    "instaloader==4.15.3",
 ]
 
 [project.scripts]

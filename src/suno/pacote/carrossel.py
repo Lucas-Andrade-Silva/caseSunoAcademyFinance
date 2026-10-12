@@ -26,6 +26,7 @@ from __future__ import annotations
 import io
 import json
 import math
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -43,8 +44,10 @@ from suno.dominio import (
     Audiencia,
     Celula,
     ChaveAncora,
+    EscolhaDeLayout,
     Formato,
     ImagemSlide,
+    ReferenciaVisual,
     Slide,
 )
 
@@ -58,11 +61,13 @@ PASTA_DE_LETRAS = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
 LETRA_FORTE = "DejaVuSans-Bold.ttf"
 LETRA_COMUM = "DejaVuSans.ttf"
 
-COR_FUNDO = "#0E1420"
-COR_TEXTO = "#F2F5FA"
-COR_APOIO = "#B9C7DA"
-COR_DESTAQUE = "#F0B429"
-"""Razões de contraste sobre o fundo: 16,9 · 10,7 · 9,9. Todas acima de CONTRASTE_MINIMO."""
+COR_FUNDO = "#252525"
+COR_TEXTO = "#FFFFFF"
+COR_APOIO = "#E6E6E6"
+COR_DESTAQUE = "#AF0404"
+COR_VERMELHO = "#FF0000"
+"""Paleta do anexo (#FF0000, #AF0404, #414141, #252525) mais o branco. O texto sobre o fundo fica
+bem acima de CONTRASTE_MINIMO; o vermelho puro só pinta formas e números grandes."""
 
 SELO_DA_AUDIENCIA: dict[Audiencia, str] = {
     Audiencia.INICIANTE: "Iniciante",
@@ -204,7 +209,7 @@ def _escrever_selo(desenho: ImageDraw.ImageDraw, audiencia: Audiencia) -> dict[s
         texto=rotulo,
         letra_nome=LETRA_FORTE,
         tamanho=TAMANHO_SELO,
-        cor=COR_FUNDO,
+        cor=COR_TEXTO,
         cor_atras=COR_DESTAQUE,
         x=MARGEM + RECUO_DO_SELO,
         y=Y_SELO + RECUO_VERTICAL_DO_SELO,
@@ -253,7 +258,7 @@ def _barras_antes_e_depois(
         eixo.set_facecolor(COR_FUNDO)
         alturas = [float(anterior.valor or 0.0), float(decidida.valor or 0.0)]
         barras = eixo.bar(
-            ["Antes", "Depois"], alturas, color=[COR_APOIO, COR_DESTAQUE], width=0.45
+            ["Antes", "Depois"], alturas, color=["#414141", COR_VERMELHO], width=0.45
         )
         for barra, ancora in zip(barras, (anterior, decidida)):
             eixo.text(
@@ -294,7 +299,7 @@ def _numero_grande(
             ancora.citacao(),
             ha="center",
             va="center",
-            color=COR_DESTAQUE,
+            color=COR_VERMELHO,
             fontsize=76,
             fontweight="bold",
             transform=eixo.transAxes,
@@ -349,7 +354,7 @@ def _desenhar_slide(
 ) -> tuple[Image.Image, dict[str, Any]]:
     imagem = Image.new("RGB", (LARGURA_SLIDE, ALTURA_SLIDE), COR_FUNDO)
     desenho = ImageDraw.Draw(imagem)
-    desenho.rectangle([0, 0, LARGURA_SLIDE, 10], fill=COR_DESTAQUE)
+    desenho.rectangle([0, 0, LARGURA_SLIDE, 10], fill=COR_VERMELHO)
 
     caixas = [_escrever_selo(desenho, audiencia)]
     caixas.append(
@@ -423,7 +428,50 @@ def _desenhar_slide(
     return imagem, manifesto
 
 
-def renderizar_carrossel(celula: Celula, ancoras: Ancoras, pasta: Path) -> list[ImagemSlide]:
+def motor_de_render() -> str:
+    """``puppeteer`` (padrão, ADR 0020) ou ``pillow`` (reserva sem Node, determinística).
+
+    ``SUNO_RENDER=pillow`` força a reserva; sem Node/Puppeteer instalado ela entra sozinha.
+    """
+    from suno.pacote import carrossel_html
+
+    escolhido = os.environ.get("SUNO_RENDER", "auto").lower()
+    if escolhido == "pillow" or not carrossel_html.disponivel():
+        return "pillow"
+    return "puppeteer"
+
+
+def renderizar_carrossel(
+    celula: Celula,
+    ancoras: Ancoras,
+    pasta: Path,
+    historico_layouts: tuple[str, ...] = (),
+    referencias_aprovadas: tuple[ReferenciaVisual, ...] = (),
+    plano_direcao: tuple[EscolhaDeLayout, ...] | None = None,
+) -> list[ImagemSlide]:
+    """Um PNG 1080x1350 por Slide; Puppeteer quando disponível, Pillow como reserva."""
+    if celula.formato is not Formato.CARROSSEL:
+        raise ValueError(f"renderizar_carrossel só aceita o Formato Carrossel, não {celula.formato}")
+    if motor_de_render() == "pillow":
+        return _renderizar_com_pillow(celula, ancoras, pasta)
+    from suno.pacote import carrossel_html
+
+    caminhos = carrossel_html.renderizar(
+        celula.conteudo.slides or [],
+        celula.audiencia,
+        ancoras,
+        pasta,
+        historico_layouts=historico_layouts,
+        referencias_aprovadas=referencias_aprovadas,
+        plano_direcao=plano_direcao,
+    )
+    return [
+        ImagemSlide(indice=i, caminho=c, largura=LARGURA_SLIDE, altura=ALTURA_SLIDE)
+        for i, c in enumerate(caminhos)
+    ]
+
+
+def _renderizar_com_pillow(celula: Celula, ancoras: Ancoras, pasta: Path) -> list[ImagemSlide]:
     """Um PNG 1080x1350 por Slide em ``<pasta>/slide-<nn>.png``, mais o manifesto ao lado.
 
     ``nn`` começa em 01 e acompanha o "n/total" do rodapé; ``ImagemSlide.indice`` continua

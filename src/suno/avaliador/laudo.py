@@ -81,10 +81,14 @@ def avaliar(
     *,
     limiares: Limiares | None = None,
     comite: "Comite | None" = None,
+    chaves_essenciais: frozenset[str] = CHAVES_ESSENCIAIS,
 ) -> Laudo:
     """``(Conteúdo, Âncora[], Audiência) → Laudo``: a costura inteira (ADR 0001).
 
     Sem LLM e sem rede enquanto ``comite`` for ``None``, que é o padrão.
+
+    ``chaves_essenciais`` é opcional e tem o padrão do Copom: só uma Ata de outra categoria
+    passa o conjunto genérico (``dominio.chaves_essenciais_da``). Quem não o usa não muda.
     """
     limiares_aplicados = limiares or LIMIARES_PROVISORIOS[audiencia]
     texto = conteudo.texto_avaliavel()
@@ -94,7 +98,7 @@ def avaliar(
     texto_conferido = conteudo.texto_de_conferencia()
 
     achados: list[_Achado] = [
-        _medir_integridade(ancoras),
+        _medir_integridade(ancoras, chaves_essenciais),
         _medir_flesch_br(texto, limiares_aplicados, audiencia),
         _medir_densidade(texto, limiares_aplicados, audiencia),
         _medir_aderencia(texto_conferido, ancoras, limiares_aplicados),
@@ -157,10 +161,12 @@ def _julgamento_do_comite(
 # ---------------------------------------------------------------------------
 
 
-def _medir_integridade(ancoras: Sequence[Ancora]) -> _Achado:
+def _medir_integridade(
+    ancoras: Sequence[Ancora], chaves_essenciais: frozenset[str] = CHAVES_ESSENCIAIS
+) -> _Achado:
     """A tabela de Âncoras está completa? Sem Correção: reescrever não conserta (ADR 0013)."""
-    medido = medir_integridade(ancoras)
-    total = len(CHAVES_ESSENCIAIS)
+    medido = medir_integridade(ancoras, chaves_essenciais)
+    total = len(chaves_essenciais)
     presentes = total - len(medido.faltantes)
     observacoes = [f"Âncora essencial ausente: {chave}" for chave in medido.faltantes]
     observacoes += [

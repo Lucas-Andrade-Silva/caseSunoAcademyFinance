@@ -233,9 +233,15 @@ determinística, a renderização é testável em CI como o Avaliador.
 
 ### Roteiro
 
-Fala cronometrada para vídeo vertical. O Gerador produz blocos de fala com marcação de tempo e
-indicação do que aparece na tela em cada bloco. O primeiro bloco é o gancho; os Limiares de
-Flesch-BR valem sobre o texto falado, não sobre a rubrica de cena.
+Fala cronometrada para vídeo vertical. O Gerador produz blocos de fala, cada um uma cena, com a
+indicação do que aparece na tela e a **direção de cena**: layout, ícone, transição de entrada,
+animação e momento do texto, efeito e sons, todos escolhidos de um catálogo fechado
+([ADR 0021](adr/0021-direcao-de-cena-do-roteiro-em-catalogo-fechado.md)). O primeiro bloco é o
+gancho; os Limiares de Flesch-BR valem sobre o texto falado, não sobre a rubrica de cena.
+
+A pessoa escolhe a **duração** antes de gerar: 40 s, 1 min, 1 min 30, 2 min ou 3 min (padrão: 1
+min). O pedido informa o orçamento de palavras e de cenas dessa duração, e o tempo de cada cena é
+recalculado pelo código a partir da fala.
 
 O Roteiro é o único Formato que não passa pelo comitê de juízes-LLM: só as métricas
 determinísticas o avaliam. É a mesma razão pela qual o vídeo pronto também não vai a juiz de visão
@@ -256,6 +262,10 @@ da ordem de corte do CLAUDE.md — o primeiro a virar "vídeo sem rosto" quando 
 
 Nenhum LLM olha o mp4. Duração, proporção e presença de áudio são medidas; o resto é uma pessoa
 assistindo no H5, que para sessenta segundos de vídeo é revisão completa, não amostra.
+
+Do Roteiro aprovado sai também o **plano de edição**: um JSON versionado, autocontido, para colar
+num gerador de vídeo com avatar sintético, e a tabela legível da mesma edição
+([ADR 0021](adr/0021-direcao-de-cena-do-roteiro-em-catalogo-fechado.md)).
 
 Um único mp4, 9:16, com dois destinos: a galeria da aplicação e o Pacote de publicação. Gerar um
 vídeo "para o app" e outro "para as redes" é o erro a evitar.
@@ -337,12 +347,22 @@ que o pytest lê e que o relatório cita. Três coisas que ela mostra e que a co
 - **Veredito em linguagem com o número ao lado** — "Alta aderência factual · 0,94". O rótulo é o
   que se lê; o número é o que o case cobra. Destaque visual reservado à ausência de Recomendação.
 
-Mais as três filas humanas: desempate (H3), revisão (H4) e aprovação do Pacote (H5).
+Três guias: **Fontes** (de onde vêm as Atas), **Curadoria** (escolher o que entra, configurar e
+gerar) e **Saídas** (revisar). A geração roda em segundo plano na API, um job por vez
+([ADR 0017](adr/0017-api-dispara-a-geracao-em-segundo-plano.md)); fora do Copom a Saída é "não
+calibrada" ([ADR 0018](adr/0018-origens-e-categoria-da-ata.md)); a Visão unida junta de duas a
+cinco Atas com as Âncoras prefixadas por parte
+([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)).
+
+As filas humanas viraram estados da Célula, resolvidos por uma Decisão humana (aprovar ou
+reprovar, com motivo): o desempate do Comitê (H3) e a revisão (H4) aparecem como chip na Célula, e
+a aprovação do Pacote (H5) fica no painel do Pacote. A Célula cujo Laudo detectou Recomendação não
+pode ser aprovada.
 
 ## Parâmetros ainda não fixados
 
-Número de slides do Carrossel, duração-alvo do Roteiro e comprimento do Texto analítico por
-Audiência não estão decididos aqui. São conhecimento de domínio da dona do Avaliador e saem da
+Número de slides do Carrossel e comprimento do Texto analítico por Audiência não estão decididos
+aqui (a duração do Roteiro é escolha da pessoa: ADR 0021). São conhecimento de domínio da dona do Avaliador e saem da
 Calibração (H2), junto com os Limiares.
 
 ## O que este diagrama não mostra

@@ -1,6 +1,11 @@
 # Front do Suno Content: desenho
 
-Data: 2026-10-09 · Estado: aguardando revisão do usuário · Mockups: [mockups-2026-10-09/](mockups-2026-10-09/)
+> **Estado (2026-10-10):** as Fases 0 a 5 foram executadas. Os registros de cada uma, com as divergências
+> deste desenho, estão em `docs/superpowers/plans/` (o "Registro da execução" no fim de cada plano), e as
+> decisões novas nos ADRs 0017 (geração em segundo plano), 0018 (Origens e categoria da Ata) e 0019 (Visão
+> unida). Nomes no código: Origem no lugar de "Fonte" e `categoria` no lugar de "tipo" (risco 9).
+
+Data: 2026-10-09 · Estado: executado (ver a nota acima) · Mockups: [mockups-2026-10-09/](mockups-2026-10-09/)
 
 ## 1. Objetivo
 

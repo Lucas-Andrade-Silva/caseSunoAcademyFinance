@@ -209,3 +209,17 @@ DADOS VÁLIDOS
 ## Observação de integração
 
 O pipeline atual aceita apenas `titulo`, `corpo` e `dado` por slide. Os campos visuais acima exigem ampliar o schema `Slide` e o renderizador. O modelo `gemini-3.1-flash-lite` gera texto e direção visual; ele não entrega os PNGs finais. Para imagens, use um modelo Gemini com saída de imagem ou gere os elementos separadamente e componha-os no renderizador local.
+
+## Atualização (ADR 0020): paleta do anexo e papel dos slides
+
+O render agora é HTML/CSS + Puppeteer. O Gemini devolve só estrutura e texto por slide
+(`tipo` hook/ponto/citacao/cta); os slides não são desenhados por IA. Paleta oficial do template:
+fundo #252525, painel #414141, vinho #AF0404, vermelho #FF0000, texto branco #FFFFFF.
+
+Prompt para uma ilustração opcional (Nano Banana), a ser colocada atrás do template:
+
+```text
+Ilustração flat, estilo clean e minimalista, aspect ratio 4:5, sem nenhum texto na imagem.
+Fundo #252525, formas em #414141 e #AF0404, acentos em #FF0000, detalhes em branco #FFFFFF.
+Tema: {{TEMA}}. Sem logotipos, sem pessoas reais, sem números ou gráficos.
+```

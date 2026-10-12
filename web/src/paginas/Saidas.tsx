@@ -1,6 +1,7 @@
 // A guia Saídas ("/saidas"): as Saídas registradas, cada uma com nome, fonte, estado e a
 // mini-Matriz. O conteúdo só aparece ao abrir a Saída (spec do front, seção 4.3).
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { listarExecucoes } from "../dados/cliente";
 import { usarRequisicao } from "../ganchos/usarRequisicao";
 import { Carregando, MensagemErro } from "../componentes/EstadoRequisicao";
@@ -17,11 +18,20 @@ const FILTROS: ReadonlyArray<{ valor: FiltroDeStatus; rotulo: string }> = [
   { valor: "todas", rotulo: "Todas" },
   { valor: "aguardando_revisao", rotulo: "Aguardando revisão" },
   { valor: "concluida", rotulo: "Concluídas" },
+  { valor: "em_geracao", rotulo: "Em geração" },
+  { valor: "com_problema", rotulo: "Interrompidas" },
 ];
+
+const EM_GERACAO = ["na_fila", "gerando"];
+const ATUALIZAR_A_CADA_MS = 3000;
 
 export default function Saidas() {
   const [recarga, recarregar] = useState(0);
-  const estado = usarRequisicao(listarExecucoes, [recarga]);
+  // Enquanto alguma Saída está sendo gerada, a lista se atualiza sozinha, sem piscar.
+  const estado = usarRequisicao(listarExecucoes, [recarga], {
+    atualizarACada: (dados) =>
+      dados.some((saida) => EM_GERACAO.includes(saida.status)) ? ATUALIZAR_A_CADA_MS : null,
+  });
   const [busca, definirBusca] = useState("");
   const [filtro, definirFiltro] = useState<FiltroDeStatus>("todas");
 
@@ -39,7 +49,11 @@ export default function Saidas() {
       <div className="px-5 py-4">
         <h1 className="text-[17px] font-bold">Saídas</h1>
         <p className="mt-3 text-sm text-suave">
-          Nenhuma Saída registrada em <code>data/execucoes/</code>.
+          Nenhuma Saída registrada ainda. Gere a primeira na guia{" "}
+          <Link to="/fontes" className="font-semibold text-suno hover:underline">
+            Fontes
+          </Link>
+          .
         </p>
       </div>
     );

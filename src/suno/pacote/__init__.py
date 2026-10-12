@@ -18,6 +18,7 @@ Três coisas que este módulo deliberadamente **não** faz:
 
 from __future__ import annotations
 
+import json
 import logging
 import shutil
 from pathlib import Path
@@ -26,16 +27,29 @@ from suno.dominio import (
     Audiencia,
     Celula,
     ConferenciaVisual,
-    Destino,
-    EstadoAvaliacaoTransversal,
     Execucao,
+    ErroProvedor,
     Formato,
     ImagemSlide,
     PacotePublicacao,
+    PapelLLM,
+    ReferenciaVisual,
 )
 from suno.pacote.carrossel import folha_de_contato, renderizar_carrossel
+from suno.pacote.direcao_de_arte import resumir_direcao_renderizada
+from suno.pacote.diretor_de_arte_ia import planejar_com_diretor_de_arte
+from suno.pacote.historico_layouts import (
+    NOME_DO_BANCO,
+    RepositorioHistoricoLayouts,
+    UsoDeLayout,
+    usos_do_plano,
+)
+from suno.pacote.feedback_visual import RepositorioFeedbackVisual
+from suno.pacote.referencias_visuais import RepositorioReferenciasVisuais
+from suno.provedores.base import Provedor
 from suno.pacote.legenda import montar_legenda
-from suno.pacote.visual import conferir_imagens
+from suno.pacote.visual import conferir_imagens, julgar_folha_de_contato
+from suno.video.plano import NOME_DO_PLANO, NOME_DO_PLANO_LEGIVEL, montar_plano, plano_em_markdown
 
 NOME_DA_PASTA = "pacote"
 NOME_DA_FOLHA = "folha-de-contato.png"
@@ -70,7 +84,7 @@ def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audien
     return None
 
 
-def _medir_video_se_disponivel(video: Path) -> list:
+def _medir_video_se_disponivel(video: Path, duracao_alvo_s: int | None = None) -> list:
     """Duração, proporção e áudio do mp4 já renderizado (ADR 0014) — sempre ligada, mas só entra
     no Pacote quando alguém rodou ``suno.cli video`` antes: este módulo não renderiza.
 
@@ -82,7 +96,7 @@ def _medir_video_se_disponivel(video: Path) -> list:
     from suno.video.render import medir_video
 
     try:
-        return medir_video(video)
+        return medir_video(video, duracao_alvo_s)
     except ImportError:
         _REGISTRO.warning(
             "%s existe, mas o extra \"video\" não está instalado (uv sync --extra video); "
@@ -93,7 +107,16 @@ def _medir_video_se_disponivel(video: Path) -> list:
 
 
 def _montar_uma(
-    execucao: Execucao, celula: Celula, pasta_do_pacote: Path, pasta_da_execucao: Path
+    execucao: Execucao,
+    celula: Celula,
+    pasta_do_pacote: Path,
+    pasta_da_execucao: Path,
+    historico_layouts: tuple[str, ...] = (),
+    referencias_aprovadas: tuple[ReferenciaVisual, ...] = (),
+    provedor_direcao: Provedor | None = None,
+    provedor_visao: Provedor | None = None,
+    sinais_humanos: dict[str, list[dict[str, int | str]]] | None = None,
+    referencia_preferida: ReferenciaVisual | None = None,
 ) -> PacotePublicacao:
     pasta_do_pacote.mkdir(parents=True, exist_ok=True)
     legenda, hashtags = montar_legenda(celula, execucao.ancoras)
@@ -101,18 +124,70 @@ def _montar_uma(
     imagens: list[ImagemSlide] = []
     folha: Path | None = None
     conferencia = ConferenciaVisual()
+    direcao_de_arte = None
     video: Path | None = None
 
     if celula.formato is Formato.CARROSSEL:
-        imagens = renderizar_carrossel(celula, execucao.ancoras, pasta_do_pacote)
+        resultado_direcao = planejar_com_diretor_de_arte(
+            celula.conteudo.slides or [],
+            referencias_aprovadas,
+            historico_layouts,
+            provedor=provedor_direcao,
+            sinais_humanos=sinais_humanos,
+            referencia_preferida=referencia_preferida,
+        )
+        imagens = renderizar_carrossel(
+            celula,
+            execucao.ancoras,
+            pasta_do_pacote,
+            historico_layouts=historico_layouts,
+            referencias_aprovadas=referencias_aprovadas,
+            plano_direcao=tuple(resultado_direcao.escolhas),
+        )
         folha = folha_de_contato(imagens, pasta_do_pacote / NOME_DA_FOLHA)
         conferencia = conferir_imagens(imagens, execucao.ancoras)
+        if provedor_visao is not None:
+            try:
+                conferencia = conferencia.model_copy(
+                    update={
+                        "juiz_visao": julgar_folha_de_contato(folha, provedor_visao),
+                        "mensagem_juiz_visao": None,
+                    }
+                )
+            except Exception as erro:  # noqa: BLE001 - o Eval opcional nunca bloqueia o Pacote
+                _REGISTRO.warning("Eval visual indisponível: %s", erro)
+                conferencia = conferencia.model_copy(
+                    update={
+                        "mensagem_juiz_visao": (
+                            "Eval visual indisponível; a revisão humana continua obrigatória."
+                        )
+                    }
+                )
+        direcao_de_arte = resumir_direcao_renderizada(
+            [Path(imagem.caminho).with_suffix(".json") for imagem in imagens],
+            historico_layouts,
+            origem_do_plano=resultado_direcao.origem,
+            provedor=resultado_direcao.provedor,
+            motivo_fallback=resultado_direcao.motivo_fallback,
+        )
     elif celula.formato is Formato.TEXTO_ANALITICO:
         (pasta_do_pacote / NOME_DO_TEXTO).write_text(celula.conteudo.texto or "", encoding="utf-8")
     else:
+        if celula.conteudo.blocos:
+            # O plano de edição (JSON para avatar + tabela legível) acompanha o Pacote: é o que
+            # um humano cola num gerador de vídeo se não usar o mp4 local.
+            plano = montar_plano(celula.conteudo, celula.audiencia)
+            (pasta_do_pacote / NOME_DO_PLANO).write_text(
+                json.dumps(plano, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            (pasta_do_pacote / NOME_DO_PLANO_LEGIVEL).write_text(
+                plano_em_markdown(plano), encoding="utf-8"
+            )
         video = _video_ja_renderizado(pasta_do_pacote, pasta_da_execucao, celula.audiencia)
         if video is not None:
-            conferencia = ConferenciaVisual(medicoes=_medir_video_se_disponivel(video))
+            conferencia = ConferenciaVisual(
+                medicoes=_medir_video_se_disponivel(video, celula.conteudo.duracao_alvo_s)
+            )
 
     (pasta_do_pacote / NOME_DA_LEGENDA).write_text(
         f"{legenda}\n\n{' '.join(hashtags)}\n", encoding="utf-8"
@@ -127,6 +202,7 @@ def _montar_uma(
         folha_de_contato=folha,
         video=video,
         conferencia=conferencia,
+        direcao_de_arte=direcao_de_arte,
     )
     (pasta_do_pacote / NOME_DO_REGISTRO).write_text(
         pacote.model_dump_json(indent=2), encoding="utf-8"
@@ -134,7 +210,14 @@ def _montar_uma(
     return pacote
 
 
-def montar_pacote(identificador_execucao: str, pasta_execucoes: Path) -> list[PacotePublicacao]:
+def montar_pacote(
+    identificador_execucao: str,
+    pasta_execucoes: Path,
+    *,
+    alvo: tuple[Audiencia, Formato] | None = None,
+    provedor_direcao: Provedor | None = None,
+    provedor_visao: Provedor | None = None,
+) -> list[PacotePublicacao]:
     """Um Pacote por Célula aprovada, em ``<pasta_execucoes>/<id>/pacote/<audiencia>-<formato>/``.
 
     Célula reprovada nunca ganha Pacote: o que o Avaliador recusou não chega ao humano como
@@ -144,24 +227,100 @@ def montar_pacote(identificador_execucao: str, pasta_execucoes: Path) -> list[Pa
     execucao = _ler_execucao(identificador_execucao, pasta_execucoes)
     pasta_da_execucao = pasta_execucoes / identificador_execucao
     raiz = pasta_da_execucao / NOME_DA_PASTA
-    if (
-        execucao.ciclo_transversal is not None
-        and execucao.ciclo_transversal.estado is not EstadoAvaliacaoTransversal.APROVADA
-    ):
-        _remover_pacotes_obsoletos(raiz, set())
-        return []
+    repositorio = RepositorioHistoricoLayouts(Path(pasta_execucoes) / NOME_DO_BANCO)
+    repositorio_feedback = RepositorioFeedbackVisual(Path(pasta_execucoes) / NOME_DO_BANCO)
+    referencias = tuple(
+        RepositorioReferenciasVisuais(Path(pasta_execucoes) / NOME_DO_BANCO).listar(
+            apenas_aprovadas=True
+        )
+    )
+    referencia_preferida = None
+    if execucao.referencia_visual is not None:
+        referencia_preferida = next(
+            (
+                referencia
+                for referencia in referencias
+                if referencia.identificador == execucao.referencia_visual
+            ),
+            None,
+        )
+        if referencia_preferida is None:
+            raise ValueError(
+                "a referência visual escolhida na curadoria não está mais aprovada"
+            )
+        if referencia_preferida.composicao is not execucao.composicao_visual:
+            raise ValueError(
+                "a referência visual escolhida não pertence à composição da Saída"
+            )
+    if provedor_direcao is None:
+        try:
+            from suno.provedores.roteador import provedor_por_nome, roteador_para
+
+            provedor_direcao = (
+                roteador_para(PapelLLM.DIRETOR_ARTE)
+                if execucao.provedor_gerador in {"falso", "roteador"}
+                else provedor_por_nome(execucao.provedor_gerador)
+            )
+        except ErroProvedor as erro:
+            _REGISTRO.warning("Diretor de Arte IA indisponível; usando regras: %s", erro)
+    if provedor_visao is None:
+        try:
+            from suno.provedores.roteador import roteador_para
+
+            provedor_visao = roteador_para(PapelLLM.JUIZ_VISAO)
+        except ErroProvedor as erro:
+            _REGISTRO.warning("Eval visual indisponível; revisão humana permanece: %s", erro)
     pacotes: list[PacotePublicacao] = []
     aprovadas: set[str] = set()
-    for historico in execucao.celulas:
-        if historico.destino_final is not Destino.APROVADO:
+    historico_layouts: list[str] = [
+        layout.value
+        for layout in repositorio.recentes(excluir_execucao=identificador_execucao)
+    ]
+    usos_da_execucao: list[UsoDeLayout] = []
+    sinais_humanos = repositorio_feedback.resumo_para_diretor(
+        excluir_execucao=identificador_execucao
+    )
+    historicos = (
+        execucao.celulas
+        if alvo is None
+        else [
+            historico
+            for historico in execucao.celulas
+            if (historico.audiencia, historico.formato) == alvo
+        ]
+    )
+    for historico in historicos:
+        if not execucao.celula_liberada(historico.audiencia, historico.formato):
             continue
         celula = historico.celula_final
         if celula is None:
             continue
         nome = f"{historico.audiencia.value}-{historico.formato.value}"
         aprovadas.add(nome)
-        pacotes.append(_montar_uma(execucao, celula, raiz / nome, pasta_da_execucao))
-    _remover_pacotes_obsoletos(raiz, aprovadas)
+        pacote = _montar_uma(
+            execucao,
+            celula,
+            raiz / nome,
+            pasta_da_execucao,
+            historico_layouts=tuple(historico_layouts),
+            referencias_aprovadas=referencias,
+            provedor_direcao=provedor_direcao,
+            provedor_visao=provedor_visao,
+            sinais_humanos=sinais_humanos,
+            referencia_preferida=referencia_preferida,
+        )
+        pacotes.append(pacote)
+        if pacote.direcao_de_arte is not None:
+            usos = usos_do_plano(historico.audiencia.value, pacote.direcao_de_arte)
+            usos_da_execucao.extend(usos)
+            historico_layouts.extend(uso.composicao.value for uso in usos)
+    if alvo is None:
+        repositorio.substituir_execucao(identificador_execucao, usos_da_execucao)
+        _remover_pacotes_obsoletos(raiz, aprovadas)
+    elif alvo[1] is Formato.CARROSSEL:
+        repositorio.substituir_audiencia(
+            identificador_execucao, alvo[0].value, usos_da_execucao
+        )
     return pacotes
 
 

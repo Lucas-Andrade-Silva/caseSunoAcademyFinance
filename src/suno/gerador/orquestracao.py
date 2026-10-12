@@ -19,7 +19,7 @@ from suno.dominio import (
     JulgamentoTransversal,
     ResultadoCicloTransversal,
 )
-from suno.gerador.ciclo import sem_credencial
+from suno.gerador.ciclo import Andou, sem_credencial
 from suno.gerador.curador import DossieCurado
 from suno.gerador.personas import AGENTES_GERADORES, AgenteGeradorPersona
 from suno.provedores.base import Provedor
@@ -32,6 +32,7 @@ TETO_DE_CORRECOES_TRANSVERSAIS = 2
 
 
 def _ordenar(celulas: Sequence[HistoricoCelula]) -> list[HistoricoCelula]:
+    """Na ordem de ``MATRIZ``."""
     por_posicao = {(celula.audiencia, celula.formato): celula for celula in celulas}
     return [por_posicao[posicao] for posicao in MATRIZ if posicao in por_posicao]
 
@@ -43,11 +44,17 @@ def _regenerar_afetadas(
     provedor: Provedor,
     *,
     comite: "Comite | None",
+    posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
+    ao_andar: Andou | None = None,
 ) -> tuple[list[HistoricoCelula], list[CorrecaoTransversalAplicada]]:
     por_posicao = {(celula.audiencia, celula.formato): celula for celula in atuais}
+    pedidas = set(posicoes)
     instrucoes: dict[tuple[Audiencia, Formato], list[str]] = {}
     for problema in julgamento.problemas:
         posicao = (problema.audiencia, problema.formato)
+        if posicao not in pedidas:
+            # O Judge citou uma Célula que ninguém pediu: ela não existe na Matriz desta Saída.
+            continue
         instrucao = (
             f"[{problema.criterio.value}] {problema.correcao} "
             f"Evidência observada: {problema.evidencia}"
@@ -62,6 +69,9 @@ def _regenerar_afetadas(
     for (audiencia, formato), orientacoes in instrucoes.items():
         por_audiencia.setdefault(audiencia, {})[formato] = orientacoes
 
+    if not por_audiencia:
+        return _ordenar(list(por_posicao.values())), []
+
     novos: list[HistoricoCelula] = []
     with ThreadPoolExecutor(max_workers=len(por_audiencia)) as executor:
         futuros = [
@@ -72,6 +82,7 @@ def _regenerar_afetadas(
                 list(por_formato),
                 comite=comite,
                 orientacoes=por_formato,
+                ao_andar=ao_andar,
             )
             for audiencia, por_formato in por_audiencia.items()
         ]
@@ -101,15 +112,21 @@ def rodar_ciclo_transversal(
     provedor: Provedor,
     *,
     comite: "Comite | None" = None,
+    posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
+    ao_andar: Andou | None = None,
 ) -> tuple[list[HistoricoCelula], ResultadoCicloTransversal]:
-    """Aprova a Matriz ou termina em revisão humana com todo o histórico preservado."""
+    """Aprova a Matriz ou termina em revisão humana com todo o histórico preservado.
+
+    ``posicoes`` é o pedido (padrão: as nove). Quem decide rodar este ciclo com menos de duas
+    Células é o chamador: coerência entre Células não faz sentido com uma só.
+    """
     atuais = _ordenar(celulas)
     julgamentos: list[JulgamentoTransversal] = []
     correcoes: list[CorrecaoTransversalAplicada] = []
     juiz = AgenteAvaliadorTransversal(provedor)
 
     for rodada in range(TETO_DE_CORRECOES_TRANSVERSAIS + 1):
-        deterministica = avaliar_matriz(atuais, dossie.ancoras)
+        deterministica = avaliar_matriz(atuais, dossie.ancoras, posicoes=posicoes)
         if deterministica.estado is not EstadoAvaliacaoTransversal.APROVADA:
             return atuais, ResultadoCicloTransversal(
                 estado=EstadoAvaliacaoTransversal.REVISAO_HUMANA,
@@ -173,7 +190,13 @@ def rodar_ciclo_transversal(
             )
 
         atuais, aplicadas = _regenerar_afetadas(
-            dossie, atuais, julgamento, provedor, comite=comite
+            dossie,
+            atuais,
+            julgamento,
+            provedor,
+            comite=comite,
+            posicoes=posicoes,
+            ao_andar=ao_andar,
         )
         correcoes.extend(aplicadas)
 

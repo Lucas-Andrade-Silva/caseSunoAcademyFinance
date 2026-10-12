@@ -454,10 +454,3 @@ def normalizar_placar(literal: str) -> str:
     limpo = _sem_acento(literal).lower()
     limpo = re.sub(r"\b(por|votos?)\b", " ", limpo)
     return re.sub(r"\s+", " ", limpo).strip()
-
-
-def mes_e_ano_no_literal(literal: str, quando: date) -> bool:
-    """O literal cita o mês e o ano desta data? É como uma data casa sem ``data_iso``."""
-    limpo = _sem_acento(literal).lower()
-    nomes = {_sem_acento(nome) for nome, indice in _MESES.items() if indice == quando.month}
-    return str(quando.year) in limpo and any(nome in limpo for nome in nomes)

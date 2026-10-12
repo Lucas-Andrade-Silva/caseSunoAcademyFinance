@@ -347,5 +347,11 @@
         }
       ]
     }
+  ],
+  "juiz_transversal:0": [
+    {
+      "estado": "aprovado",
+      "problemas": []
+    }
   ]
 }

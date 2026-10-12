@@ -12,6 +12,7 @@ import {
   type DecisaoHumana,
   type Formato,
 } from "../dados/cliente";
+import { mensagemDeFalha } from "../dados/cliente";
 import { usarRequisicao } from "../ganchos/usarRequisicao";
 import { Carregando, MensagemErro } from "../componentes/EstadoRequisicao";
 import BarraDecisao from "../componentes/BarraDecisao";
@@ -23,16 +24,23 @@ import SecaoPacote from "../componentes/SecaoPacote";
 import Reprovacao from "../componentes/Reprovacao";
 import VereditoCartao from "../componentes/VereditoCartao";
 import { celulaBloqueada, chaveDaPosicao, vizinhas } from "../lib/matriz";
+import { motivoSemPacote } from "../lib/pacote";
 import { guardarRevisor } from "../lib/revisor";
 import { rotuloAudiencia, rotuloFormato } from "../texto/rotulos";
 
 export default function CelulaAberta() {
-  const parametros = useParams<{ id: string; audiencia: string; formato: string }>();
+  const parametros = useParams<{
+    id: string;
+    audiencia: string;
+    formato: string;
+  }>();
   const id = parametros.id ?? "";
   const audiencia = parametros.audiencia as Audiencia;
   const formato = parametros.formato as Formato;
 
   const [recarga, recarregar] = useState(0);
+  const [aviso, definirAviso] = useState<string | null>(null);
+  const [gatilhoDeMontagem, definirGatilhoDeMontagem] = useState(0);
   const [enviando, definirEnviando] = useState(false);
   const [erroDaDecisao, definirErroDaDecisao] = useState<string | null>(null);
   const [registrada, definirRegistrada] = useState<{
@@ -47,8 +55,10 @@ export default function CelulaAberta() {
   );
   const estadoPacotes = usarRequisicao(() => listarPacotes(id), [id, recarga]);
 
-  if (estadoExecucao.situacao === "carregando") return <Carregando rotulo="Carregando Célula…" />;
-  if (estadoExecucao.situacao === "erro") return <MensagemErro erro={estadoExecucao.erro} />;
+  if (estadoExecucao.situacao === "carregando")
+    return <Carregando rotulo="Carregando Célula…" />;
+  if (estadoExecucao.situacao === "erro")
+    return <MensagemErro erro={estadoExecucao.erro} />;
 
   const execucao = estadoExecucao.dados;
   const chave = `${id}:${chaveDaPosicao(audiencia, formato)}`;
@@ -61,20 +71,31 @@ export default function CelulaAberta() {
   const decisaoLocal = registrada?.chave === chave ? registrada.decisao : null;
   const decisao =
     decisaoLocal ??
-    (execucao.decisoes ?? []).find((d) => d.audiencia === audiencia && d.formato === formato) ??
+    (execucao.decisoes ?? []).find(
+      (d) => d.audiencia === audiencia && d.formato === formato,
+    ) ??
     null;
   const pedidas = (execucao.celulas ?? []).map((h) => ({
     audiencia: h.audiencia,
     formato: h.formato,
   }));
   const { anterior, proxima } = vizinhas(pedidas, audiencia, formato);
+  const semPacote = motivoSemPacote({
+    destinoDaCelula: historico?.destino_final ?? "reprovado_revisao_humana",
+    aprovadaPorRevisor: decisao?.estado === "aprovada",
+  });
   const pacote =
     estadoPacotes.situacao === "pronto"
-      ? (estadoPacotes.dados.find((p) => p.audiencia === audiencia && p.formato === formato) ??
-        null)
+      ? (estadoPacotes.dados.find(
+          (p) => p.audiencia === audiencia && p.formato === formato,
+        ) ?? null)
       : null;
 
-  function decidir(estado: "aprovada" | "reprovada", motivo: string | null, revisor: string) {
+  function decidir(
+    estado: "aprovada" | "reprovada",
+    motivo: string | null,
+    revisor: string,
+  ) {
     definirEnviando(true);
     definirErroDaDecisao(null);
     guardarRevisor(revisor);
@@ -83,14 +104,29 @@ export default function CelulaAberta() {
       motivo,
       revisor: revisor === "" ? null : revisor,
     })
-      .then((nova) => definirRegistrada({ chave, decisao: nova }))
+      .then((nova) => {
+        definirRegistrada({ chave, decisao: nova });
+        if (estado === "aprovada" && formato === "carrossel") {
+          const motivoAposAprovacao = motivoSemPacote({
+            destinoDaCelula:
+              historico?.destino_final ?? "reprovado_revisao_humana",
+            aprovadaPorRevisor: nova.estado === "aprovada",
+          });
+          if (motivoAposAprovacao === null)
+            definirGatilhoDeMontagem((atual) => atual + 1);
+          else definirAviso(motivoAposAprovacao);
+        }
+      })
       .catch((falha: unknown) => {
-        definirErroDaDecisao(falha instanceof Error ? falha.message : String(falha));
+        definirErroDaDecisao(mensagemDeFalha(falha));
       })
       .finally(() => definirEnviando(false));
   }
 
-  function linkDaVizinha(destino: { audiencia: string; formato: string } | null, rotulo: string) {
+  function linkDaVizinha(
+    destino: { audiencia: string; formato: string } | null,
+    rotulo: string,
+  ) {
     if (destino === null) {
       return <span className="text-[#5d5d63]">{rotulo}</span>;
     }
@@ -112,7 +148,10 @@ export default function CelulaAberta() {
             Saídas
           </Link>{" "}
           ›{" "}
-          <Link to={`/saidas/${encodeURIComponent(id)}`} className="hover:text-texto">
+          <Link
+            to={`/saidas/${encodeURIComponent(id)}`}
+            className="hover:text-texto"
+          >
             {execucao.nome}
           </Link>{" "}
           › {rotuloAudiencia(audiencia)} · {rotuloFormato(formato)}
@@ -122,13 +161,18 @@ export default function CelulaAberta() {
             {rotuloAudiencia(audiencia)} · {rotuloFormato(formato)}
           </h1>
           {ultima && (
-            <Chip tom={historico?.destino_final === "aprovado" ? "ok" : "alerta"}>
-              {historico?.destino_final === "aprovado" ? "Laudo: aprovada" : "Laudo: não aprovada"}
+            <Chip
+              tom={historico?.destino_final === "aprovado" ? "ok" : "alerta"}
+            >
+              {historico?.destino_final === "aprovado"
+                ? "Laudo: aprovada"
+                : "Laudo: não aprovada"}
             </Chip>
           )}
           {tentativas.length > 0 && (
             <Chip>
-              {tentativas.length} {tentativas.length === 1 ? "rodada" : "rodadas"}
+              {tentativas.length}{" "}
+              {tentativas.length === 1 ? "rodada" : "rodadas"}
             </Chip>
           )}
           <div className="flex-1" />
@@ -151,15 +195,28 @@ export default function CelulaAberta() {
           <div className="min-w-0 space-y-3">
             <section className="rounded-2xl bg-cartao p-3.5">
               <h2 className="mb-2 text-[12.5px] font-bold">Conteúdo</h2>
-              <ConteudoCelula conteudo={ultima.celula.conteudo} />
+              <ConteudoCelula
+                conteudo={ultima.celula.conteudo}
+                plano={
+                  formato === "roteiro" &&
+                  historico?.destino_final === "aprovado"
+                    ? { identificador: id, audiencia }
+                    : undefined
+                }
+              />
             </section>
-            <Reprovacao laudo={ultima.laudo} destinoFinal={historico?.destino_final} />
+            <Reprovacao
+              laudo={ultima.laudo}
+              destinoFinal={historico?.destino_final}
+            />
             <SecaoPacote
               identificador={id}
               audiencia={audiencia}
               formato={formato}
               pacote={pacote}
+              motivoSemPacote={semPacote}
               onAtualizado={() => recarregar((atual) => atual + 1)}
+              gatilhoDeMontagem={gatilhoDeMontagem}
             />
             {tentativas.length > 1 && (
               <details className="rounded-2xl bg-cartao p-3.5">
@@ -168,13 +225,19 @@ export default function CelulaAberta() {
                 </summary>
                 <ol className="mt-3 space-y-3">
                   {tentativas.map((tentativa) => (
-                    <li key={tentativa.rodada} className="rounded-xl border border-linha p-3">
+                    <li
+                      key={tentativa.rodada}
+                      className="rounded-xl border border-linha p-3"
+                    >
                       <p className="mb-2 text-xs font-bold uppercase tracking-wide text-suave">
                         Rodada {tentativa.rodada}
                       </p>
                       <div className="space-y-1">
                         {tentativa.laudo.medidas.map((medida) => (
-                          <VereditoCartao key={medida.metrica} medida={medida} />
+                          <VereditoCartao
+                            key={medida.metrica}
+                            medida={medida}
+                          />
                         ))}
                       </div>
                     </li>
@@ -190,8 +253,12 @@ export default function CelulaAberta() {
               destinoFinal={historico?.destino_final ?? ultima.laudo.destino}
             />
             {estadoAncoras.situacao === "carregando" && <Carregando />}
-            {estadoAncoras.situacao === "erro" && <MensagemErro erro={estadoAncoras.erro} />}
-            {estadoAncoras.situacao === "pronto" && <SecaoAncoras ancoras={estadoAncoras.dados} />}
+            {estadoAncoras.situacao === "erro" && (
+              <MensagemErro erro={estadoAncoras.erro} />
+            )}
+            {estadoAncoras.situacao === "pronto" && (
+              <SecaoAncoras ancoras={estadoAncoras.dados} />
+            )}
           </div>
         </div>
       )}
@@ -202,8 +269,39 @@ export default function CelulaAberta() {
           decisao={decisao}
           enviando={enviando}
           erro={erroDaDecisao}
+          rotuloAprovar={
+            formato === "carrossel" ? "APROVAR E GERAR CARROSSEL" : "APROVAR"
+          }
           onDecidir={decidir}
         />
+      )}
+
+      {aviso && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="titulo-do-aviso"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-linha bg-cartao p-5 shadow-xl">
+            <h2 id="titulo-do-aviso" className="text-[15px] font-bold">
+              O carrossel não foi gerado
+            </h2>
+            <p className="mt-2 text-sm">
+              Sua aprovação foi registrada, mas o Pacote ainda não pode ser
+              montado.
+            </p>
+            <p className="mt-2 text-xs text-suave">{aviso}</p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => definirAviso(null)}
+              className="mt-4 rounded-full bg-suno px-5 py-2 text-xs font-bold tracking-wide text-white"
+            >
+              ENTENDI
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -27,19 +27,26 @@ import re
 
 from pydantic import BaseModel, Field
 
+from suno.avaliador.densidade import medir_densidade
 from suno.dominio import (
+    LIMIARES_PROVISORIOS,
     Ancoras,
     Audiencia,
     BlocoFala,
+    CategoriaDaAta,
     Conteudo,
     Correcao,
+    DuracaoDoVideo,
     Faixa,
+    ExigenciaDeExplicacao,
     Formato,
     Mensagem,
+    Metrica,
     PapelLLM,
     PedidoLLM,
     Slide,
 )
+from suno.video.design import cronometrar, diretriz_de_duracao, instrucao_de_direcao
 
 _registro = logging.getLogger(__name__)
 
@@ -56,8 +63,9 @@ ponto final que o LLM escreveu depois da citação, não um dígito.
 
 SLIDES_MINIMOS = 5
 SLIDES_MAXIMOS = 7
-SEGUNDOS_DO_ROTEIRO = 60
-"""Teto de duração do Roteiro, em segundos (ARQUITETURA.md)."""
+DURACAO_PADRAO_DO_ROTEIRO = DuracaoDoVideo.S60
+"""A duração do Roteiro quando a pessoa não escolhe: um minuto (ARQUITETURA.md). As opções são
+as de ``DuracaoDoVideo``: 40s, 1m, 1m30, 2m e 3m."""
 
 ALVO_FLESCH_BR: dict[Audiencia, Faixa] = {
     Audiencia.INICIANTE: Faixa(minimo=60.0),
@@ -68,6 +76,11 @@ ALVO_FLESCH_BR: dict[Audiencia, Faixa] = {
 
 MAX_TOKENS_DA_CELULA = 4096
 """A Ata inteira entra no pedido; a resposta estruturada é curta, mas o Carrossel tem sete slides."""
+
+
+def max_tokens_do_roteiro(duracao: DuracaoDoVideo) -> int:
+    """Cada cena carrega fala, rubrica e a direção de cena: o teto cresce com a duração."""
+    return min(8192, 2048 + 30 * duracao.segundos)
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +106,8 @@ class RespostaCarrossel(BaseModel):
 
 
 class RespostaRoteiro(BaseModel):
-    """Blocos de fala cronometrados; o primeiro é o gancho."""
+    """Blocos de fala com direção de cena; o primeiro é o gancho. O tempo de cada um é
+    recalculado em ``montar_conteudo`` pelo número de palavras."""
 
     blocos: list[BlocoFala] = Field(min_length=2)
 
@@ -143,19 +157,99 @@ INSTRUCAO_DO_FORMATO: dict[Formato, str] = {
         "e o que observar adiante (só o que a Ata sinaliza; nenhuma projeção sua)."
     ),
     Formato.CARROSSEL: (
-        f"Formato Carrossel: de {SLIDES_MINIMOS} a {SLIDES_MAXIMOS} slides, o primeiro é o "
-        "gancho, os do meio são o corpo e o último é a conclusão. Cada slide tem 'titulo' e "
-        "'corpo'; 'dado' é opcional e recebe a chave da Âncora a plotar naquele slide "
-        "(só a chave, sem chaves duplas)."
+        f"Formato Carrossel: de {SLIDES_MINIMOS} a {SLIDES_MAXIMOS} slides. O primeiro tem "
+        "'tipo' hook (a chamada que abre uma pergunta ou um contraste), o último tem 'tipo' cta "
+        "(chamada para ação que convida a ler a Ata ou acompanhar o tema — nunca a comprar, "
+        "vender ou manter algo) e os do meio têm 'tipo' ponto (um ponto, chave ou dica por "
+        "slide) ou citacao (um trecho curto da Ata, parafraseado). Cada slide tem 'titulo' de "
+        "até 8 palavras e 'corpo' de até 32; 'destaque' é opcional e repete literalmente uma "
+        "expressão do título para realçar; 'dado' é opcional e recebe a chave da Âncora a "
+        "plotar naquele slide (só a chave, sem chaves duplas)."
     ),
     Formato.ROTEIRO: (
-        f"Formato Roteiro: blocos de fala cronometrados somando no máximo {SEGUNDOS_DO_ROTEIRO} "
-        "segundos. O primeiro bloco é o gancho. 'fala' é o que é dito e é o que a Facilidade de "
-        "leitura mede; 'tela' é a rubrica de cena, não é lida em voz alta, mas aparece escrita "
-        "no vídeo — todo número em 'tela' também entra escrevendo `{{chave}}`, do mesmo jeito "
-        "que em 'fala'."
+        "Formato Roteiro: blocos de fala, cada um uma cena. O primeiro bloco é o gancho. "
+        "'fala' é o que é dito e é o que a Facilidade de leitura mede; 'tela' é a rubrica "
+        "de cena, não é lida em voz alta, mas aparece escrita no vídeo — todo número em "
+        "'tela' também entra escrevendo `{{chave}}`, do mesmo jeito que em 'fala'."
     ),
 }
+
+
+COMO_ESCREVER_NO_ALVO: dict[Audiencia, str] = {
+    Audiencia.INICIANTE: (
+        "Como chegar lá: frases de 8 a 12 palavras, nunca acima de 15. Uma ideia por frase; "
+        "troque vírgula por ponto. Prefira palavras de duas ou três sílabas ('alta' em vez de "
+        "'elevação', 'caro' em vez de 'oneroso'). Corte advérbios em '-mente'."
+    ),
+    Audiencia.INTERMEDIARIO: (
+        "Como chegar lá: frases de 15 a 22 palavras, alternando curtas e médias. Vocabulário "
+        "de mercado, sem empilhar orações subordinadas na mesma frase."
+    ),
+    Audiencia.AVANCADO: (
+        "Como chegar lá: frases longas, de 28 a 40 palavras, com orações subordinadas "
+        "encadeadas ('à medida que', 'na medida em que', 'conquanto'). Vocabulário técnico "
+        "polissilábico (transmissão, desancoragem, contracionista, assimetria). Evite frases "
+        "curtas: cada uma delas deixa o texto fácil demais para esta Audiência."
+    ),
+}
+"""O Flesch-BR é 248,835 − 1,015 × palavras por frase − 84,6 × sílabas por palavra. O LLM não
+calcula o índice, mas controla as duas variáveis: este texto traduz o alvo nelas."""
+
+MAXIMO_DE_TERMOS_LISTADOS = 25
+
+MARCAS_DE_EXPLICACAO = (
+    "Como explicar um termo de forma que conte: logo depois dele, na mesma frase, abra "
+    "parêntese, dois-pontos ou travessão — 'a inflação (a alta geral dos preços)' — ou escreva 'ou seja', 'isto é', 'que é', 'que são', 'significa', 'é como' ou "
+    "'funciona como'. Vírgula seguida de 'que representa', 'que consiste' ou 'onde' não conta "
+    "como explicação. Só a primeira vez que o termo aparece é conferida, e o título também "
+    "conta: não ponha termo técnico no título, deixe-o para o corpo, onde dá para explicar. "
+    "A explicação também é conferida: escreva-a só com palavras comuns, sem outro termo da "
+    "lista abaixo dentro dela ('a volta da confiança', não 'o retorno da confiança')."
+)
+
+
+def _bloco_de_explicacao(ata_texto: str, audiencia: Audiencia) -> str | None:
+    """As regras de explicação e os termos do Léxico desta Ata que a Audiência cobra explicados.
+
+    Mede a própria Ata com a Densidade: os termos que nela saem ``sem_explicacao`` são os que o
+    LLM tende a copiar, e são exatamente os que o Avaliador vai cobrar.
+    """
+    exigencia = LIMIARES_PROVISORIOS[audiencia].explicacao
+    if exigencia is ExigenciaDeExplicacao.NUNCA:
+        return None
+    termos = medir_densidade(ata_texto, exigencia).sem_explicacao[:MAXIMO_DE_TERMOS_LISTADOS]
+    if not termos:
+        return MARCAS_DE_EXPLICACAO
+    return (
+        f"{MARCAS_DE_EXPLICACAO}\nTermos desta Ata que exigem explicação se você usar (ou "
+        f"troque por palavra comum): {', '.join(termos)}."
+    )
+
+
+DICA_POR_METRICA: dict[Metrica, str] = {
+    Metrica.DENSIDADE: (
+        "Para cada termo listado: explique-o na primeira vez em que aparece, com parêntese "
+        "logo depois dele, ou troque-o por uma palavra comum. Se o termo está no título, "
+        "tire-o do título. Se ele aparece dentro da explicação de outro termo, troque-o por um "
+        "sinônimo comum ('volta' em vez de 'retorno', 'chance de perda' em vez de 'risco')."
+    ),
+    Metrica.ADERENCIA: (
+        "Todo número sai de uma `{{chave}}` da lista; apague o número que não tem chave."
+    ),
+}
+
+
+def _dica_de_flesch(correcao: Correcao) -> str:
+    faixa = correcao.faixa
+    facil_demais = (
+        faixa is not None
+        and faixa.maximo is not None
+        and correcao.valor_medido is not None
+        and correcao.valor_medido >= faixa.maximo
+    )
+    if facil_demais:
+        return "O texto está fácil demais: junte frases curtas em frases longas e use termos técnicos."
+    return "O texto está difícil demais: quebre as frases longas e troque palavras longas por curtas."
 
 
 def _alvo_em_palavras(audiencia: Audiencia) -> str:
@@ -174,13 +268,29 @@ def _lista_de_ancoras(ancoras: Ancoras) -> str:
     )
 
 
-def _bloco_de_correcoes(correcoes: list[Correcao]) -> str:
-    linhas = "\n".join(f"- {correcao.instrucao}" for correcao in correcoes)
-    return (
+def _bloco_de_correcoes(correcoes: list[Correcao], rascunho: str | None = None) -> str:
+    linhas: list[str] = []
+    for correcao in correcoes:
+        dica = (
+            _dica_de_flesch(correcao)
+            if correcao.metrica is Metrica.FLESCH_BR
+            else DICA_POR_METRICA.get(correcao.metrica)
+        )
+        linhas.append(f"- {correcao.instrucao}" + (f" {dica}" if dica else ""))
+    partes = [
         "O que precisa mudar (o Avaliador mediu a Célula da rodada anterior e reprovou):\n"
-        f"{linhas}\n"
-        "Reescreva a Célula inteira corrigindo exatamente isso. Não mude o que já estava certo."
+        + "\n".join(linhas)
+    ]
+    if rascunho:
+        # Sem o rascunho, a "correção" é uma geração nova do zero: o que estava certo some e
+        # entram termos novos sem explicação (execução copom-281, 2026-10-10).
+        partes.append(f"A Célula da rodada anterior, já com os números preenchidos:\n{rascunho}")
+    partes.append(
+        "Reescreva a Célula inteira partindo dessa versão e corrija exatamente isso. Não mude o "
+        "que já estava certo nem introduza termo técnico novo. Os números continuam entrando "
+        "como `{{chave}}`."
     )
+    return "\n\n".join(partes)
 
 
 def _bloco_transversal(orientacoes: list[str]) -> str:
@@ -192,6 +302,28 @@ def _bloco_transversal(orientacoes: list[str]) -> str:
     )
 
 
+DESCRICAO_DO_COMUNICADO: dict[CategoriaDaAta, str] = {
+    CategoriaDaAta.COPOM: "uma Ata do Copom",
+    CategoriaDaAta.COMUNICADO_RELEVANTE: "um Fato Relevante da CVM",
+    CategoriaDaAta.RELEASE: "um release de resultados",
+    CategoriaDaAta.IMPORTADA: "um comunicado financeiro",
+    CategoriaDaAta.UNIDA: "um conjunto de comunicados financeiros",
+}
+"""Como o pedido chama o documento de origem. Só o Copom diz "Ata do Copom"."""
+
+
+INSTRUCAO_DA_VISAO_UNIDA = (
+    "Este conteúdo reúne vários comunicados, marcados no texto como [a1], [a2]… e nas chaves de "
+    "Âncora pelo mesmo prefixo (a1_, a2_…). Diga de qual comunicado vem cada número que citar e "
+    "nunca atribua a um comunicado o número de outro."
+)
+"""Só na categoria ``unida``: cada número cita a sua origem (spec do front, seção 4.2)."""
+
+
+def descricao_do_comunicado(categoria: CategoriaDaAta) -> str:
+    return DESCRICAO_DO_COMUNICADO[categoria]
+
+
 def montar_pedido(
     ata_texto: str,
     ancoras: Ancoras,
@@ -200,22 +332,40 @@ def montar_pedido(
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
     orientacoes_transversais: list[str] | None = None,
+    comunicado: str = DESCRICAO_DO_COMUNICADO[CategoriaDaAta.COPOM],
+    instrucoes_do_conjunto: str | None = None,
+    duracao: DuracaoDoVideo = DURACAO_PADRAO_DO_ROTEIRO,
+    rascunho: str | None = None,
 ) -> PedidoLLM:
-    """O pedido de uma Célula. Em ``rodada > 0``, as ``correcoes`` entram como valor medido."""
+    """O pedido de uma Célula. Em ``rodada > 0``, as ``correcoes`` entram como valor medido, e
+    ``rascunho`` (o texto da rodada anterior) entra para a correção partir dele.
+
+    ``duracao`` só vale para o Roteiro: fixa o orçamento de palavras e de cenas e liga o catálogo
+    de direção de cena.
+    """
     sistema = "\n\n".join(
         [
-            "Você adapta uma Ata do Copom para uma Audiência num Formato.",
+            f"Você adapta {comunicado} para uma Audiência num Formato.",
             INSTRUCAO_DA_AUDIENCIA[audiencia],
             INSTRUCAO_DO_FORMATO[formato],
+            *(
+                [diretriz_de_duracao(duracao), instrucao_de_direcao()]
+                if formato is Formato.ROTEIRO
+                else []
+            ),
             (
                 "Facilidade de leitura alvo (índice Flesch-BR): "
-                f"{_alvo_em_palavras(audiencia)}."
+                f"{_alvo_em_palavras(audiencia)}. {COMO_ESCREVER_NO_ALVO[audiencia]}"
             ),
+            *([explicacao] if (explicacao := _bloco_de_explicacao(ata_texto, audiencia)) else []),
             (
                 "Todo número entra escrevendo `{{chave}}`, e só chave da lista de Âncoras do "
                 "pedido. Nunca escreva um número, por extenso ou em dígitos, que não seja uma "
-                "chave dessa lista."
+                "chave dessa lista. A chave já sai com a unidade ('13,75% a.a.'): não repita "
+                "'ao ano' nem '%' depois dela. Chave sem unidade sai só o valor: escreva a palavra junto "
+                "(se a chave da reunião sai só o número, escreva 'ª reunião' logo depois dela)."
             ),
+            *([instrucoes_do_conjunto] if instrucoes_do_conjunto else []),
             LINHA_QUE_NAO_SE_CRUZA,
         ]
     )
@@ -229,7 +379,7 @@ def montar_pedido(
         ),
     ]
     if rodada > 0 and correcoes:
-        partes_do_usuario.append(_bloco_de_correcoes(correcoes))
+        partes_do_usuario.append(_bloco_de_correcoes(correcoes, rascunho))
     if orientacoes_transversais:
         partes_do_usuario.append(_bloco_transversal(orientacoes_transversais))
     return PedidoLLM(
@@ -239,7 +389,11 @@ def montar_pedido(
             Mensagem(autor="sistema", texto=sistema),
             Mensagem(autor="usuario", texto="\n\n".join(partes_do_usuario)),
         ],
-        max_tokens=MAX_TOKENS_DA_CELULA,
+        max_tokens=(
+            max_tokens_do_roteiro(duracao)
+            if formato is Formato.ROTEIRO
+            else MAX_TOKENS_DA_CELULA
+        ),
         temperatura=0.3,
     )
 
@@ -297,7 +451,10 @@ def montar_markdown(resposta_estruturada: RespostaTextoAnalitico) -> str:
 
 
 def montar_conteudo(
-    resposta_estruturada: BaseModel, formato: Formato, ancoras: Ancoras
+    resposta_estruturada: BaseModel,
+    formato: Formato,
+    ancoras: Ancoras,
+    duracao: DuracaoDoVideo = DURACAO_PADRAO_DO_ROTEIRO,
 ) -> Conteudo:
     """Aplica ``preencher`` em todo campo de texto, inclusive a rubrica ``tela`` do Roteiro:
     ela aparece escrita no vídeo, então um número ali também vem das Âncoras, nunca da memória
@@ -327,7 +484,13 @@ def montar_conteudo(
         campos = [campo for slide in resposta_estruturada.slides for campo in (slide.titulo, slide.corpo)]
         preenchidos, usadas = _preencher_varios(campos, ancoras)
         slides = [
-            Slide(titulo=preenchidos[2 * i], corpo=preenchidos[2 * i + 1], dado=slide.dado)
+            Slide(
+                tipo=slide.tipo,
+                titulo=preenchidos[2 * i],
+                corpo=preenchidos[2 * i + 1],
+                dado=slide.dado,
+                destaque=slide.destaque,
+            )
             for i, slide in enumerate(resposta_estruturada.slides)
         ]
         return Conteudo(formato=formato, slides=slides, ancoras_citadas=usadas)
@@ -341,7 +504,12 @@ def montar_conteudo(
     )
     usadas = usadas_fala + [chave for chave in usadas_tela if chave not in usadas_fala]
     blocos = [
-        BlocoFala(inicio_s=bloco.inicio_s, fim_s=bloco.fim_s, fala=falas[i], tela=telas[i])
+        bloco.model_copy(update={"fala": falas[i], "tela": telas[i]})
         for i, bloco in enumerate(resposta_estruturada.blocos)
     ]
-    return Conteudo(formato=formato, blocos=blocos, ancoras_citadas=usadas)
+    return Conteudo(
+        formato=formato,
+        blocos=cronometrar(blocos),
+        duracao_alvo_s=duracao.segundos,
+        ancoras_citadas=usadas,
+    )

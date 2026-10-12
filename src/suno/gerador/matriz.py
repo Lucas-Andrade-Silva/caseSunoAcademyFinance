@@ -10,10 +10,14 @@ thread basta.
 O retorno é o **histórico** de cada posição, não só a Célula: o Ciclo de correção pode ter
 gerado até três, e a reprovação consertada é entregável do case tanto quanto a aprovação.
 A ordem do resultado é a de ``MATRIZ``, sempre, qualquer que tenha sido a ordem de término.
+
+``posicoes`` é o pedido: o padrão são as nove, mas a interface pode pedir de uma a nove
+Células. Cada Audiência vira um trabalhador que gera só os Formatos pedidos para ela.
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
@@ -27,6 +31,7 @@ from suno.dominio import (
     ModoSelecao,
     SelecaoCuradoria,
 )
+from suno.gerador.ciclo import Andou
 from suno.gerador.curador import DossieCurado
 from suno.gerador.personas import AGENTES_GERADORES
 from suno.provedores.base import Provedor
@@ -59,15 +64,29 @@ def gerar_matriz_do_dossie(
     provedor: Provedor,
     *,
     comite: "Comite | None" = None,
+    posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
+    ao_andar: Andou | None = None,
 ) -> list[HistoricoCelula]:
-    """Os três geradores recebem o mesmo dossiê e devolvem a Matriz na ordem fixa."""
+    """Os geradores recebem o mesmo dossiê e devolvem as Células pedidas na ordem fixa."""
+    pedidas = set(posicoes)
     prontos: dict[tuple[Audiencia, Formato], HistoricoCelula] = {}
     with ThreadPoolExecutor(max_workers=TRABALHADORES) as executor:
-        futuros = {
-            executor.submit(agente.gerar, dossie, provedor, comite=comite): agente.audiencia
+        futuros = [
+            executor.submit(
+                agente.gerar_formatos,
+                dossie,
+                provedor,
+                [
+                    formato
+                    for audiencia, formato in MATRIZ
+                    if audiencia is agente.audiencia and (audiencia, formato) in pedidas
+                ],
+                comite=comite,
+                ao_andar=ao_andar,
+            )
             for agente in AGENTES_GERADORES
-        }
+        ]
         for futuro in futuros:
             for historico in futuro.result():
                 prontos[(historico.audiencia, historico.formato)] = historico
-    return [prontos[posicao] for posicao in MATRIZ]
+    return [prontos[posicao] for posicao in MATRIZ if posicao in pedidas]

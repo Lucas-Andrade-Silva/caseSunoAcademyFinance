@@ -37,10 +37,13 @@ from typing import Sequence
 from pydantic import BaseModel, Field
 
 from suno.dominio import (
+    CHAVE_DATA_DO_COMUNICADO,
+    CHAVE_NUMERO_PRINCIPAL,
     AncoraNumerica,
     Ancoras,
     AncoraTextual,
     Ata,
+    CategoriaDaAta,
     ChaveAncora,
     ErroProvedor,
     Mensagem,
@@ -48,6 +51,7 @@ from suno.dominio import (
     PedidoLLM,
     Unidade,
 )
+from suno.gerador.moldes import descricao_do_comunicado
 from suno.ingestao.numeros import NumeroEncontrado, extrair_numeros
 from suno.provedores.base import Provedor
 
@@ -67,11 +71,16 @@ ROTULOS: dict[str, str] = {
     ChaveAncora.IPCA_PROJECAO_ANO_SEGUINTE: "Projeção do IPCA para o ano seguinte",
     ChaveAncora.ALVO_INFLACAO: "Alvo de inflação perseguido pelo Copom",
     ChaveAncora.NUMERO_REUNIAO: "Número da reunião do Copom",
+    CHAVE_DATA_DO_COMUNICADO: "Data do comunicado",
+    CHAVE_NUMERO_PRINCIPAL: "Número principal do comunicado",
 }
 """Como um humano chamaria cada chave. Chave livre cai no próprio nome."""
 
 CHAVE_LIVRE = re.compile(r"^[a-z][a-z0-9_]{2,40}$")
 """``AncoraNumerica.chave`` aceita chave fora do enum; só não aceita lixo do LLM."""
+
+MAXIMO_DE_CHAVES_GENERICAS = 12
+"""Fora do Copom o LLM escolhe os números que importam; mais que isto vira ruído na Célula."""
 
 CARACTERES_DE_TRECHO = 220
 """Quanto de cada trecho vai no pedido. A Ata inteira vai junto, então nada se perde."""
@@ -232,6 +241,27 @@ def por_regra_fixa(ata: Ata, candidatos: Sequence[NumeroEncontrado]) -> list[Anc
     return [ancora for ancora in achadas if ancora is not None]
 
 
+def por_regra_generica(ata: Ata, candidatos: Sequence[NumeroEncontrado]) -> list[AncoraNumerica]:
+    """As duas chaves essenciais de uma Ata fora do Copom, sem LLM nenhum no caminho.
+
+    ``data_do_documento``: uma data de verdade achada no texto (a que bate com os metadados,
+    se houver; senão a primeira). Ano solto ("2026") não é data. ``numero_principal``: o primeiro
+    valor em reais ou, sem ele, o primeiro número que não seja data.
+    """
+    achadas: list[AncoraNumerica] = []
+    datas = [c for c in candidatos if c.unidade is Unidade.DATA and c.data_iso is not None]
+    if datas:
+        iguais = [c for c in datas if c.data_iso == ata.data_referencia]
+        escolhida = max(iguais, key=lambda c: len(c.literal)) if iguais else datas[0]
+        achadas.append(_ancora_do_candidato(CHAVE_DATA_DO_COMUNICADO, escolhida))
+    numeros = [c for c in candidatos if c.unidade is not Unidade.DATA]
+    em_reais = [c for c in numeros if c.unidade is Unidade.REAIS]
+    principal = (em_reais or numeros or [None])[0]
+    if principal is not None:
+        achadas.append(_ancora_do_candidato(CHAVE_NUMERO_PRINCIPAL, principal))
+    return achadas
+
+
 # ---------------------------------------------------------------------------
 # O LLM rotula
 # ---------------------------------------------------------------------------
@@ -253,18 +283,33 @@ def montar_pedido_de_extracao(
 ) -> PedidoLLM:
     """O pedido de rotulagem. Só índice sai daqui; nenhum número volta em prosa."""
     pedidas = "\n".join(f"- {chave}: {ROTULOS.get(chave, chave)}" for chave in faltantes)
-    sistema = (
-        "Você rotula números que já foram extraídos de uma Ata do Copom. Você não escreve "
-        "números: você aponta o índice do candidato certo.\n"
-        "Para cada chave pedida, devolva o índice do candidato da lista que corresponde a "
-        "ela. Se nenhum candidato corresponder, omita a chave — não invente.\n"
+    fechamento = (
         "Devolva também as afirmações factuais centrais da Ata (Âncoras textuais). O campo "
         "'trecho' precisa ser cópia literal de uma frase da Ata: afirmação com trecho que "
         "não está na Ata é descartada pelo sistema."
     )
+    if ata.categoria is CategoriaDaAta.COPOM:
+        sistema = (
+            "Você rotula números que já foram extraídos de uma Ata do Copom. Você não escreve "
+            "números: você aponta o índice do candidato certo.\n"
+            "Para cada chave pedida, devolva o índice do candidato da lista que corresponde a "
+            "ela. Se nenhum candidato corresponder, omita a chave — não invente.\n" + fechamento
+        )
+        bloco_de_chaves = f"Chaves que ainda faltam:\n{pedidas or '- (nenhuma)'}\n\n"
+    else:
+        sistema = (
+            "Você rotula números que já foram extraídos de "
+            f"{descricao_do_comunicado(ata.categoria)}. Você não escreve números: você aponta o "
+            "índice do candidato certo.\n"
+            f"Escolha até {MAXIMO_DE_CHAVES_GENERICAS} candidatos que um leitor precisa conhecer "
+            "para entender o documento e dê a cada um uma chave curta em snake_case que diga o "
+            "que o número é (por exemplo valor_da_operacao). Se nenhum candidato servir, não "
+            "devolva chave — não invente.\n" + fechamento
+        )
+        bloco_de_chaves = ""
     usuario = (
         f"Ata {ata.identificador} — {ata.titulo}\n\n"
-        f"Chaves que ainda faltam:\n{pedidas or '- (nenhuma)'}\n\n"
+        f"{bloco_de_chaves}"
         f"Candidatos numéricos:\n{_listar_candidatos(candidatos)}\n\n"
         f"Texto da Ata:\n{ata.texto}"
     )
@@ -331,12 +376,24 @@ def _textuais_conferidas(rotulagem: RotulagemDaAta, texto: str) -> list[AncoraTe
 # ---------------------------------------------------------------------------
 
 
-def extrair_ancoras(ata: Ata, provedor: Provedor) -> Ancoras:
-    """A tabela de Âncoras da Ata: regra fixa primeiro, LLM só para rotular (ADR 0011)."""
+def extrair_ancoras(
+    ata: Ata, provedor: Provedor, *, com_chaves_genericas: bool = False
+) -> Ancoras:
+    """A tabela de Âncoras da Ata: regra fixa primeiro, LLM só para rotular (ADR 0011).
+
+    ``com_chaves_genericas`` (só para uma parte do Copom na Visão unida) acrescenta as duas
+    chaves essenciais genéricas às do Copom: o essencial de cada parte da união é o genérico.
+    """
     candidatos = extrair_numeros(ata.texto, ano_padrao=ata.data_referencia.year)
-    numericas = por_regra_fixa(ata, candidatos)
+    do_copom = ata.categoria is CategoriaDaAta.COPOM
+    numericas = por_regra_fixa(ata, candidatos) if do_copom else por_regra_generica(ata, candidatos)
+    if do_copom and com_chaves_genericas:
+        numericas.extend(por_regra_generica(ata, candidatos))
     presentes = {ancora.chave for ancora in numericas}
-    faltantes = [chave.value for chave in ChaveAncora if chave.value not in presentes]
+    # Fora do Copom não há chave canônica a pedir: o LLM escolhe e nomeia (até um teto).
+    faltantes = (
+        [chave.value for chave in ChaveAncora if chave.value not in presentes] if do_copom else []
+    )
 
     textuais: list[AncoraTextual] = []
     pedido = montar_pedido_de_extracao(ata, candidatos, faltantes)
@@ -346,7 +403,50 @@ def extrair_ancoras(ata: Ata, provedor: Provedor) -> Ancoras:
         # Extração degradada não é exceção: a integridade decide depois (ADR 0013).
         _registro.warning("extração seguiu só com a regra fixa: %s", erro)
     else:
+        if not do_copom:
+            rotulagem = rotulagem.model_copy(
+                update={"chaves": rotulagem.chaves[:MAXIMO_DE_CHAVES_GENERICAS]}
+            )
         numericas.extend(_numericas_rotuladas(rotulagem, candidatos, presentes))
         textuais = _textuais_conferidas(rotulagem, ata.texto)
 
     return Ancoras(ata=ata.identificador, numericas=numericas, textuais=textuais)
+
+
+def _titulo_curto(titulo: str, limite: int = 60) -> str:
+    return titulo if len(titulo) <= limite else titulo[: limite - 1].rstrip() + "…"
+
+
+def extrair_ancoras_da_uniao(
+    partes: Sequence[Ata], uniao: Ata, provedor: Provedor
+) -> Ancoras:
+    """As Âncoras da Visão unida: uma extração por parte, cada chave com o prefixo ``a<N>_``.
+
+    O rótulo diz de que comunicado vem o número (``[a2] Empresa Exemplo: Número principal``): é o
+    que a Célula aberta mostra ao lado do conteúdo. Nada colide entre partes, e uma Âncora de uma
+    parte nunca vira a de outra.
+    """
+    numericas: list[AncoraNumerica] = []
+    textuais: list[AncoraTextual] = []
+    for posicao, parte in enumerate(partes, start=1):
+        prefixo = f"a{posicao}"
+        parcial = extrair_ancoras(parte, provedor, com_chaves_genericas=True)
+        numericas.extend(
+            ancora.model_copy(
+                update={
+                    "chave": f"{prefixo}_{ancora.chave}",
+                    "rotulo": f"[{prefixo}] {_titulo_curto(parte.titulo)}: {ancora.rotulo}",
+                }
+            )
+            for ancora in parcial.numericas
+        )
+        textuais.extend(
+            afirmacao.model_copy(
+                update={
+                    "identificador": f"{prefixo}_{afirmacao.identificador}",
+                    "afirmacao": f"[{prefixo}] {afirmacao.afirmacao}",
+                }
+            )
+            for afirmacao in parcial.textuais
+        )
+    return Ancoras(ata=uniao.identificador, numericas=numericas, textuais=textuais)

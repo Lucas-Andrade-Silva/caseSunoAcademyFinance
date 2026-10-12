@@ -32,26 +32,31 @@ class ResultadoIntegridade:
     ancoras_com_trecho_vazio: list[str] = field(default_factory=list)
 
 
-def _ordem_estavel() -> list[str]:
+def _ordem_estavel(essenciais: frozenset[str]) -> list[str]:
     """As chaves essenciais na ordem em que ``ChaveAncora`` as declara, e o resto ordenado.
 
     Ordem estável importa: ``faltantes`` entra no Laudo e no relatório, e comparação de
     execuções não pode depender da ordem de iteração de um conjunto.
     """
-    declaradas = [c.value for c in ChaveAncora if c.value in CHAVES_ESSENCIAIS]
-    sobras = sorted(str(c) for c in CHAVES_ESSENCIAIS if str(c) not in declaradas)
+    declaradas = [c.value for c in ChaveAncora if c.value in essenciais]
+    sobras = sorted(str(c) for c in essenciais if str(c) not in declaradas)
     return [*declaradas, *sobras]
 
 
-def medir_integridade(ancoras: Sequence[Ancora]) -> ResultadoIntegridade:
+def medir_integridade(
+    ancoras: Sequence[Ancora],
+    chaves_essenciais: frozenset[str] = CHAVES_ESSENCIAIS,
+) -> ResultadoIntegridade:
     """A extração está completa? Sem LLM e sem rede (ADR 0013).
+
+    ``chaves_essenciais`` é o conjunto da categoria da Ata: o do Copom por padrão.
 
     Sequência vazia devolve incompleta com todas as chaves essenciais faltando — é o caso
     da Ata fora do padrão que o ADR 0013 descreve, e o silêncio é o modo de falha.
     """
     numericas = [a for a in ancoras if isinstance(a, AncoraNumerica)]
     presentes = {a.chave for a in numericas}
-    faltantes = [chave for chave in _ordem_estavel() if chave not in presentes]
+    faltantes = [chave for chave in _ordem_estavel(chaves_essenciais) if chave not in presentes]
     sem_trecho = [a.chave for a in numericas if not a.trecho.strip()]
     return ResultadoIntegridade(
         completa=not faltantes,

@@ -21,6 +21,7 @@ from suno.dominio import (
     Audiencia,
     BlocoFala,
     Conteudo,
+    Correcao,
     Destino,
     ErroProvedor,
     Formato,
@@ -392,6 +393,36 @@ def test_rodada_de_correcao_carrega_o_valor_medido_e_nao_instrucao_generica(
     usuario = next(m.texto for m in pedido.mensagens if m.autor == "usuario")
     assert "O que precisa mudar" in usuario
     assert "Flesch-BR medido" in usuario
+    assert "difícil demais: quebre as frases longas" in usuario
+
+
+def test_correcao_parte_do_rascunho_da_rodada_anterior(ancoras_de_teste: Ancoras):
+    """Sem o rascunho, a correção vira geração do zero e traz termo novo sem explicação."""
+    correcao = Correcao(
+        metrica=Metrica.DENSIDADE, valor_medido=0.08, faixa=None, instrucao="Termos sem explicação: juros."
+    )
+    pedido = montar_pedido(
+        "Ata",
+        ancoras_de_teste,
+        Audiencia.INICIANTE,
+        Formato.TEXTO_ANALITICO,
+        rodada=1,
+        correcoes=[correcao],
+        rascunho="# Os juros caíram\n\nTexto anterior.",
+    )
+    usuario = next(m.texto for m in pedido.mensagens if m.autor == "usuario")
+    assert "# Os juros caíram" in usuario
+    assert "tire-o do título" in usuario
+
+
+def test_pedido_lista_os_termos_da_ata_que_a_audiencia_cobra_explicados(ancoras_de_teste: Ancoras):
+    ata = "O Copom avaliou o hiato do produto e o balanço de riscos."
+    iniciante = montar_pedido(ata, ancoras_de_teste, Audiencia.INICIANTE, Formato.TEXTO_ANALITICO)
+    avancado = montar_pedido(ata, ancoras_de_teste, Audiencia.AVANCADO, Formato.TEXTO_ANALITICO)
+    sistema_iniciante = iniciante.mensagens[0].texto
+    assert "hiato do produto" in sistema_iniciante.split("exigem explicação")[1]
+    # Avançado nunca exige explicação: nem regra nem lista.
+    assert "exigem explicação" not in avancado.mensagens[0].texto
 
 
 def test_rodada_zero_nao_carrega_bloco_de_correcao(ancoras_de_teste: Ancoras):
