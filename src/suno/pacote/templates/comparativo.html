@@ -1,0 +1,24 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>{{CSS}}
+.titulo { top: 180px; height: 260px; font-size: 70px; }
+.coluna { position:absolute; top:440px; width:426px; height:390px; border-radius:30px;
+  padding:38px; z-index:2; background:rgba(20,8,9,.88); border:2px solid rgba(255,255,255,.14); }
+.coluna.a { left:84px; border-top:10px solid #8A8A92; }
+.coluna.b { right:84px; border-top:10px solid var(--vermelho); }
+.coluna .rotulo { font-size:24px; font-weight:700; letter-spacing:.18em; margin-bottom:24px;
+  color:rgba(255,255,255,.72); }
+.coluna .corpo { position:static; width:auto; height:275px; font-size:34px; }
+.grafico { top:850px; height:330px; }.barras { padding-top:16px; }.barra .bloco { max-height:170px; }
+.numero-grande { padding-top:38px; }.numero-grande .valor { font-size:116px; }
+</style></head><body data-fundo>
+<div class="arte">
+  <div class="forma escura" style="width:700px;height:650px;left:-330px;top:-260px;border-radius:50%"></div>
+  <div class="forma" style="width:700px;height:650px;right:-330px;bottom:-260px;border-radius:50%"></div>
+  <div class="anel" style="width:760px;height:760px;left:160px;top:330px"></div>
+</div>
+<div class="topo"><div class="marca"><b>(</b> SUNO <b>)</b></div><div class="selo">{{SELO}}</div></div>
+<div class="titulo" data-caixa="titulo" data-ajustar>{{TITULO}}</div>
+<div class="coluna a" data-fundo><div class="rotulo">PONTO A</div><div class="corpo" data-caixa="comparacao-a" data-ajustar>{{CORPO_ESQUERDA}}</div></div>
+<div class="coluna b" data-fundo><div class="rotulo">PONTO B</div><div class="corpo" data-caixa="comparacao-b" data-ajustar>{{CORPO_DIREITA}}</div></div>
+{{GRAFICO}}
+<div class="pontos">{{PONTOS}}</div><div class="numero">{{NUMERO}}</div>
+{{AJUSTE}}</body></html>

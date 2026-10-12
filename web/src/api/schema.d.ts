@@ -38,6 +38,265 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fontes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Fontes */
+        get: operations["listar_fontes_api_fontes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fontes/{identificador}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Alterar Origem */
+        patch: operations["alterar_origem_api_fontes__identificador__patch"];
+        trace?: never;
+    };
+    "/api/fontes/atualizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Atualizar Fontes
+         * @description Busca nas Origens ligadas, em segundo plano. Precisa de rede e falha sem travar a tela.
+         */
+        post: operations["atualizar_fontes_api_fontes_atualizar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fontes/atualizacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Atualizacao */
+        get: operations["obter_atualizacao_api_fontes_atualizacao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fontes/importar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Importar Comunicado
+         * @description O corpo é o arquivo cru (PDF ou texto UTF-8); título e data vão na query.
+         */
+        post: operations["importar_comunicado_api_fontes_importar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curadoria/sugestoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Sugestoes */
+        get: operations["obter_sugestoes_api_curadoria_sugestoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Referencias Visuais
+         * @description A biblioteca local de padrões aprovados que orienta a direção de arte.
+         */
+        get: operations["listar_referencias_visuais_api_referencias_visuais_get"];
+        put?: never;
+        /**
+         * Importar Referencia Visual
+         * @description Cadastra metadados autorizados; a nova referência nasce não aprovada.
+         */
+        post: operations["importar_referencia_visual_api_referencias_visuais_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/coleta/perfis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Perfis De Referencia */
+        get: operations["listar_perfis_de_referencia_api_referencias_visuais_coleta_perfis_get"];
+        put?: never;
+        /** Adicionar Perfil De Referencia */
+        post: operations["adicionar_perfil_de_referencia_api_referencias_visuais_coleta_perfis_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/coleta/candidatos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Candidatos De Referencia */
+        get: operations["listar_candidatos_de_referencia_api_referencias_visuais_coleta_candidatos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/descoberta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descobrir Referencias
+         * @description Filtra carrosséis e ranqueia os perfis monitorados por movimentação.
+         */
+        get: operations["descobrir_referencias_api_referencias_visuais_descoberta_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/coleta/executar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Executar Coleta De Referencias */
+        post: operations["executar_coleta_de_referencias_api_referencias_visuais_coleta_executar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/coleta/candidatos/{identificador}/importar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Importar Candidato De Referencia */
+        post: operations["importar_candidato_de_referencia_api_referencias_visuais_coleta_candidatos__identificador__importar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/referencias-visuais/{identificador}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Alterar Referencia Visual */
+        patch: operations["alterar_referencia_visual_api_referencias_visuais__identificador__patch"];
+        trace?: never;
+    };
+    "/api/referencias-visuais/{identificador}/imagem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Imagem Da Referencia */
+        get: operations["obter_imagem_da_referencia_api_referencias_visuais__identificador__imagem_get"];
+        put?: never;
+        /**
+         * Enviar Imagem Da Referencia
+         * @description Normaliza a imagem e tenta analisá-la no Gemini; falha mantém revisão manual.
+         */
+        post: operations["enviar_imagem_da_referencia_api_referencias_visuais__identificador__imagem_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/execucoes": {
         parameters: {
             query?: never;
@@ -47,6 +306,27 @@ export interface paths {
         };
         /** Listar Execucoes Rota */
         get: operations["listar_execucoes_rota_api_execucoes_get"];
+        put?: never;
+        /**
+         * Criar Saida
+         * @description Enfileira a geração e responde na hora; a tela acompanha por ``.../andamento``.
+         */
+        post: operations["criar_saida_api_execucoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/andamento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Andamento */
+        get: operations["obter_andamento_api_execucoes__identificador__andamento_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -66,7 +346,8 @@ export interface paths {
         get: operations["obter_execucao_api_execucoes__identificador__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Excluir Execucao */
+        delete: operations["excluir_execucao_api_execucoes__identificador__delete"];
         options?: never;
         head?: never;
         /** Renomear Execucao */
@@ -178,6 +459,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execucoes/{identificador}/celulas/{audiencia}/roteiro/plano": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Plano De Edicao
+         * @description O plano de edição do Roteiro aprovado: cenas, ícones, transições, efeitos e sons, em
+         *     JSON para colar num gerador de avatar e em Markdown para conferir. Roteiro que não foi
+         *     aprovado não tem plano (ADR 0004).
+         */
+        get: operations["obter_plano_de_edicao_api_execucoes__identificador__celulas__audiencia__roteiro_plano_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/pacotes/montar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Montar Pacotes
+         * @description Monta os Pacotes das Células aprovadas, em segundo plano.
+         *
+         *     Cada Célula é considerada individualmente; uma pendência em outra posição da Matriz não
+         *     bloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.
+         */
+        post: operations["montar_pacotes_api_execucoes__identificador__pacotes_montar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/pacotes/montagem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Montagem */
+        get: operations["obter_montagem_api_execucoes__identificador__pacotes_montagem_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/execucoes/{identificador}/pacotes": {
         parameters: {
             query?: never;
@@ -246,6 +589,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/baixar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baixar Pacote
+         * @description O Pacote pronto para publicar, num .zip: slides, legenda (com hashtags) e vídeo.
+         */
+        get: operations["baixar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__baixar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/aprovar": {
         parameters: {
             query?: never;
@@ -284,6 +647,39 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AlteracaoDaOrigem
+         * @description O corpo do ``PATCH /api/fontes/{id}``: ligar ou desligar.
+         */
+        AlteracaoDaOrigem: {
+            /** Ativa */
+            ativa: boolean;
+        };
+        /** AlteracaoDaReferenciaVisual */
+        AlteracaoDaReferenciaVisual: {
+            /** Aprovada */
+            aprovada: boolean;
+        };
+        /**
+         * AnaliseVisualReferencia
+         * @description Padrões estruturais aproveitáveis sem copiar a identidade de outra publicação.
+         */
+        AnaliseVisualReferencia: {
+            /** Posicao Do Titulo */
+            posicao_do_titulo: string;
+            /** Proeminencia Do Titulo */
+            proeminencia_do_titulo: string;
+            /** Densidade Textual */
+            densidade_textual: string;
+            /** Uso De Imagem */
+            uso_de_imagem: string;
+            /** Tipo De Fundo */
+            tipo_de_fundo: string;
+            /** Elementos Visuais */
+            elementos_visuais?: string[];
+            /** Estrutura Do Conteudo */
+            estrutura_do_conteudo?: string[];
+        };
         /**
          * AncoraNumerica
          * @description Um número da Ata, com valor, unidade e o trecho literal de onde veio.
@@ -371,6 +767,81 @@ export interface components {
             extraida_em?: string;
         };
         /**
+         * Andamento
+         * @description ``andamento.json``, ao lado de ``execucao.json``, que só é gravado ao fim do pipeline.
+         */
+        Andamento: {
+            /** Identificador */
+            identificador: string;
+            /** Nome */
+            nome: string;
+            /** Ata */
+            ata: string;
+            /** Provedor */
+            provedor: string;
+            /**
+             * Comite
+             * @default false
+             */
+            comite: boolean;
+            /** @default copom */
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /**
+             * Atas
+             * @description Os identificadores das Atas usadas: uma, ou de 2 a 5 na Visão unida.
+             */
+            atas?: string[];
+            estado: components["schemas"]["EstadoDoAndamento"];
+            fase?: components["schemas"]["FaseDaExecucao"] | null;
+            /** Celulas */
+            celulas?: components["schemas"]["AndamentoDaCelula"][];
+            /**
+             * Erro
+             * @description Sem credencial; vai para a tela.
+             */
+            erro?: string | null;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /**
+             * Atualizado Em
+             * Format: date-time
+             */
+            atualizado_em: string;
+            /** Concluido Em */
+            concluido_em?: string | null;
+            composicao_visual?: components["schemas"]["ComposicaoCarrossel"] | null;
+            /** Referencia Visual */
+            referencia_visual?: string | null;
+        };
+        /** AndamentoDaCelula */
+        AndamentoDaCelula: {
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+            /** @default aguardando */
+            etapa: components["schemas"]["EtapaDaCelula"];
+            /**
+             * Rodada
+             * @default 0
+             */
+            rodada: number;
+        };
+        /**
+         * AnimacaoDoTexto
+         * @description Como o texto da tela aparece.
+         * @enum {string}
+         */
+        AnimacaoDoTexto: "aparecer" | "fade" | "deslizar_baixo" | "pop" | "digitar";
+        /** AprovacaoDoPacote */
+        AprovacaoDoPacote: {
+            /** Revisor */
+            revisor?: string | null;
+            /** Observacao */
+            observacao?: string | null;
+        };
+        /**
          * Ata
          * @description O comunicado financeiro público que entra no sistema (ADR 0006).
          */
@@ -413,6 +884,22 @@ export interface components {
              * @enum {string}
              */
             idioma: "pt" | "en";
+            /**
+             * @description Ata sem categoria (as anteriores à interface) vale Copom.
+             * @default copom
+             */
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /**
+             * Origem
+             * @description Identificador da Origem no catálogo (data/fontes/catalogo.json).
+             * @default copom
+             */
+            origem: string;
+            /**
+             * Partes
+             * @description Só na Visão unida: os identificadores das Atas reunidas, na ordem (a1, a2…).
+             */
+            partes?: string[];
         };
         /**
          * AtaResumo
@@ -430,6 +917,11 @@ export interface components {
              * Format: date
              */
             data_referencia: string;
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /** Origem */
+            origem: string;
+            /** Demo Disponivel */
+            demo_disponivel: boolean;
         };
         /**
          * Audiencia
@@ -454,6 +946,11 @@ export interface components {
             total_com_conteudo: number;
             /** Posicoes Faltantes */
             posicoes_faltantes?: string[];
+            /**
+             * Posicoes Inesperadas
+             * @description Células que chegaram sem terem sido pedidas.
+             */
+            posicoes_inesperadas?: string[];
             /** Posicoes Duplicadas */
             posicoes_duplicadas?: string[];
             /** Posicoes Reprovadas */
@@ -471,6 +968,10 @@ export interface components {
         /**
          * BlocoFala
          * @description Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho.
+         *
+         *     Além da fala e da rubrica, o bloco carrega a **direção de cena**: tudo o que a edição precisa
+         *     para executá-lo, escolhido de catálogos fechados (``suno.video.design``). Todos os campos
+         *     de direção têm padrão — um Roteiro gravado antes deles continua válido.
          */
         BlocoFala: {
             /** Inicio S */
@@ -488,7 +989,74 @@ export interface components {
              * @default
              */
             tela: string;
+            /**
+             * @description O layout da cena, do catálogo.
+             * @default texto_destaque
+             */
+            cena: components["schemas"]["TipoDeCena"];
+            /** @description Um ícone do catálogo, se houver. */
+            icone?: components["schemas"]["IconeDeCena"] | null;
+            /**
+             * @description Como esta cena entra.
+             * @default corte
+             */
+            entrada: components["schemas"]["TransicaoDeEntrada"];
+            /** @default fade */
+            texto_anima: components["schemas"]["AnimacaoDoTexto"];
+            /**
+             * Texto Entra Em S
+             * @description Segundos depois do início da cena em que o texto aparece.
+             * @default 0
+             */
+            texto_entra_em_s: number;
+            /** @default nenhum */
+            efeito: components["schemas"]["EfeitoDeCena"];
+            /** @description Som que acompanha a transição de entrada. */
+            som_de_entrada?: components["schemas"]["SomDeCena"] | null;
+            /** @description Som que marca o texto ou o efeito da cena. */
+            som_de_efeito?: components["schemas"]["SomDeCena"] | null;
         };
+        /** CandidatoDeReferencia */
+        CandidatoDeReferencia: {
+            /** Identificador */
+            identificador: string;
+            /** Usuario */
+            usuario: string;
+            /** Titulo */
+            titulo: string;
+            /** Legenda */
+            legenda: string;
+            /** Url */
+            url: string;
+            /**
+             * Publicado Em
+             * Format: date-time
+             */
+            publicado_em: string;
+            /** Curtidas */
+            curtidas?: number | null;
+            /** Comentarios */
+            comentarios?: number | null;
+            /** Seguidores */
+            seguidores?: number | null;
+            /** Taxa Engajamento */
+            taxa_engajamento?: number | null;
+            /** @default outros */
+            setor: components["schemas"]["SetorDaReferencia"];
+            /** Capa Url */
+            capa_url?: string | null;
+            /**
+             * Importado
+             * @default false
+             */
+            importado: boolean;
+        };
+        /**
+         * CategoriaDaAta
+         * @description A que Origem a Ata pertence. Só o Copom tem Limiares, Léxico e Âncoras essenciais calibrados.
+         * @enum {string}
+         */
+        CategoriaDaAta: "copom" | "comunicado_relevante" | "release" | "importada" | "unida";
         /**
          * Celula
          * @description Uma saída concreta: uma Audiência num Formato, numa rodada do Ciclo de correção.
@@ -515,6 +1083,12 @@ export interface components {
             provedor?: string | null;
         };
         /**
+         * ComposicaoCarrossel
+         * @description A composição visual escolhida pela direção de arte, separada do papel narrativo.
+         * @enum {string}
+         */
+        ComposicaoCarrossel: "editorial" | "minimalista" | "infografico" | "comparativo" | "estatistico" | "narrativo";
+        /**
          * ConferenciaVisual
          * @description O resultado da avaliação visual do Pacote. Vai ao H5, nunca ao Laudo.
          */
@@ -522,6 +1096,8 @@ export interface components {
             /** Medicoes */
             medicoes?: components["schemas"]["MedicaoVisual"][];
             juiz_visao?: components["schemas"]["ParecerVisao"] | null;
+            /** Mensagem Juiz Visao */
+            mensagem_juiz_visao?: string | null;
         };
         /**
          * Conteudo
@@ -542,6 +1118,11 @@ export interface components {
             slides?: components["schemas"]["Slide"][] | null;
             /** Blocos */
             blocos?: components["schemas"]["BlocoFala"][] | null;
+            /**
+             * Duracao Alvo S
+             * @description Roteiro: a duração que a pessoa escolheu (40, 60, 90, 120 ou 180 s).
+             */
+            duracao_alvo_s?: number | null;
             /**
              * Ancoras Citadas
              * @description Chaves das Âncoras numéricas preenchidas em molde nesta Célula.
@@ -651,6 +1232,16 @@ export interface components {
          * @enum {string}
          */
         DefeitoRender: "estouro_de_caixa" | "contraste_baixo" | "dimensao_errada" | "numero_divergente" | "duracao_fora_da_faixa" | "sem_audio";
+        /** DescobertaDeReferencias */
+        DescobertaDeReferencias: {
+            /** Janela Dias */
+            janela_dias: number;
+            setor?: components["schemas"]["SetorDaReferencia"] | null;
+            /** Perfis */
+            perfis?: components["schemas"]["PerfilEmAlta"][];
+            /** Candidatos */
+            candidatos?: components["schemas"]["CandidatoDeReferencia"][];
+        };
         /**
          * Destino
          * @description Os três destinos de um Laudo (ADR 0013).
@@ -664,17 +1255,136 @@ export interface components {
          */
         DimensaoSubjetiva: "tom" | "clareza" | "coerencia";
         /**
+         * DirecaoDeArteCarrossel
+         * @description Plano efetivamente renderizado, com diversidade mensurável e auditável.
+         */
+        DirecaoDeArteCarrossel: {
+            /** Escolhas */
+            escolhas?: components["schemas"]["EscolhaDeLayout"][];
+            /** Distribuicao */
+            distribuicao?: {
+                [key: string]: number;
+            };
+            /** Historico Considerado */
+            historico_considerado?: components["schemas"]["ComposicaoCarrossel"][];
+            /**
+             * Repeticoes Consecutivas
+             * @default 0
+             */
+            repeticoes_consecutivas: number;
+            /**
+             * Origem Do Plano
+             * @default deterministico
+             * @enum {string}
+             */
+            origem_do_plano: "ia" | "deterministico" | "curadoria";
+            /** Provedor */
+            provedor?: string | null;
+            /** Motivo Fallback */
+            motivo_fallback?: string | null;
+        };
+        /**
+         * DuracaoDoVideo
+         * @description A duração que a pessoa escolhe para o vídeo, em segundos. O valor é o texto do número
+         *     porque ``StrEnum`` serializa como string; ``segundos`` é o inteiro.
+         * @enum {string}
+         */
+        DuracaoDoVideo: "40" | "60" | "90" | "120" | "180";
+        /**
+         * EfeitoDeCena
+         * @description O único efeito contínuo da cena; ``nenhum`` é a escolha sóbria, e a mais comum.
+         * @enum {string}
+         */
+        EfeitoDeCena: "nenhum" | "zoom_lento" | "pulso" | "sublinhado" | "contagem";
+        /**
+         * EscolhaDeLayout
+         * @description Por que uma composição foi aplicada a um slide do Carrossel.
+         */
+        EscolhaDeLayout: {
+            /** Indice */
+            indice: number;
+            composicao: components["schemas"]["ComposicaoCarrossel"];
+            /** Pontuacao */
+            pontuacao: number;
+            /**
+             * Motivos
+             * @default []
+             */
+            motivos: string[];
+            /** Referencia Visual */
+            referencia_visual?: string | null;
+            /** @default media */
+            intensidade_visual: components["schemas"]["IntensidadeVisual"];
+        };
+        /**
+         * EstadoAnaliseVisual
+         * @enum {string}
+         */
+        EstadoAnaliseVisual: "nao_solicitada" | "pendente" | "concluida" | "erro";
+        /**
          * EstadoAvaliacaoTransversal
          * @description Veredito único sobre a Matriz completa, depois dos nove ciclos individuais.
          * @enum {string}
          */
         EstadoAvaliacaoTransversal: "aprovada" | "revisao_humana";
+        /** EstadoDaAtualizacao */
+        EstadoDaAtualizacao: {
+            /**
+             * Estado
+             * @default ocioso
+             * @enum {string}
+             */
+            estado: "ocioso" | "rodando" | "ok" | "erro";
+            /**
+             * Mensagem
+             * @default
+             */
+            mensagem: string;
+            /**
+             * Novos
+             * @default 0
+             */
+            novos: number;
+            /** Iniciada Em */
+            iniciada_em?: string | null;
+            /** Concluida Em */
+            concluida_em?: string | null;
+        };
+        /** EstadoDaMontagem */
+        EstadoDaMontagem: {
+            /** Identificador */
+            identificador: string;
+            /**
+             * Estado
+             * @default ocioso
+             * @enum {string}
+             */
+            estado: "ocioso" | "rodando" | "ok" | "erro";
+            /**
+             * Mensagem
+             * @default
+             */
+            mensagem: string;
+            /**
+             * Total
+             * @default 0
+             */
+            total: number;
+            /** Concluida Em */
+            concluida_em?: string | null;
+        };
         /**
          * EstadoDecisao
          * @description O que um humano decidiu sobre uma Célula.
          * @enum {string}
          */
         EstadoDecisao: "aprovada" | "reprovada";
+        /**
+         * EstadoDoAndamento
+         * @description O estado do job. ``interrompida`` é o job que o servidor perdeu ao reiniciar.
+         * @enum {string}
+         */
+        EstadoDoAndamento: "na_fila" | "gerando" | "concluida" | "interrompida" | "falhou";
         /**
          * EstadoJulgamentoTransversal
          * @description Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas.
@@ -687,6 +1397,12 @@ export interface components {
          * @enum {string}
          */
         EstadoMedida: "medida" | "ausente" | "revisao_humana";
+        /**
+         * EtapaDaCelula
+         * @description Onde uma Célula está enquanto a Matriz é gerada.
+         * @enum {string}
+         */
+        EtapaDaCelula: "aguardando" | "gerando" | "corrigindo" | "aprovada" | "revisao_humana";
         /**
          * Execucao
          * @description O único arquivo de estado de uma execução: ``data/execucoes/<id>/execucao.json``.
@@ -733,6 +1449,23 @@ export interface components {
              * @description Decisões humanas por Célula; posição sem registro está pendente.
              */
             decisoes?: components["schemas"]["DecisaoHumana"][];
+            /**
+             * Pedido
+             * @description Posições da Matriz que foram pedidas; vazio (execução antiga) significa as nove.
+             */
+            pedido?: components["schemas"]["PosicaoDaMatriz"][];
+            /**
+             * @description Categoria da Ata de origem; fora do Copom, a Saída é não calibrada.
+             * @default copom
+             */
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /** @description Família visual escolhida na curadoria para os Carrosséis desta Saída. */
+            composicao_visual?: components["schemas"]["ComposicaoCarrossel"] | null;
+            /**
+             * Referencia Visual
+             * @description Referência aprovada escolhida na curadoria; ausente em Saídas antigas.
+             */
+            referencia_visual?: string | null;
         };
         /**
          * ExecucaoResumo
@@ -765,9 +1498,18 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "aguardando_revisao" | "concluida";
+            status: "na_fila" | "gerando" | "aguardando_revisao" | "concluida" | "interrompida" | "falhou";
             /** Posicoes */
             posicoes: components["schemas"]["PosicaoResumo"][];
+            /** Erro */
+            erro?: string | null;
+            /** @default copom */
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /**
+             * Atas
+             * @default []
+             */
+            atas: string[];
         };
         /**
          * Faixa
@@ -778,6 +1520,32 @@ export interface components {
             minimo?: number | null;
             /** Maximo */
             maximo?: number | null;
+        };
+        /**
+         * FaseDaExecucao
+         * @description Onde a execução inteira está.
+         * @enum {string}
+         */
+        FaseDaExecucao: "extraindo_ancoras" | "gerando_celulas" | "avaliando_matriz" | "gravando";
+        /**
+         * FeedbackVisualHumano
+         * @description A decisão H5: sinal de uso real, separado do parecer automático do Eval.
+         */
+        FeedbackVisualHumano: {
+            /**
+             * Aprovado
+             * @default true
+             */
+            aprovado: boolean;
+            /** Revisor */
+            revisor?: string | null;
+            /** Observacao */
+            observacao?: string | null;
+            /**
+             * Em
+             * Format: date-time
+             */
+            em?: string;
         };
         /**
          * FilaHumana
@@ -845,6 +1613,12 @@ export interface components {
              */
             falha?: string | null;
         };
+        /**
+         * IconeDeCena
+         * @description Os ícones do catálogo. O LLM escolhe um nome; o desenho vive no design system.
+         * @enum {string}
+         */
+        IconeDeCena: "juros" | "inflacao" | "grafico_alta" | "grafico_queda" | "grafico_estavel" | "calendario" | "banco" | "bolso" | "alerta" | "lupa" | "documento" | "balanca" | "relogio" | "pergunta" | "check";
         /** ImagemSlide */
         ImagemSlide: {
             /** Indice */
@@ -859,6 +1633,15 @@ export interface components {
             /** Altura */
             altura: number;
         };
+        /** ImportacaoDeCandidato */
+        ImportacaoDeCandidato: {
+            composicao: components["schemas"]["ComposicaoCarrossel"];
+        };
+        /**
+         * IntensidadeVisual
+         * @enum {string}
+         */
+        IntensidadeVisual: "baixa" | "media" | "alta";
         /**
          * JulgamentoDimensao
          * @description Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada.
@@ -881,7 +1664,10 @@ export interface components {
             estado: components["schemas"]["EstadoJulgamentoTransversal"];
             /** Problemas */
             problemas?: components["schemas"]["ProblemaTransversal"][];
-            /** Provedor */
+            /**
+             * Provedor
+             * @default
+             */
             provedor: string;
             /** Falha */
             falha?: string | null;
@@ -912,6 +1698,12 @@ export interface components {
              * Format: date-time
              */
             avaliado_em?: string;
+        };
+        /** ListaDeOrigens */
+        ListaDeOrigens: {
+            /** Origens */
+            origens: components["schemas"]["OrigemComAtas"][];
+            atualizacao: components["schemas"]["EstadoDaAtualizacao"];
         };
         /**
          * MedicaoVisual
@@ -966,6 +1758,12 @@ export interface components {
          */
         Metrica: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "integridade";
         /**
+         * ModoDeGeracao
+         * @description Demo roda sem rede, com respostas prontas; Real usa o roteador e gasta cota gratuita.
+         * @enum {string}
+         */
+        ModoDeGeracao: "demo" | "real";
+        /**
          * ModoSelecao
          * @description Como os itens aprovados pela curadoria humana alimentam a Matriz.
          * @enum {string}
@@ -977,6 +1775,98 @@ export interface components {
          * @enum {string}
          */
         MotivoReprovacao: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "falha_de_extracao";
+        /** NovaReferenciaVisual */
+        NovaReferenciaVisual: {
+            /** Titulo */
+            titulo: string;
+            /** Tema */
+            tema: string;
+            composicao: components["schemas"]["ComposicaoCarrossel"];
+            /** Descricao */
+            descricao: string;
+            /** Instrucao De Design */
+            instrucao_de_design: string;
+            /**
+             * Origem
+             * @default Importação manual
+             */
+            origem: string;
+        };
+        /**
+         * NovaSaida
+         * @description O corpo do ``POST /api/execucoes``: o que gerar, de onde e em que modo.
+         */
+        NovaSaida: {
+            /** Nome */
+            nome?: string | null;
+            /** Ata */
+            ata?: string | null;
+            /** Itens */
+            itens?: string[] | null;
+            modo: components["schemas"]["ModoDeGeracao"];
+            /** Pedido */
+            pedido: components["schemas"]["PosicaoDaMatriz"][];
+            /**
+             * Comite
+             * @default false
+             */
+            comite: boolean;
+            /** @default 60 */
+            duracao: components["schemas"]["DuracaoDoVideo"];
+            composicao_visual?: components["schemas"]["ComposicaoCarrossel"] | null;
+            /** Referencia Visual */
+            referencia_visual?: string | null;
+        };
+        /** NovoPerfilDeReferencia */
+        NovoPerfilDeReferencia: {
+            /** Usuario */
+            usuario: string;
+        };
+        /** Origem */
+        Origem: {
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /**
+             * Ativa
+             * @default false
+             */
+            ativa: boolean;
+            /**
+             * Disponivel
+             * @default true
+             */
+            disponivel: boolean;
+            /** Aviso */
+            aviso?: string | null;
+        };
+        /**
+         * OrigemComAtas
+         * @description Uma Origem do catálogo com as Atas que ela tem em disco (a Fonte e seus itens, na tela).
+         */
+        OrigemComAtas: {
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /**
+             * Ativa
+             * @default false
+             */
+            ativa: boolean;
+            /**
+             * Disponivel
+             * @default true
+             */
+            disponivel: boolean;
+            /** Aviso */
+            aviso?: string | null;
+            /** Atas */
+            atas: components["schemas"]["ResumoDaAta"][];
+        };
         /**
          * PacotePublicacao
          * @description O conjunto pronto para um humano publicar, só de Célula aprovada.
@@ -997,6 +1887,7 @@ export interface components {
             /** Video */
             video?: string | null;
             conferencia?: components["schemas"]["ConferenciaVisual"];
+            direcao_de_arte?: components["schemas"]["DirecaoDeArteCarrossel"] | null;
             /**
              * Montado Em
              * Format: date-time
@@ -1007,18 +1898,45 @@ export interface components {
              * @default false
              */
             aprovado_por_humano: boolean;
+            feedback_visual_humano?: components["schemas"]["FeedbackVisualHumano"] | null;
         };
         /**
          * ParecerVisao
-         * @description Resposta holística do juiz de visão sobre a folha de contato. Opcional.
+         * @description Resposta do Eval visual sobre a folha de contato. Nunca aprova sozinho.
          */
         ParecerVisao: {
             /** Parece Quebrado */
             parece_quebrado: boolean;
+            /**
+             * Legibilidade
+             * @default boa
+             * @enum {string}
+             */
+            legibilidade: "boa" | "atencao" | "ruim";
+            /**
+             * Coerencia Visual
+             * @default boa
+             * @enum {string}
+             */
+            coerencia_visual: "boa" | "atencao" | "ruim";
+            /**
+             * Aderencia Marca
+             * @default boa
+             * @enum {string}
+             */
+            aderencia_marca: "boa" | "atencao" | "ruim";
             /** Observacoes */
             observacoes?: string[];
             /** Provedor */
             provedor: string;
+        };
+        /** PedidoDeColeta */
+        PedidoDeColeta: {
+            /**
+             * Janela Dias
+             * @default 30
+             */
+            janela_dias: number;
         };
         /**
          * PedidoDeDecisao
@@ -1054,6 +1972,61 @@ export interface components {
             /** Decisao */
             decisao?: string | null;
         };
+        /** PerfilDeReferencia */
+        PerfilDeReferencia: {
+            /** Usuario */
+            usuario: string;
+            /**
+             * Ativo
+             * @default true
+             */
+            ativo: boolean;
+            /** Ultima Coleta Em */
+            ultima_coleta_em?: string | null;
+            /**
+             * Ultimo Estado
+             * @default nao_executada
+             */
+            ultimo_estado: string;
+            /** Ultima Mensagem */
+            ultima_mensagem?: string | null;
+        };
+        /** PerfilEmAlta */
+        PerfilEmAlta: {
+            /** Usuario */
+            usuario: string;
+            /** Publicacoes */
+            publicacoes: number;
+            /** Movimentacao */
+            movimentacao: number;
+            /** Taxa Engajamento Media */
+            taxa_engajamento_media?: number | null;
+            /**
+             * Ultimo Post Em
+             * Format: date-time
+             */
+            ultimo_post_em: string;
+        };
+        /**
+         * PlanoDeEdicao
+         * @description O plano de edição de um Roteiro: o JSON para o gerador de avatar e a tabela legível.
+         */
+        PlanoDeEdicao: {
+            /** Plano */
+            plano: {
+                [key: string]: unknown;
+            };
+            /** Markdown */
+            markdown: string;
+        };
+        /**
+         * PosicaoDaMatriz
+         * @description Uma posição da Matriz em JSON (o pedido e a API). O pipeline usa a tupla de ``MATRIZ``.
+         */
+        PosicaoDaMatriz: {
+            audiencia: components["schemas"]["Audiencia"];
+            formato: components["schemas"]["Formato"];
+        };
         /**
          * PosicaoResumo
          * @description Uma posição da Matriz, no mínimo que a tela precisa para colorir e rotular.
@@ -1061,7 +2034,7 @@ export interface components {
         PosicaoResumo: {
             audiencia: components["schemas"]["Audiencia"];
             formato: components["schemas"]["Formato"];
-            destino: components["schemas"]["Destino"];
+            destino: components["schemas"]["Destino"] | null;
             decisao: components["schemas"]["EstadoDecisao"] | null;
             /** Bloqueada */
             bloqueada: boolean;
@@ -1069,6 +2042,7 @@ export interface components {
             sem_conteudo: boolean;
             /** Revisao Comite */
             revisao_comite: boolean;
+            etapa?: components["schemas"]["EtapaDaCelula"] | null;
         };
         /**
          * ProblemaTransversal
@@ -1083,6 +2057,45 @@ export interface components {
             evidencia: string;
             /** Correcao */
             correcao: string;
+        };
+        /**
+         * ReferenciaVisual
+         * @description Uma referência curada que orienta uma composição do catálogo fechado.
+         */
+        ReferenciaVisual: {
+            /** Identificador */
+            identificador: string;
+            /** Titulo */
+            titulo: string;
+            /** Tema */
+            tema: string;
+            composicao: components["schemas"]["ComposicaoCarrossel"];
+            /** Descricao */
+            descricao: string;
+            /** Instrucao De Design */
+            instrucao_de_design: string;
+            analise: components["schemas"]["AnaliseVisualReferencia"];
+            /**
+             * Aprovada
+             * @default true
+             */
+            aprovada: boolean;
+            /**
+             * Origem
+             * @default Suno — referência interna
+             */
+            origem: string;
+            /**
+             * Imagem Disponivel
+             * @default false
+             */
+            imagem_disponivel: boolean;
+            /** @default nao_solicitada */
+            estado_analise: components["schemas"]["EstadoAnaliseVisual"];
+            /** Provedor Analise */
+            provedor_analise?: string | null;
+            /** Mensagem Analise */
+            mensagem_analise?: string | null;
         };
         /**
          * Renomeacao
@@ -1119,12 +2132,59 @@ export interface components {
              */
             provedores: string[];
         };
+        /** ResultadoDaColeta */
+        ResultadoDaColeta: {
+            /** Janela Dias */
+            janela_dias: number;
+            /**
+             * Candidatos Novos
+             * @default 0
+             */
+            candidatos_novos: number;
+            /**
+             * Perfis Consultados
+             * @default 0
+             */
+            perfis_consultados: number;
+            /** Falhas */
+            falhas?: string[];
+        };
+        /**
+         * ResumoDaAta
+         * @description O que a tela mostra de uma Ata sem abrir o texto inteiro.
+         */
+        ResumoDaAta: {
+            /** Identificador */
+            identificador: string;
+            /** Origem */
+            origem: string;
+            categoria: components["schemas"]["CategoriaDaAta"];
+            /** Titulo */
+            titulo: string;
+            /**
+             * Data Referencia
+             * Format: date
+             */
+            data_referencia: string;
+            /** Resumo */
+            resumo: string;
+            /** Total Ancoras */
+            total_ancoras: number;
+            /** Calibrada */
+            calibrada: boolean;
+            /** Demo Disponivel */
+            demo_disponivel: boolean;
+            /** Extracao Completa */
+            extracao_completa: boolean;
+        };
         /** Saude */
         Saude: {
             /** Ok */
             ok: boolean;
             /** Execucoes */
             execucoes: number;
+            /** Real Disponivel */
+            real_disponivel: boolean;
         };
         /**
          * SelecaoCuradoria
@@ -1136,19 +2196,55 @@ export interface components {
             itens: string[];
         };
         /**
+         * SetorDaReferencia
+         * @enum {string}
+         */
+        SetorDaReferencia: "investimentos" | "financas_pessoais" | "economia" | "mercado_financeiro" | "criptoativos" | "outros";
+        /**
          * Slide
          * @description Um registro do roteiro de slides do Carrossel. O Avaliador julga o texto, não a imagem.
          */
         Slide: {
+            /**
+             * @description hook no primeiro slide, cta no último, ponto ou citacao no meio.
+             * @default ponto
+             */
+            tipo: components["schemas"]["TipoSlide"];
             /** Titulo */
             titulo: string;
             /** Corpo */
             corpo: string;
             /**
+             * Destaque
+             * @description Uma expressão do título a realçar; precisa aparecer literalmente nele.
+             */
+            destaque?: string | null;
+            /**
              * Dado
              * @description Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009).
              */
             dado?: string | null;
+        };
+        /**
+         * SomDeCena
+         * @description Os sons do catálogo, sintetizados em código (nenhum arquivo de áudio é versionado).
+         * @enum {string}
+         */
+        SomDeCena: "whoosh" | "pop" | "clique" | "ding" | "swell";
+        /** Sugestao */
+        Sugestao: {
+            /** Itens */
+            itens: components["schemas"]["ResumoDaAta"][];
+            /** Motivo */
+            motivo: string;
+        };
+        /**
+         * Sugestoes
+         * @description As duas sugestões da curadoria. ``visao_unida`` é ``None`` com menos de 2 Atas que geram.
+         */
+        Sugestoes: {
+            destaque_unico: components["schemas"]["Sugestao"] | null;
+            visao_unida: components["schemas"]["Sugestao"] | null;
         };
         /**
          * Tentativa
@@ -1160,6 +2256,24 @@ export interface components {
             celula: components["schemas"]["Celula"];
             laudo: components["schemas"]["Laudo"];
         };
+        /**
+         * TipoDeCena
+         * @description O layout de uma cena do Roteiro no design system (``suno.video.design``).
+         * @enum {string}
+         */
+        TipoDeCena: "gancho" | "dado_grande" | "texto_destaque" | "lista" | "comparacao" | "citacao" | "encerramento";
+        /**
+         * TipoSlide
+         * @description O papel do slide no Carrossel; cada um tem seu template HTML (ADR 0020).
+         * @enum {string}
+         */
+        TipoSlide: "hook" | "ponto" | "citacao" | "cta";
+        /**
+         * TransicaoDeEntrada
+         * @description Como a cena entra, vista da cena anterior. A primeira cena entra sempre em ``corte``.
+         * @enum {string}
+         */
+        TransicaoDeEntrada: "corte" | "fade" | "deslizar_esquerda" | "deslizar_cima" | "zoom";
         /**
          * Unidade
          * @description Unidade de uma Âncora numérica. ``p.p.`` ≠ ``%`` e ambos ≠ ``pb`` (pesquisa §3).
@@ -1252,6 +2366,476 @@ export interface operations {
             };
         };
     };
+    listar_fontes_api_fontes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaDeOrigens"];
+                };
+            };
+        };
+    };
+    alterar_origem_api_fontes__identificador__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlteracaoDaOrigem"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Origem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_fontes_api_fontes_atualizar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaAtualizacao"];
+                };
+            };
+        };
+    };
+    obter_atualizacao_api_fontes_atualizacao_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaAtualizacao"];
+                };
+            };
+        };
+    };
+    importar_comunicado_api_fontes_importar_post: {
+        parameters: {
+            query: {
+                titulo: string;
+                data_referencia?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumoDaAta"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_sugestoes_api_curadoria_sugestoes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sugestoes"];
+                };
+            };
+        };
+    };
+    listar_referencias_visuais_api_referencias_visuais_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenciaVisual"][];
+                };
+            };
+        };
+    };
+    importar_referencia_visual_api_referencias_visuais_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovaReferenciaVisual"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenciaVisual"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_perfis_de_referencia_api_referencias_visuais_coleta_perfis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerfilDeReferencia"][];
+                };
+            };
+        };
+    };
+    adicionar_perfil_de_referencia_api_referencias_visuais_coleta_perfis_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovoPerfilDeReferencia"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PerfilDeReferencia"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_candidatos_de_referencia_api_referencias_visuais_coleta_candidatos_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidatoDeReferencia"][];
+                };
+            };
+        };
+    };
+    descobrir_referencias_api_referencias_visuais_descoberta_get: {
+        parameters: {
+            query?: {
+                janela_dias?: number;
+                setor?: components["schemas"]["SetorDaReferencia"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DescobertaDeReferencias"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    executar_coleta_de_referencias_api_referencias_visuais_coleta_executar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoDeColeta"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoDaColeta"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    importar_candidato_de_referencia_api_referencias_visuais_coleta_candidatos__identificador__importar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportacaoDeCandidato"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenciaVisual"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    alterar_referencia_visual_api_referencias_visuais__identificador__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlteracaoDaReferenciaVisual"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenciaVisual"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_imagem_da_referencia_api_referencias_visuais__identificador__imagem_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enviar_imagem_da_referencia_api_referencias_visuais__identificador__imagem_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenciaVisual"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_execucoes_rota_api_execucoes_get: {
         parameters: {
             query?: never;
@@ -1268,6 +2852,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExecucaoResumo"][];
+                };
+            };
+        };
+    };
+    criar_saida_api_execucoes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NovaSaida"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Andamento"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_andamento_api_execucoes__identificador__andamento_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Andamento"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1291,6 +2939,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Execucao"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    excluir_execucao_api_execucoes__identificador__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -1536,6 +3213,103 @@ export interface operations {
             };
         };
     };
+    obter_plano_de_edicao_api_execucoes__identificador__celulas__audiencia__roteiro_plano_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+                audiencia: components["schemas"]["Audiencia"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanoDeEdicao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    montar_pacotes_api_execucoes__identificador__pacotes_montar_post: {
+        parameters: {
+            query?: {
+                audiencia?: components["schemas"]["Audiencia"] | null;
+                formato?: components["schemas"]["Formato"] | null;
+            };
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaMontagem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_montagem_api_execucoes__identificador__pacotes_montagem_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaMontagem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_pacotes_api_execucoes__identificador__pacotes_get: {
         parameters: {
             query?: never;
@@ -1666,7 +3440,7 @@ export interface operations {
             };
         };
     };
-    aprovar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__aprovar_post: {
+    baixar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__baixar_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1678,6 +3452,43 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    aprovar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__aprovar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+                audiencia: components["schemas"]["Audiencia"];
+                formato: components["schemas"]["Formato"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AprovacaoDoPacote"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

@@ -17,26 +17,35 @@ import logging
 import re
 import threading
 import time
+from collections.abc import Sequence
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypeVar
+from typing import Callable, TypeVar
 
 from pydantic import BaseModel
 
 from suno.dominio import (
+    DuracaoDoVideo,
     MATRIZ,
+    Audiencia,
+    ComposicaoCarrossel,
     Custo,
     Destino,
     EstadoAvaliacaoTransversal,
     Execucao,
+    FaseDaExecucao,
     FilaHumana,
+    Formato,
     HistoricoCelula,
     Pendencia,
     PedidoLLM,
+    PosicaoDaMatriz,
     ResultadoCicloTransversal,
     RespostaLLM,
 )
-from suno.gerador.curador import AgenteCurador
+from suno.gerador.ciclo import Andou
+from suno.gerador.curador import AgenteCurador, compor_uniao
 from suno.gerador.matriz import gerar_matriz_do_dossie
 from suno.gerador.orquestracao import rodar_ciclo_transversal
 from suno.ingestao.pdf import carregar_ata
@@ -167,7 +176,10 @@ def _pendencias(celulas: list[HistoricoCelula]) -> list[Pendencia]:
     ]
 
 
-def _pendencias_transversais(ciclo: ResultadoCicloTransversal) -> list[Pendencia]:
+def _pendencias_transversais(
+    ciclo: ResultadoCicloTransversal,
+    posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
+) -> list[Pendencia]:
     """Problema do Judge entra na H4 por Célula, sem duplicar falha determinística."""
     if ciclo.estado is EstadoAvaliacaoTransversal.APROVADA:
         return []
@@ -175,10 +187,10 @@ def _pendencias_transversais(ciclo: ResultadoCicloTransversal) -> list[Pendencia
         return []
 
     ultimo = ciclo.julgamentos[-1] if ciclo.julgamentos else None
-    posicoes = (
+    citadas = (
         {(problema.audiencia, problema.formato) for problema in ultimo.problemas}
         if ultimo is not None and ultimo.problemas
-        else set(MATRIZ)
+        else set(posicoes)
     )
     return [
         Pendencia(
@@ -187,8 +199,8 @@ def _pendencias_transversais(ciclo: ResultadoCicloTransversal) -> list[Pendencia
             formato=formato,
             motivo=ciclo.motivo_final,
         )
-        for audiencia, formato in MATRIZ
-        if (audiencia, formato) in posicoes
+        for audiencia, formato in posicoes
+        if (audiencia, formato) in citadas
     ]
 
 
@@ -216,13 +228,46 @@ def _identificador_estavel(bruto: str) -> str:
     return nome
 
 
+def _posicoes_do_pedido(
+    pedido: Sequence[tuple[Audiencia, Formato]] | None,
+) -> tuple[tuple[Audiencia, Formato], ...]:
+    """Sem pedido valem as nove. Vazio ou repetido é recusado antes de qualquer chamada."""
+    if pedido is None:
+        return MATRIZ
+    if len(pedido) == 0:
+        raise ValueError("o pedido está vazio: escolha ao menos uma Célula")
+    if len(set(pedido)) != len(pedido):
+        raise ValueError("o pedido tem posição repetida")
+    escolhidas = set(pedido)
+    return tuple(posicao for posicao in MATRIZ if posicao in escolhidas)
+
+
+def _avisar_fase(
+    ao_mudar_fase: Callable[[FaseDaExecucao], None] | None, fase: FaseDaExecucao
+) -> None:
+    """Quem escuta é a tela; um aviso que quebra nunca derruba a execução."""
+    if ao_mudar_fase is None:
+        return
+    try:
+        ao_mudar_fase(fase)
+    except Exception:  # noqa: BLE001 - o aviso é de cortesia
+        _registro.exception("aviso de fase falhou em %s", fase)
+
+
 def executar(
-    caminho_ata: Path,
+    caminho_ata: Path | Sequence[Path],
     provedor: str,
     pasta_execucoes: Path,
     *,
     comite: bool = False,
     identificador: str | None = None,
+    pedido: Sequence[tuple[Audiencia, Formato]] | None = None,
+    nome: str | None = None,
+    ao_mudar_fase: Callable[[FaseDaExecucao], None] | None = None,
+    ao_andar: Andou | None = None,
+    duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
+    composicao_visual: ComposicaoCarrossel | None = None,
+    referencia_visual: str | None = None,
 ) -> Execucao:
     """A execução ponta a ponta de uma Ata, gravada em disco no fim (ADR 0001, 0006).
 
@@ -232,27 +277,67 @@ def executar(
     com o carimbo de hora, cada regeneração criaria uma pasta nova e o link mudaria.
     Rodar de novo com o mesmo identificador **sobrescreve** o ``execucao.json`` e os
     ``.md``: é regeneração da demo, não uma segunda execução.
+
+    ``caminho_ata`` pode ser uma lista de 2 a 5 caminhos: é a Visão unida, um só conteúdo que
+    junta as Atas, com as Âncoras prefixadas por parte (``a1_``, ``a2_``…).
+
+    ``pedido`` escolhe quais Células gerar (de uma a nove; sem ele, as nove). Com menos de
+    duas, a avaliação da Matriz e o Judge não rodam: coerência entre Células pede ao menos
+    duas. ``nome`` é o rótulo de tela; vazio vira o identificador. ``ao_mudar_fase`` e
+    ``ao_andar`` são os avisos de andamento que a API grava em ``andamento.json`` (ADR 0017).
+    ``duracao`` é a duração que a pessoa escolheu para o Roteiro (40s a 3m); as outras duas
+    formas não a leem.
     """
     iniciada_em = datetime.now(timezone.utc)
     relogio = time.perf_counter()
-    nome = _identificador_estavel(identificador) if identificador is not None else None
+    nome_da_pasta = _identificador_estavel(identificador) if identificador is not None else None
+    posicoes = _posicoes_do_pedido(pedido)
 
-    ata = carregar_ata(Path(caminho_ata))
+    caminhos = (
+        [Path(caminho_ata)]
+        if isinstance(caminho_ata, (str, Path))
+        else [Path(caminho) for caminho in caminho_ata]
+    )
+    atas = [carregar_ata(caminho) for caminho in caminhos]
+    unida = len(atas) > 1
+    ata = compor_uniao(atas) if unida else atas[0]
     prontas = _respostas_prontas_da_ata(ata.identificador) if provedor == "falso" else None
     contado = ProvedorContado(provedor_por_nome(provedor, respostas_prontas=prontas))
 
-    dossie = AgenteCurador(contado).preparar(ata)
-    juizes = _comite_de_ambiente(contado.nome, ligado=comite)
-    celulas = gerar_matriz_do_dossie(dossie, contado, comite=juizes)
-    celulas, ciclo_transversal = rodar_ciclo_transversal(
-        dossie, celulas, contado, comite=juizes
+    _avisar_fase(ao_mudar_fase, FaseDaExecucao.EXTRAINDO_ANCORAS)
+    curador = AgenteCurador(contado)
+    dossie = replace(
+        curador.preparar_uniao(atas) if unida else curador.preparar(ata), duracao=duracao
     )
-    avaliacao_transversal = ciclo_transversal.avaliacao_deterministica
+    juizes = _comite_de_ambiente(contado.nome, ligado=comite)
+    _avisar_fase(ao_mudar_fase, FaseDaExecucao.GERANDO_CELULAS)
+    celulas = gerar_matriz_do_dossie(
+        dossie, contado, comite=juizes, posicoes=posicoes, ao_andar=ao_andar
+    )
+    ciclo_transversal: ResultadoCicloTransversal | None = None
+    avaliacao_transversal = None
+    if len(posicoes) >= 2:
+        _avisar_fase(ao_mudar_fase, FaseDaExecucao.AVALIANDO_MATRIZ)
+        celulas, ciclo_transversal = rodar_ciclo_transversal(
+            dossie, celulas, contado, comite=juizes, posicoes=posicoes, ao_andar=ao_andar
+        )
+        avaliacao_transversal = ciclo_transversal.avaliacao_deterministica
+    _avisar_fase(ao_mudar_fase, FaseDaExecucao.GRAVANDO)
 
     concluida_em = datetime.now(timezone.utc)
     padrao = f"{ata.identificador}-{provedor}-{iniciada_em.strftime('%Y%m%d-%H%M%S')}"
+    pendencias_transversais = (
+        _pendencias_transversais(ciclo_transversal, posicoes)
+        if ciclo_transversal is not None
+        else []
+    )
     execucao = Execucao(
-        identificador=nome if nome is not None else padrao,
+        identificador=nome_da_pasta if nome_da_pasta is not None else padrao,
+        nome=nome or "",
+        pedido=[PosicaoDaMatriz(audiencia=a, formato=f) for a, f in posicoes],
+        categoria=ata.categoria,
+        composicao_visual=composicao_visual,
+        referencia_visual=referencia_visual,
         ata=ata.identificador,
         provedor_gerador=provedor,
         iniciada_em=iniciada_em,
@@ -260,7 +345,7 @@ def executar(
         selecao=dossie.selecao,
         ancoras=dossie.ancoras,
         celulas=celulas,
-        pendencias=[*_pendencias(celulas), *_pendencias_transversais(ciclo_transversal)],
+        pendencias=[*_pendencias(celulas), *pendencias_transversais],
         custo=contado.custo(time.perf_counter() - relogio),
         comite_ligado=juizes is not None,
         avaliacao_transversal=avaliacao_transversal,

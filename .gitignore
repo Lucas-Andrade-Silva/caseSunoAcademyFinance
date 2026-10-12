@@ -40,3 +40,11 @@ data/execucoes/*
 data/execucoes/demo-copom-280/pacote/**/*.mp4
 data/execucoes/demo-copom-280/pacote/**/*.wav
 data/execucoes/demo-copom-280/pacote/**/*.mp3
+
+# Atas baixadas ou importadas pela interface são cópia local; só o catálogo de Origens entra no
+# repositório. As Atas do Copom da demo continuam versionadas em data/atas/.
+data/fontes/*
+!data/fontes/catalogo.json
+
+# Render do Carrossel (ADR 0020)
+render/node_modules/

@@ -1,0 +1,76 @@
+/* Carrossel Suno: fundo escuro com formas orgânicas em vermelho e vinho (paleta do case), título
+   em Anton (condensada, caixa-alta) e texto em Poppins, ambas OFL e lidas do disco: o render não
+   usa rede nem letra do sistema. O texto fica sempre sobre fundo escuro ou painel escuro; as
+   formas ficam atrás e só aparecem nas margens. */
+@font-face { font-family: "Anton"; src: url("{{FONTE_TITULO}}"); font-weight: 400; }
+@font-face { font-family: "Poppins"; src: url("{{FONTE_TEXTO}}"); font-weight: 400; }
+@font-face { font-family: "Poppins"; src: url("{{FONTE_TEXTO_MEDIO}}"); font-weight: 600; }
+@font-face { font-family: "Poppins"; src: url("{{FONTE_TEXTO_FORTE}}"); font-weight: 700; }
+:root {
+  --vermelho: #FF1A1A;
+  --vermelho-vivo: #FF0000;
+  --vinho: #AF0404;
+  --vinho-escuro: #5A0508;
+  --cinza: #414141;
+  --fundo: #140809;
+  --branco: #FFFFFF;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1350px; overflow: hidden; }
+body { background: var(--fundo); color: var(--branco); font-family: "Poppins", sans-serif; position: relative; }
+
+/* ---- a arte de fundo: só decoração, sem texto ---- */
+.arte { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+.arte > * { position: absolute; }
+.forma { background: linear-gradient(145deg, #FF2A2A 0%, var(--vermelho-vivo) 35%, var(--vinho) 100%); }
+.forma.escura { background: linear-gradient(160deg, var(--vinho) 0%, var(--vinho-escuro) 100%); }
+.brilho { border-radius: 50%; filter: blur(90px); opacity: .55; }
+.anel { border-radius: 50%; border: 2px solid rgba(255, 255, 255, .10); }
+.linhas { left: 0; bottom: 0; width: 1080px; height: 520px; opacity: .55; }
+
+/* ---- o topo e o rodapé ---- */
+.topo { position: absolute; top: 64px; left: 84px; right: 84px; display: flex; align-items: center;
+  justify-content: space-between; z-index: 3; }
+.marca { font-size: 34px; font-weight: 700; letter-spacing: .32em; }
+.marca b { color: var(--vermelho); font-weight: 400; }
+.selo { padding: 10px 26px; border-radius: 40px; border: 2px solid rgba(255, 255, 255, .55);
+  font-size: 26px; font-weight: 600; background: rgba(20, 8, 9, .55); }
+.numero { position: absolute; bottom: 70px; right: 84px; font-size: 26px; font-weight: 600; z-index: 3;
+  color: rgba(255, 255, 255, .8); }
+.pontos { position: absolute; bottom: 82px; left: 84px; display: flex; gap: 12px; z-index: 3; }
+.pontos i { width: 14px; height: 14px; border-radius: 7px; background: rgba(255, 255, 255, .35); }
+.pontos i.ativo { width: 48px; background: var(--vermelho); }
+.arraste { position: absolute; bottom: 58px; left: 50%; transform: translateX(-50%); z-index: 3;
+  padding: 14px 34px; border-radius: 40px; border: 2px solid var(--vermelho);
+  background: rgba(20, 8, 9, .7); font-size: 26px; font-weight: 600; white-space: nowrap; }
+.pontos.com-arraste { left: 84px; }
+
+/* ---- o texto ---- */
+.titulo { position: absolute; left: 84px; width: 912px; font-weight: 700; line-height: 1.12;
+  overflow: hidden; z-index: 2; text-shadow: 0 6px 30px rgba(0, 0, 0, .35); }
+.titulo.capa { font-family: "Anton", sans-serif; font-weight: 400; text-transform: uppercase;
+  line-height: 1.1; letter-spacing: .01em; padding-top: 12px; }
+.corpo { position: absolute; left: 84px; width: 912px; font-size: 38px; line-height: 1.45;
+  overflow: hidden; z-index: 2; }
+.destaque { background: var(--vermelho-vivo); padding: 0 14px; border-radius: 10px;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone; text-shadow: none; }
+.painel { position: absolute; left: 84px; width: 912px; z-index: 2; border-radius: 32px;
+  background: rgba(20, 8, 9, .82); border: 2px solid rgba(255, 255, 255, .12); padding: 40px 44px; }
+.painel .corpo { position: static; width: auto; }
+.painel.acento { border-left: 12px solid var(--vermelho-vivo); }
+.linha { position: absolute; left: 84px; bottom: 140px; width: 120px; height: 8px;
+  background: var(--vermelho); border-radius: 4px; z-index: 2; }
+
+/* ---- o gráfico do slide de ponto ---- */
+.grafico { position: absolute; left: 84px; top: 790px; width: 912px; height: 400px; z-index: 2;
+  background: rgba(20, 8, 9, .82); border: 2px solid rgba(255, 255, 255, .12); border-radius: 32px; }
+.barras { display: flex; align-items: flex-end; justify-content: center; gap: 120px; height: 100%;
+  padding: 24px 0 18px; }
+.barra { width: 240px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.barra .valor { white-space: nowrap; font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+.barra .bloco { width: 100%; border-radius: 14px 14px 0 0; }
+.barra .rotulo { font-size: 26px; margin-top: 14px; }
+.numero-grande { text-align: center; padding-top: 70px; }
+.numero-grande .valor { font-family: "Anton", sans-serif; font-size: 150px; font-weight: 400;
+  color: var(--vermelho); white-space: nowrap; }
+.numero-grande .rotulo { font-size: 30px; margin-top: 24px; }

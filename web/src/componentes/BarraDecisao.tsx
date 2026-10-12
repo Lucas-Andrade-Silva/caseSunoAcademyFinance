@@ -7,11 +7,13 @@ import { lerRevisor } from "../lib/revisor";
 import { formatarDataCurta } from "../texto/rotulos";
 import Chip from "./Chip";
 
-export interface PropriedadesDaBarra {
+interface PropriedadesDaBarra {
   bloqueada: boolean;
   decisao: DecisaoHumana | null;
   enviando: boolean;
   erro: string | null;
+  /** Rótulo do botão de aprovar; no Carrossel, a aprovação também dispara a geração. */
+  rotuloAprovar?: string;
   onDecidir: (estado: "aprovada" | "reprovada", motivo: string | null, revisor: string) => void;
 }
 
@@ -28,6 +30,7 @@ export default function BarraDecisao({
   decisao,
   enviando,
   erro,
+  rotuloAprovar = "APROVAR",
   onDecidir,
 }: PropriedadesDaBarra) {
   const [reprovando, definirReprovando] = useState(false);
@@ -111,7 +114,7 @@ export default function BarraDecisao({
           onClick={() => onDecidir("aprovada", null, revisor.trim())}
           className="rounded-full bg-suno px-[18px] py-2 text-xs font-bold tracking-wide text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
-          APROVAR
+          {rotuloAprovar}
         </button>
       </div>
     </div>

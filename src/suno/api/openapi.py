@@ -15,7 +15,7 @@ from suno.api.app import criar_app
 
 
 def gerar_schema() -> dict:
-    app = criar_app(Path("data/execucoes"))
+    app = criar_app(Path("data/execucoes"), recuperar_ao_iniciar=False)
     return app.openapi()
 
 

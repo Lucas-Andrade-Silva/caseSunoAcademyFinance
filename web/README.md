@@ -1,9 +1,19 @@
 # Suno Content — interface
 
 React + Vite + Tailwind sobre FastAPI (ADR 0005). Painel escuro, em preto e vermelho da Suno,
-com três guias: **Fontes**, **Curadoria** e **Saídas**. Fontes e Curadoria ainda são páginas
-"em breve"; a guia Saídas já lista as execuções, abre a Matriz 3×3, mostra cada Célula com o
-Laudo e as Âncoras ao lado, e deixa aprovar, reprovar, renomear e exportar.
+com três guias:
+
+- **Fontes**: um trilho de cartões por Origem (Copom, Fatos Relevantes da CVM, Releases da B3 "em
+  breve" e documentos importados), a bolinha de seleção, **Importar documento** (PDF ou texto) e
+  **Atualizar fontes** (precisa de rede e falha sem travar a tela).
+- **Curadoria**, em três passos: **Escolher** (Destaque único, Visão unida ou "Montar a minha"),
+  **Configurar** (nome, Demo ou Real, a Matriz 3×3 clicável por Célula, linha ou coluna) e
+  **Gerando** (a Matriz ao vivo; dá para sair da tela, a geração continua no servidor).
+- **Saídas**: lista as execuções com a mini-Matriz, abre a Matriz 3×3, mostra cada Célula com o Laudo
+  e as Âncoras ao lado, monta o Pacote de publicação e deixa aprovar, reprovar, renomear e exportar.
+
+Fora do Copom a Saída leva o selo **não calibrado**. A Demo só existe para uma Ata com respostas
+prontas (hoje, a do Copom 280); o modo Real precisa de chave e modelo de provedor no `.env`.
 
 O desenho completo está em `docs/superpowers/specs/2026-10-09-front-suno-design.md`, com os
 mockups em `docs/superpowers/specs/mockups-2026-10-09/`.
@@ -53,8 +63,9 @@ cd web
 npm test
 ```
 
-Vitest, só para a lógica pura em `src/lib/` (estado e cor de cada posição da Matriz, contagens,
-filtro). Os componentes são conferidos por `tsc` e olhando o app rodando.
+Vitest, só para a lógica pura em `src/lib/` (estado e cor de cada posição da Matriz, seleção por
+Célula, linha e coluna, progresso da geração, seleção de Atas, motivo de não haver Pacote). Os
+componentes são conferidos por `tsc` e olhando o app rodando.
 
 ## Cliente da API
 

@@ -1,0 +1,20 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>{{CSS}}
+.etapa { position:absolute; left:70px; top:150px; z-index:1; font-family:"Anton",sans-serif;
+  font-size:410px; line-height:1; color:rgba(255,255,255,.07); }
+.rotulo-etapa { position:absolute; left:84px; top:270px; z-index:2; color:var(--vermelho);
+  font-size:28px; font-weight:700; letter-spacing:.22em; }
+.titulo { top:350px; height:360px; font-family:"Anton",sans-serif; font-size:105px;
+  font-weight:400; text-transform:uppercase; }
+.painel { top:780px; height:330px; }.painel .corpo { height:250px; font-size:38px; }
+</style></head><body data-fundo>
+<div class="arte">
+  <div class="forma" style="width:660px;height:620px;right:-260px;top:-220px;border-radius:55% 45% 60% 40%"></div>
+  <div class="forma escura" style="width:760px;height:620px;left:-360px;bottom:-260px;border-radius:45% 55% 40% 60%"></div>
+  <svg class="linhas" viewBox="0 0 1080 520" fill="none"><path d="M0 420 L160 390 L300 320 L440 350 L590 240 L740 280 L900 150 L1080 110" stroke="#fff" stroke-opacity=".25" stroke-width="5"/></svg>
+</div>
+<div class="topo"><div class="marca"><b>(</b> SUNO <b>)</b></div><div class="selo">{{SELO}}</div></div>
+<div class="etapa">{{ORDEM}}</div><div class="rotulo-etapa">ETAPA {{ORDEM}} DE {{TOTAL}}</div>
+<div class="titulo" data-caixa="titulo" data-ajustar>{{TITULO}}</div>
+<div class="painel acento" data-fundo><div class="corpo" data-caixa="corpo" data-ajustar>{{CORPO}}</div></div>
+<div class="pontos">{{PONTOS}}</div><div class="numero">{{NUMERO}}</div>
+{{AJUSTE}}</body></html>

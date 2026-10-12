@@ -28,9 +28,9 @@ Roda sem rede e sem modelo, e é a que decide se o render precisa ser refeito:
 
 Falha aqui é **defeito de render**: refazer o render, não reescrever a Célula.
 
-## Camada de juiz multimodal, opcional
+## Camada do Eval multimodal, falível
 
-Um juiz de visão olha o artefato pronto e responde o que não se mede: isto parece quebrado?
+O Eval visual olha o artefato pronto e responde o que não se mede: isto parece quebrado?
 O layout está equilibrado? O gráfico comunica o que a legenda diz que comunica? A pergunta é
 holística de propósito — aqui não há um número a atingir, e por isso é o único lugar do projeto
 onde um juiz holístico é aceitável.
@@ -72,9 +72,9 @@ o sistema achou suspeito". O ponto de decisão continua sendo humano; ele só de
 
 ## Consequências
 
-Isto fica **abaixo da linha dos seis entregáveis**. A camada determinística é barata e roda em CI,
-então entra junto com o render. O juiz multimodal é extensão: se o prazo apertar, ele cai antes de
-qualquer coisa que valha nota, e o H5 volta a ser inspeção humana sem lista — que é como estava.
+O Eval multimodal roda quando existe provedor visual configurado e falha de forma aberta: o
+Pacote permanece disponível e o H5 continua sendo a decisão final. O fechamento do ciclo com a
+aprovação humana e a memória agregada está no ADR 0027.
 
 **NÃO VERIFICADO:** cota de entrada de imagem no tier gratuito do Gemini, e quais modelos de visão
 Groq e SambaNova expõem hoje. Precisa ir para

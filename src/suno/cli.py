@@ -4,6 +4,7 @@
     python -m suno.cli pacote     --execucao <id>
     python -m suno.cli buscar-ata [--reuniao 280]          # H1: roda antes, com rede
     python -m suno.cli video      --execucao <id> --audiencia iniciante
+    python -m suno.cli plano      --execucao <id> --audiencia iniciante
     python -m suno.cli servir     [--porta 8000]
 
 Só ``argparse``, da biblioteca padrão. Cada subcomando delega ao módulo dono; este arquivo
@@ -38,6 +39,7 @@ def _carregar_env() -> None:
 
 def cmd_executar(args: argparse.Namespace) -> int:
     from suno.gerador.execucao import executar
+    from suno.video.design import duracao_valida
 
     # --comite liga; sem a flag, SUNO_COMITE=1 no .env também liga (ADR 0008: nasce desligado).
     comite = args.comite or os.environ.get("SUNO_COMITE", "0") == "1"
@@ -47,6 +49,7 @@ def cmd_executar(args: argparse.Namespace) -> int:
         _pasta_execucoes(args.execucoes),
         comite=comite,
         identificador=args.identificador,
+        duracao=duracao_valida(args.duracao),
     )
     aprovadas = sum(1 for h in execucao.celulas if h.destino_final.value == "aprovado")
     print(f"execucao={execucao.identificador} ata={execucao.ata} provedor={execucao.provedor_gerador}")
@@ -97,6 +100,15 @@ def cmd_video(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_plano(args: argparse.Namespace) -> int:
+    from suno.video.plano import plano_do_roteiro
+
+    caminho = plano_do_roteiro(args.execucao, Audiencia(args.audiencia), _pasta_execucoes(args.execucoes))
+    print(f"plano={caminho}")
+    print(f"markdown={caminho.with_suffix('.md')}")
+    return 0
+
+
 def cmd_servir(args: argparse.Namespace) -> int:
     import uvicorn
 
@@ -116,6 +128,10 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--provedor", default="falso", help="falso | gemini | groq | sambanova | roteador")
     p.add_argument("--comite", action="store_true", help="liga o comitê de juízes-LLM (ADR 0008)")
     p.add_argument("--execucoes", default=None, help="pasta de saída (padrão: SUNO_EXECUCOES ou data/execucoes)")
+    p.add_argument(
+        "--duracao", type=int, default=60, choices=[40, 60, 90, 120, 180],
+        help="duração do Roteiro em segundos (padrão: 60)",
+    )
     p.add_argument("--identificador", default=None, help="nome fixo da execução (padrão: <ata>-<provedor>-<carimbo>)")
     p.set_defaults(funcao=cmd_executar)
 
@@ -137,6 +153,12 @@ def construir_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--execucoes", default=None)
     p.set_defaults(funcao=cmd_video)
+
+    p = sub.add_parser("plano", help="grava o plano de edição (JSON para avatar + Markdown) de um Roteiro aprovado")
+    p.add_argument("--execucao", required=True)
+    p.add_argument("--audiencia", required=True, choices=[a.value for a in Audiencia])
+    p.add_argument("--execucoes", default=None)
+    p.set_defaults(funcao=cmd_plano)
 
     p = sub.add_parser("servir", help="sobe a API e a interface")
     p.add_argument("--host", default="127.0.0.1")

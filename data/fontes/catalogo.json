@@ -1,0 +1,36 @@
+{
+  "origens": [
+    {
+      "id": "copom",
+      "nome": "Atas do Copom",
+      "categoria": "copom",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
+      "id": "cvm_fatos_relevantes",
+      "nome": "Fatos Relevantes da CVM",
+      "categoria": "comunicado_relevante",
+      "ativa": false,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
+      "id": "releases_b3",
+      "nome": "Releases de Resultados (B3)",
+      "categoria": "release",
+      "ativa": false,
+      "disponivel": false,
+      "aviso": "em breve"
+    },
+    {
+      "id": "importados",
+      "nome": "Documentos importados",
+      "categoria": "importada",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    }
+  ]
+}

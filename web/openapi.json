@@ -66,6 +66,593 @@
         }
       }
     },
+    "/api/fontes": {
+      "get": {
+        "summary": "Listar Fontes",
+        "operationId": "listar_fontes_api_fontes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeOrigens"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fontes/{identificador}": {
+      "patch": {
+        "summary": "Alterar Origem",
+        "operationId": "alterar_origem_api_fontes__identificador__patch",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlteracaoDaOrigem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Origem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fontes/atualizar": {
+      "post": {
+        "summary": "Atualizar Fontes",
+        "description": "Busca nas Origens ligadas, em segundo plano. Precisa de rede e falha sem travar a tela.",
+        "operationId": "atualizar_fontes_api_fontes_atualizar_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaAtualizacao"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fontes/atualizacao": {
+      "get": {
+        "summary": "Obter Atualizacao",
+        "operationId": "obter_atualizacao_api_fontes_atualizacao_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaAtualizacao"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fontes/importar": {
+      "post": {
+        "summary": "Importar Comunicado",
+        "description": "O corpo é o arquivo cru (PDF ou texto UTF-8); título e data vão na query.",
+        "operationId": "importar_comunicado_api_fontes_importar_post",
+        "parameters": [
+          {
+            "name": "titulo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Titulo"
+            }
+          },
+          {
+            "name": "data_referencia",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Referencia"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoDaAta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/curadoria/sugestoes": {
+      "get": {
+        "summary": "Obter Sugestoes",
+        "operationId": "obter_sugestoes_api_curadoria_sugestoes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sugestoes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais": {
+      "get": {
+        "summary": "Listar Referencias Visuais",
+        "description": "A biblioteca local de padrões aprovados que orienta a direção de arte.",
+        "operationId": "listar_referencias_visuais_api_referencias_visuais_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReferenciaVisual"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Referencias Visuais Api Referencias Visuais Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Importar Referencia Visual",
+        "description": "Cadastra metadados autorizados; a nova referência nasce não aprovada.",
+        "operationId": "importar_referencia_visual_api_referencias_visuais_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaReferenciaVisual"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenciaVisual"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/coleta/perfis": {
+      "get": {
+        "summary": "Listar Perfis De Referencia",
+        "operationId": "listar_perfis_de_referencia_api_referencias_visuais_coleta_perfis_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PerfilDeReferencia"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Perfis De Referencia Api Referencias Visuais Coleta Perfis Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Adicionar Perfil De Referencia",
+        "operationId": "adicionar_perfil_de_referencia_api_referencias_visuais_coleta_perfis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoPerfilDeReferencia"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PerfilDeReferencia"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/coleta/candidatos": {
+      "get": {
+        "summary": "Listar Candidatos De Referencia",
+        "operationId": "listar_candidatos_de_referencia_api_referencias_visuais_coleta_candidatos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CandidatoDeReferencia"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Candidatos De Referencia Api Referencias Visuais Coleta Candidatos Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/descoberta": {
+      "get": {
+        "summary": "Descobrir Referencias",
+        "description": "Filtra carrosséis e ranqueia os perfis monitorados por movimentação.",
+        "operationId": "descobrir_referencias_api_referencias_visuais_descoberta_get",
+        "parameters": [
+          {
+            "name": "janela_dias",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "title": "Janela Dias"
+            }
+          },
+          {
+            "name": "setor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SetorDaReferencia"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Setor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescobertaDeReferencias"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/coleta/executar": {
+      "post": {
+        "summary": "Executar Coleta De Referencias",
+        "operationId": "executar_coleta_de_referencias_api_referencias_visuais_coleta_executar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedidoDeColeta"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoDaColeta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/coleta/candidatos/{identificador}/importar": {
+      "post": {
+        "summary": "Importar Candidato De Referencia",
+        "operationId": "importar_candidato_de_referencia_api_referencias_visuais_coleta_candidatos__identificador__importar_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportacaoDeCandidato"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenciaVisual"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/{identificador}": {
+      "patch": {
+        "summary": "Alterar Referencia Visual",
+        "operationId": "alterar_referencia_visual_api_referencias_visuais__identificador__patch",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlteracaoDaReferenciaVisual"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenciaVisual"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/referencias-visuais/{identificador}/imagem": {
+      "post": {
+        "summary": "Enviar Imagem Da Referencia",
+        "description": "Normaliza a imagem e tenta analisá-la no Gemini; falha mantém revisão manual.",
+        "operationId": "enviar_imagem_da_referencia_api_referencias_visuais__identificador__imagem_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenciaVisual"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Obter Imagem Da Referencia",
+        "operationId": "obter_imagem_da_referencia_api_referencias_visuais__identificador__imagem_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/execucoes": {
       "get": {
         "summary": "Listar Execucoes Rota",
@@ -81,6 +668,82 @@
                   },
                   "type": "array",
                   "title": "Response Listar Execucoes Rota Api Execucoes Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Criar Saida",
+        "description": "Enfileira a geração e responde na hora; a tela acompanha por ``.../andamento``.",
+        "operationId": "criar_saida_api_execucoes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaSaida"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Andamento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/andamento": {
+      "get": {
+        "summary": "Obter Andamento",
+        "operationId": "obter_andamento_api_execucoes__identificador__andamento_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Andamento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -160,6 +823,36 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Excluir Execucao",
+        "operationId": "excluir_execucao_api_execucoes__identificador__delete",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -477,6 +1170,165 @@
         }
       }
     },
+    "/api/execucoes/{identificador}/celulas/{audiencia}/roteiro/plano": {
+      "get": {
+        "summary": "Obter Plano De Edicao",
+        "description": "O plano de edição do Roteiro aprovado: cenas, ícones, transições, efeitos e sons, em\nJSON para colar num gerador de avatar e em Markdown para conferir. Roteiro que não foi\naprovado não tem plano (ADR 0004).",
+        "operationId": "obter_plano_de_edicao_api_execucoes__identificador__celulas__audiencia__roteiro_plano_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanoDeEdicao"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/pacotes/montar": {
+      "post": {
+        "summary": "Montar Pacotes",
+        "description": "Monta os Pacotes das Células aprovadas, em segundo plano.\n\nCada Célula é considerada individualmente; uma pendência em outra posição da Matriz não\nbloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.",
+        "operationId": "montar_pacotes_api_execucoes__identificador__pacotes_montar_post",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Audiencia"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Formato"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Formato"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaMontagem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/pacotes/montagem": {
+      "get": {
+        "summary": "Obter Montagem",
+        "operationId": "obter_montagem_api_execucoes__identificador__pacotes_montagem_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaMontagem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/execucoes/{identificador}/pacotes": {
       "get": {
         "summary": "Listar Pacotes",
@@ -663,6 +1515,60 @@
         }
       }
     },
+    "/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/baixar": {
+      "get": {
+        "summary": "Baixar Pacote",
+        "description": "O Pacote pronto para publicar, num .zip: slides, legenda (com hashtags) e vídeo.",
+        "operationId": "baixar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__baixar_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/aprovar": {
       "post": {
         "summary": "Aprovar Pacote",
@@ -694,6 +1600,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AprovacaoDoPacote"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Corpo"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -739,6 +1662,81 @@
   },
   "components": {
     "schemas": {
+      "AlteracaoDaOrigem": {
+        "properties": {
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ativa"
+        ],
+        "title": "AlteracaoDaOrigem",
+        "description": "O corpo do ``PATCH /api/fontes/{id}``: ligar ou desligar."
+      },
+      "AlteracaoDaReferenciaVisual": {
+        "properties": {
+          "aprovada": {
+            "type": "boolean",
+            "title": "Aprovada"
+          }
+        },
+        "type": "object",
+        "required": [
+          "aprovada"
+        ],
+        "title": "AlteracaoDaReferenciaVisual"
+      },
+      "AnaliseVisualReferencia": {
+        "properties": {
+          "posicao_do_titulo": {
+            "type": "string",
+            "title": "Posicao Do Titulo"
+          },
+          "proeminencia_do_titulo": {
+            "type": "string",
+            "title": "Proeminencia Do Titulo"
+          },
+          "densidade_textual": {
+            "type": "string",
+            "title": "Densidade Textual"
+          },
+          "uso_de_imagem": {
+            "type": "string",
+            "title": "Uso De Imagem"
+          },
+          "tipo_de_fundo": {
+            "type": "string",
+            "title": "Tipo De Fundo"
+          },
+          "elementos_visuais": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Elementos Visuais"
+          },
+          "estrutura_do_conteudo": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Estrutura Do Conteudo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "posicao_do_titulo",
+          "proeminencia_do_titulo",
+          "densidade_textual",
+          "uso_de_imagem",
+          "tipo_de_fundo"
+        ],
+        "title": "AnaliseVisualReferencia",
+        "description": "Padrões estruturais aproveitáveis sem copiar a identidade de outra publicação."
+      },
       "AncoraNumerica": {
         "properties": {
           "chave": {
@@ -874,6 +1872,198 @@
         "title": "Ancoras",
         "description": "O resultado do estágio de extração: roda uma vez por Ata, antes da Matriz."
       },
+      "Andamento": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "ata": {
+            "type": "string",
+            "title": "Ata"
+          },
+          "provedor": {
+            "type": "string",
+            "title": "Provedor"
+          },
+          "comite": {
+            "type": "boolean",
+            "title": "Comite",
+            "default": false
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta",
+            "default": "copom"
+          },
+          "atas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Atas",
+            "description": "Os identificadores das Atas usadas: uma, ou de 2 a 5 na Visão unida."
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoDoAndamento"
+          },
+          "fase": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FaseDaExecucao"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "celulas": {
+            "items": {
+              "$ref": "#/components/schemas/AndamentoDaCelula"
+            },
+            "type": "array",
+            "title": "Celulas"
+          },
+          "erro": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Erro",
+            "description": "Sem credencial; vai para a tela."
+          },
+          "criado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Criado Em"
+          },
+          "atualizado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Atualizado Em"
+          },
+          "concluido_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluido Em"
+          },
+          "composicao_visual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposicaoCarrossel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "referencia_visual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Visual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "nome",
+          "ata",
+          "provedor",
+          "estado",
+          "criado_em",
+          "atualizado_em"
+        ],
+        "title": "Andamento",
+        "description": "``andamento.json``, ao lado de ``execucao.json``, que só é gravado ao fim do pipeline."
+      },
+      "AndamentoDaCelula": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          },
+          "etapa": {
+            "$ref": "#/components/schemas/EtapaDaCelula",
+            "default": "aguardando"
+          },
+          "rodada": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Rodada",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato"
+        ],
+        "title": "AndamentoDaCelula"
+      },
+      "AnimacaoDoTexto": {
+        "type": "string",
+        "enum": [
+          "aparecer",
+          "fade",
+          "deslizar_baixo",
+          "pop",
+          "digitar"
+        ],
+        "title": "AnimacaoDoTexto",
+        "description": "Como o texto da tela aparece."
+      },
+      "AprovacaoDoPacote": {
+        "properties": {
+          "revisor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revisor"
+          },
+          "observacao": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacao"
+          }
+        },
+        "type": "object",
+        "title": "AprovacaoDoPacote"
+      },
       "Ata": {
         "properties": {
           "identificador": {
@@ -940,6 +2130,25 @@
             ],
             "title": "Idioma",
             "default": "pt"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta",
+            "description": "Ata sem categoria (as anteriores à interface) vale Copom.",
+            "default": "copom"
+          },
+          "origem": {
+            "type": "string",
+            "title": "Origem",
+            "description": "Identificador da Origem no catálogo (data/fontes/catalogo.json).",
+            "default": "copom"
+          },
+          "partes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Partes",
+            "description": "Só na Visão unida: os identificadores das Atas reunidas, na ordem (a1, a2…)."
           }
         },
         "type": "object",
@@ -977,6 +2186,17 @@
             "type": "string",
             "format": "date",
             "title": "Data Referencia"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta"
+          },
+          "origem": {
+            "type": "string",
+            "title": "Origem"
+          },
+          "demo_disponivel": {
+            "type": "boolean",
+            "title": "Demo Disponivel"
           }
         },
         "type": "object",
@@ -984,7 +2204,10 @@
           "identificador",
           "titulo",
           "reuniao",
-          "data_referencia"
+          "data_referencia",
+          "categoria",
+          "origem",
+          "demo_disponivel"
         ],
         "title": "AtaResumo",
         "description": "A Ata sem ``texto``: a listagem não carrega o comunicado inteiro por item."
@@ -1023,6 +2246,14 @@
             },
             "type": "array",
             "title": "Posicoes Faltantes"
+          },
+          "posicoes_inesperadas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Posicoes Inesperadas",
+            "description": "Células que chegaram sem terem sido pedidas."
           },
           "posicoes_duplicadas": {
             "items": {
@@ -1089,6 +2320,64 @@
             "title": "Tela",
             "description": "Rubrica de cena: o que aparece na tela.",
             "default": ""
+          },
+          "cena": {
+            "$ref": "#/components/schemas/TipoDeCena",
+            "description": "O layout da cena, do catálogo.",
+            "default": "texto_destaque"
+          },
+          "icone": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IconeDeCena"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Um ícone do catálogo, se houver."
+          },
+          "entrada": {
+            "$ref": "#/components/schemas/TransicaoDeEntrada",
+            "description": "Como esta cena entra.",
+            "default": "corte"
+          },
+          "texto_anima": {
+            "$ref": "#/components/schemas/AnimacaoDoTexto",
+            "default": "fade"
+          },
+          "texto_entra_em_s": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Texto Entra Em S",
+            "description": "Segundos depois do início da cena em que o texto aparece.",
+            "default": 0.0
+          },
+          "efeito": {
+            "$ref": "#/components/schemas/EfeitoDeCena",
+            "default": "nenhum"
+          },
+          "som_de_entrada": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SomDeCena"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Som que acompanha a transição de entrada."
+          },
+          "som_de_efeito": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SomDeCena"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Som que marca o texto ou o efeito da cena."
           }
         },
         "type": "object",
@@ -1098,7 +2387,126 @@
           "fala"
         ],
         "title": "BlocoFala",
-        "description": "Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho."
+        "description": "Um bloco de fala cronometrada do Roteiro. O primeiro bloco é o gancho.\n\nAlém da fala e da rubrica, o bloco carrega a **direção de cena**: tudo o que a edição precisa\npara executá-lo, escolhido de catálogos fechados (``suno.video.design``). Todos os campos\nde direção têm padrão — um Roteiro gravado antes deles continua válido."
+      },
+      "CandidatoDeReferencia": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "usuario": {
+            "type": "string",
+            "title": "Usuario"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "legenda": {
+            "type": "string",
+            "title": "Legenda"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "publicado_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Publicado Em"
+          },
+          "curtidas": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curtidas"
+          },
+          "comentarios": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comentarios"
+          },
+          "seguidores": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seguidores"
+          },
+          "taxa_engajamento": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxa Engajamento"
+          },
+          "setor": {
+            "$ref": "#/components/schemas/SetorDaReferencia",
+            "default": "outros"
+          },
+          "capa_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capa Url"
+          },
+          "importado": {
+            "type": "boolean",
+            "title": "Importado",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "usuario",
+          "titulo",
+          "legenda",
+          "url",
+          "publicado_em"
+        ],
+        "title": "CandidatoDeReferencia"
+      },
+      "CategoriaDaAta": {
+        "type": "string",
+        "enum": [
+          "copom",
+          "comunicado_relevante",
+          "release",
+          "importada",
+          "unida"
+        ],
+        "title": "CategoriaDaAta",
+        "description": "A que Origem a Ata pertence. Só o Copom tem Limiares, Léxico e Âncoras essenciais calibrados."
       },
       "Celula": {
         "properties": {
@@ -1146,6 +2554,19 @@
         "title": "Celula",
         "description": "Uma saída concreta: uma Audiência num Formato, numa rodada do Ciclo de correção."
       },
+      "ComposicaoCarrossel": {
+        "type": "string",
+        "enum": [
+          "editorial",
+          "minimalista",
+          "infografico",
+          "comparativo",
+          "estatistico",
+          "narrativo"
+        ],
+        "title": "ComposicaoCarrossel",
+        "description": "A composição visual escolhida pela direção de arte, separada do papel narrativo."
+      },
       "ConferenciaVisual": {
         "properties": {
           "medicoes": {
@@ -1164,6 +2585,17 @@
                 "type": "null"
               }
             ]
+          },
+          "mensagem_juiz_visao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Juiz Visao"
           }
         },
         "type": "object",
@@ -1214,6 +2646,18 @@
               }
             ],
             "title": "Blocos"
+          },
+          "duracao_alvo_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duracao Alvo S",
+            "description": "Roteiro: a duração que a pessoa escolheu (40, 60, 90, 120 ou 180 s)."
           },
           "ancoras_citadas": {
             "items": {
@@ -1446,6 +2890,43 @@
         "title": "DefeitoRender",
         "description": "O que a camada determinística da conferência visual consegue medir."
       },
+      "DescobertaDeReferencias": {
+        "properties": {
+          "janela_dias": {
+            "type": "integer",
+            "title": "Janela Dias"
+          },
+          "setor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SetorDaReferencia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "perfis": {
+            "items": {
+              "$ref": "#/components/schemas/PerfilEmAlta"
+            },
+            "type": "array",
+            "title": "Perfis"
+          },
+          "candidatos": {
+            "items": {
+              "$ref": "#/components/schemas/CandidatoDeReferencia"
+            },
+            "type": "array",
+            "title": "Candidatos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "janela_dias"
+        ],
+        "title": "DescobertaDeReferencias"
+      },
       "Destino": {
         "type": "string",
         "enum": [
@@ -1466,6 +2947,153 @@
         "title": "DimensaoSubjetiva",
         "description": "As dimensões que só o comitê julga (ADR 0008)."
       },
+      "DirecaoDeArteCarrossel": {
+        "properties": {
+          "escolhas": {
+            "items": {
+              "$ref": "#/components/schemas/EscolhaDeLayout"
+            },
+            "type": "array",
+            "title": "Escolhas"
+          },
+          "distribuicao": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Distribuicao"
+          },
+          "historico_considerado": {
+            "items": {
+              "$ref": "#/components/schemas/ComposicaoCarrossel"
+            },
+            "type": "array",
+            "title": "Historico Considerado"
+          },
+          "repeticoes_consecutivas": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Repeticoes Consecutivas",
+            "default": 0
+          },
+          "origem_do_plano": {
+            "type": "string",
+            "enum": [
+              "ia",
+              "deterministico",
+              "curadoria"
+            ],
+            "title": "Origem Do Plano",
+            "default": "deterministico"
+          },
+          "provedor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provedor"
+          },
+          "motivo_fallback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo Fallback"
+          }
+        },
+        "type": "object",
+        "title": "DirecaoDeArteCarrossel",
+        "description": "Plano efetivamente renderizado, com diversidade mensurável e auditável."
+      },
+      "DuracaoDoVideo": {
+        "type": "string",
+        "enum": [
+          "40",
+          "60",
+          "90",
+          "120",
+          "180"
+        ],
+        "title": "DuracaoDoVideo",
+        "description": "A duração que a pessoa escolhe para o vídeo, em segundos. O valor é o texto do número\nporque ``StrEnum`` serializa como string; ``segundos`` é o inteiro."
+      },
+      "EfeitoDeCena": {
+        "type": "string",
+        "enum": [
+          "nenhum",
+          "zoom_lento",
+          "pulso",
+          "sublinhado",
+          "contagem"
+        ],
+        "title": "EfeitoDeCena",
+        "description": "O único efeito contínuo da cena; ``nenhum`` é a escolha sóbria, e a mais comum."
+      },
+      "EscolhaDeLayout": {
+        "properties": {
+          "indice": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Indice"
+          },
+          "composicao": {
+            "$ref": "#/components/schemas/ComposicaoCarrossel"
+          },
+          "pontuacao": {
+            "type": "integer",
+            "title": "Pontuacao"
+          },
+          "motivos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Motivos",
+            "default": []
+          },
+          "referencia_visual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Visual"
+          },
+          "intensidade_visual": {
+            "$ref": "#/components/schemas/IntensidadeVisual",
+            "default": "media"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indice",
+          "composicao",
+          "pontuacao"
+        ],
+        "title": "EscolhaDeLayout",
+        "description": "Por que uma composição foi aplicada a um slide do Carrossel."
+      },
+      "EstadoAnaliseVisual": {
+        "type": "string",
+        "enum": [
+          "nao_solicitada",
+          "pendente",
+          "concluida",
+          "erro"
+        ],
+        "title": "EstadoAnaliseVisual"
+      },
       "EstadoAvaliacaoTransversal": {
         "type": "string",
         "enum": [
@@ -1475,6 +3103,103 @@
         "title": "EstadoAvaliacaoTransversal",
         "description": "Veredito único sobre a Matriz completa, depois dos nove ciclos individuais."
       },
+      "EstadoDaAtualizacao": {
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ocioso",
+              "rodando",
+              "ok",
+              "erro"
+            ],
+            "title": "Estado",
+            "default": "ocioso"
+          },
+          "mensagem": {
+            "type": "string",
+            "title": "Mensagem",
+            "default": ""
+          },
+          "novos": {
+            "type": "integer",
+            "title": "Novos",
+            "default": 0
+          },
+          "iniciada_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iniciada Em"
+          },
+          "concluida_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluida Em"
+          }
+        },
+        "type": "object",
+        "title": "EstadoDaAtualizacao"
+      },
+      "EstadoDaMontagem": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ocioso",
+              "rodando",
+              "ok",
+              "erro"
+            ],
+            "title": "Estado",
+            "default": "ocioso"
+          },
+          "mensagem": {
+            "type": "string",
+            "title": "Mensagem",
+            "default": ""
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "concluida_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluida Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador"
+        ],
+        "title": "EstadoDaMontagem"
+      },
       "EstadoDecisao": {
         "type": "string",
         "enum": [
@@ -1483,6 +3208,18 @@
         ],
         "title": "EstadoDecisao",
         "description": "O que um humano decidiu sobre uma Célula."
+      },
+      "EstadoDoAndamento": {
+        "type": "string",
+        "enum": [
+          "na_fila",
+          "gerando",
+          "concluida",
+          "interrompida",
+          "falhou"
+        ],
+        "title": "EstadoDoAndamento",
+        "description": "O estado do job. ``interrompida`` é o job que o servidor perdeu ao reiniciar."
       },
       "EstadoJulgamentoTransversal": {
         "type": "string",
@@ -1504,6 +3241,18 @@
         ],
         "title": "EstadoMedida",
         "description": "Medida calculada, sem base para calcular, ou aguardando desempate humano (H3)."
+      },
+      "EtapaDaCelula": {
+        "type": "string",
+        "enum": [
+          "aguardando",
+          "gerando",
+          "corrigindo",
+          "aprovada",
+          "revisao_humana"
+        ],
+        "title": "EtapaDaCelula",
+        "description": "Onde uma Célula está enquanto a Matriz é gerada."
       },
       "Execucao": {
         "properties": {
@@ -1607,6 +3356,42 @@
             "type": "array",
             "title": "Decisoes",
             "description": "Decisões humanas por Célula; posição sem registro está pendente."
+          },
+          "pedido": {
+            "items": {
+              "$ref": "#/components/schemas/PosicaoDaMatriz"
+            },
+            "type": "array",
+            "title": "Pedido",
+            "description": "Posições da Matriz que foram pedidas; vazio (execução antiga) significa as nove."
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta",
+            "description": "Categoria da Ata de origem; fora do Copom, a Saída é não calibrada.",
+            "default": "copom"
+          },
+          "composicao_visual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposicaoCarrossel"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Família visual escolhida na curadoria para os Carrosséis desta Saída."
+          },
+          "referencia_visual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Visual",
+            "description": "Referência aprovada escolhida na curadoria; ausente em Saídas antigas."
           }
         },
         "type": "object",
@@ -1672,8 +3457,12 @@
           "status": {
             "type": "string",
             "enum": [
+              "na_fila",
+              "gerando",
               "aguardando_revisao",
-              "concluida"
+              "concluida",
+              "interrompida",
+              "falhou"
             ],
             "title": "Status"
           },
@@ -1683,6 +3472,29 @@
             },
             "type": "array",
             "title": "Posicoes"
+          },
+          "erro": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Erro"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta",
+            "default": "copom"
+          },
+          "atas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Atas",
+            "default": []
           }
         },
         "type": "object",
@@ -1731,6 +3543,56 @@
         "type": "object",
         "title": "Faixa",
         "description": "Intervalo fechado em ``minimo``, aberto em ``maximo``. ``None`` é sem limite daquele lado."
+      },
+      "FaseDaExecucao": {
+        "type": "string",
+        "enum": [
+          "extraindo_ancoras",
+          "gerando_celulas",
+          "avaliando_matriz",
+          "gravando"
+        ],
+        "title": "FaseDaExecucao",
+        "description": "Onde a execução inteira está."
+      },
+      "FeedbackVisualHumano": {
+        "properties": {
+          "aprovado": {
+            "type": "boolean",
+            "title": "Aprovado",
+            "default": true
+          },
+          "revisor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revisor"
+          },
+          "observacao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observacao"
+          },
+          "em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Em"
+          }
+        },
+        "type": "object",
+        "title": "FeedbackVisualHumano",
+        "description": "A decisão H5: sinal de uso real, separado do parecer automático do Eval."
       },
       "FilaHumana": {
         "type": "string",
@@ -1862,6 +3724,28 @@
         "title": "HistoricoCelula",
         "description": "As tentativas de uma posição da Matriz, e onde ela terminou."
       },
+      "IconeDeCena": {
+        "type": "string",
+        "enum": [
+          "juros",
+          "inflacao",
+          "grafico_alta",
+          "grafico_queda",
+          "grafico_estavel",
+          "calendario",
+          "banco",
+          "bolso",
+          "alerta",
+          "lupa",
+          "documento",
+          "balanca",
+          "relogio",
+          "pergunta",
+          "check"
+        ],
+        "title": "IconeDeCena",
+        "description": "Os ícones do catálogo. O LLM escolhe um nome; o desenho vive no design system."
+      },
       "ImagemSlide": {
         "properties": {
           "indice": {
@@ -1891,6 +3775,27 @@
           "altura"
         ],
         "title": "ImagemSlide"
+      },
+      "ImportacaoDeCandidato": {
+        "properties": {
+          "composicao": {
+            "$ref": "#/components/schemas/ComposicaoCarrossel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "composicao"
+        ],
+        "title": "ImportacaoDeCandidato"
+      },
+      "IntensidadeVisual": {
+        "type": "string",
+        "enum": [
+          "baixa",
+          "media",
+          "alta"
+        ],
+        "title": "IntensidadeVisual"
       },
       "JulgamentoDimensao": {
         "properties": {
@@ -1949,7 +3854,8 @@
           },
           "provedor": {
             "type": "string",
-            "title": "Provedor"
+            "title": "Provedor",
+            "default": ""
           },
           "falha": {
             "anyOf": [
@@ -1971,8 +3877,7 @@
         "type": "object",
         "required": [
           "rodada",
-          "estado",
-          "provedor"
+          "estado"
         ],
         "title": "JulgamentoTransversal",
         "description": "Uma resposta auditável do LLM Judge, inclusive quando o provedor falha."
@@ -2035,6 +3940,26 @@
         ],
         "title": "Laudo",
         "description": "O resultado da avaliação de uma Célula: medidas, veredito e o que precisa mudar."
+      },
+      "ListaDeOrigens": {
+        "properties": {
+          "origens": {
+            "items": {
+              "$ref": "#/components/schemas/OrigemComAtas"
+            },
+            "type": "array",
+            "title": "Origens"
+          },
+          "atualizacao": {
+            "$ref": "#/components/schemas/EstadoDaAtualizacao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origens",
+          "atualizacao"
+        ],
+        "title": "ListaDeOrigens"
       },
       "MedicaoVisual": {
         "properties": {
@@ -2150,6 +4075,15 @@
         "title": "Metrica",
         "description": "As cinco medidas determinísticas."
       },
+      "ModoDeGeracao": {
+        "type": "string",
+        "enum": [
+          "demo",
+          "real"
+        ],
+        "title": "ModoDeGeracao",
+        "description": "Demo roda sem rede, com respostas prontas; Real usa o roteador e gasta cota gratuita."
+      },
       "ModoSelecao": {
         "type": "string",
         "enum": [
@@ -2170,6 +4104,250 @@
         ],
         "title": "MotivoReprovacao",
         "description": "Enumerado, não texto livre: é o que permite contar reprovação por motivo (ADR 0013)."
+      },
+      "NovaReferenciaVisual": {
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 3,
+            "title": "Titulo"
+          },
+          "tema": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "title": "Tema"
+          },
+          "composicao": {
+            "$ref": "#/components/schemas/ComposicaoCarrossel"
+          },
+          "descricao": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 10,
+            "title": "Descricao"
+          },
+          "instrucao_de_design": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Instrucao De Design"
+          },
+          "origem": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Origem",
+            "default": "Importação manual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titulo",
+          "tema",
+          "composicao",
+          "descricao",
+          "instrucao_de_design"
+        ],
+        "title": "NovaReferenciaVisual"
+      },
+      "NovaSaida": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "ata": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ata"
+          },
+          "itens": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Itens"
+          },
+          "modo": {
+            "$ref": "#/components/schemas/ModoDeGeracao"
+          },
+          "pedido": {
+            "items": {
+              "$ref": "#/components/schemas/PosicaoDaMatriz"
+            },
+            "type": "array",
+            "title": "Pedido"
+          },
+          "comite": {
+            "type": "boolean",
+            "title": "Comite",
+            "default": false
+          },
+          "duracao": {
+            "$ref": "#/components/schemas/DuracaoDoVideo",
+            "default": "60"
+          },
+          "composicao_visual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComposicaoCarrossel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "referencia_visual": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referencia Visual"
+          }
+        },
+        "type": "object",
+        "required": [
+          "modo",
+          "pedido"
+        ],
+        "title": "NovaSaida",
+        "description": "O corpo do ``POST /api/execucoes``: o que gerar, de onde e em que modo."
+      },
+      "NovoPerfilDeReferencia": {
+        "properties": {
+          "usuario": {
+            "type": "string",
+            "maxLength": 31,
+            "minLength": 1,
+            "title": "Usuario"
+          }
+        },
+        "type": "object",
+        "required": [
+          "usuario"
+        ],
+        "title": "NovoPerfilDeReferencia"
+      },
+      "Origem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta"
+          },
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa",
+            "default": false
+          },
+          "disponivel": {
+            "type": "boolean",
+            "title": "Disponivel",
+            "default": true
+          },
+          "aviso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aviso"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "categoria"
+        ],
+        "title": "Origem"
+      },
+      "OrigemComAtas": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta"
+          },
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa",
+            "default": false
+          },
+          "disponivel": {
+            "type": "boolean",
+            "title": "Disponivel",
+            "default": true
+          },
+          "aviso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aviso"
+          },
+          "atas": {
+            "items": {
+              "$ref": "#/components/schemas/ResumoDaAta"
+            },
+            "type": "array",
+            "title": "Atas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "categoria",
+          "atas"
+        ],
+        "title": "OrigemComAtas",
+        "description": "Uma Origem do catálogo com as Atas que ela tem em disco (a Fonte e seus itens, na tela)."
       },
       "PacotePublicacao": {
         "properties": {
@@ -2228,6 +4406,16 @@
           "conferencia": {
             "$ref": "#/components/schemas/ConferenciaVisual"
           },
+          "direcao_de_arte": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DirecaoDeArteCarrossel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "montado_em": {
             "type": "string",
             "format": "date-time",
@@ -2237,6 +4425,16 @@
             "type": "boolean",
             "title": "Aprovado Por Humano",
             "default": false
+          },
+          "feedback_visual_humano": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeedbackVisualHumano"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2254,6 +4452,36 @@
           "parece_quebrado": {
             "type": "boolean",
             "title": "Parece Quebrado"
+          },
+          "legibilidade": {
+            "type": "string",
+            "enum": [
+              "boa",
+              "atencao",
+              "ruim"
+            ],
+            "title": "Legibilidade",
+            "default": "boa"
+          },
+          "coerencia_visual": {
+            "type": "string",
+            "enum": [
+              "boa",
+              "atencao",
+              "ruim"
+            ],
+            "title": "Coerencia Visual",
+            "default": "boa"
+          },
+          "aderencia_marca": {
+            "type": "string",
+            "enum": [
+              "boa",
+              "atencao",
+              "ruim"
+            ],
+            "title": "Aderencia Marca",
+            "default": "boa"
           },
           "observacoes": {
             "items": {
@@ -2273,7 +4501,18 @@
           "provedor"
         ],
         "title": "ParecerVisao",
-        "description": "Resposta holística do juiz de visão sobre a folha de contato. Opcional."
+        "description": "Resposta do Eval visual sobre a folha de contato. Nunca aprova sozinho."
+      },
+      "PedidoDeColeta": {
+        "properties": {
+          "janela_dias": {
+            "type": "integer",
+            "title": "Janela Dias",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "title": "PedidoDeColeta"
       },
       "PedidoDeDecisao": {
         "properties": {
@@ -2357,6 +4596,132 @@
         "title": "Pendencia",
         "description": "Uma Célula esperando decisão humana numa fila."
       },
+      "PerfilDeReferencia": {
+        "properties": {
+          "usuario": {
+            "type": "string",
+            "title": "Usuario"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo",
+            "default": true
+          },
+          "ultima_coleta_em": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Coleta Em"
+          },
+          "ultimo_estado": {
+            "type": "string",
+            "title": "Ultimo Estado",
+            "default": "nao_executada"
+          },
+          "ultima_mensagem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Mensagem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "usuario"
+        ],
+        "title": "PerfilDeReferencia"
+      },
+      "PerfilEmAlta": {
+        "properties": {
+          "usuario": {
+            "type": "string",
+            "title": "Usuario"
+          },
+          "publicacoes": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Publicacoes"
+          },
+          "movimentacao": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Movimentacao"
+          },
+          "taxa_engajamento_media": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taxa Engajamento Media"
+          },
+          "ultimo_post_em": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ultimo Post Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "usuario",
+          "publicacoes",
+          "movimentacao",
+          "ultimo_post_em"
+        ],
+        "title": "PerfilEmAlta"
+      },
+      "PlanoDeEdicao": {
+        "properties": {
+          "plano": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Plano"
+          },
+          "markdown": {
+            "type": "string",
+            "title": "Markdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plano",
+          "markdown"
+        ],
+        "title": "PlanoDeEdicao",
+        "description": "O plano de edição de um Roteiro: o JSON para o gerador de avatar e a tabela legível."
+      },
+      "PosicaoDaMatriz": {
+        "properties": {
+          "audiencia": {
+            "$ref": "#/components/schemas/Audiencia"
+          },
+          "formato": {
+            "$ref": "#/components/schemas/Formato"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audiencia",
+          "formato"
+        ],
+        "title": "PosicaoDaMatriz",
+        "description": "Uma posição da Matriz em JSON (o pedido e a API). O pipeline usa a tupla de ``MATRIZ``."
+      },
       "PosicaoResumo": {
         "properties": {
           "audiencia": {
@@ -2366,7 +4731,14 @@
             "$ref": "#/components/schemas/Formato"
           },
           "destino": {
-            "$ref": "#/components/schemas/Destino"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Destino"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "decisao": {
             "anyOf": [
@@ -2389,6 +4761,16 @@
           "revisao_comite": {
             "type": "boolean",
             "title": "Revisao Comite"
+          },
+          "etapa": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EtapaDaCelula"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2440,6 +4822,89 @@
         ],
         "title": "ProblemaTransversal",
         "description": "Problema subjetivo localizado pelo Judge em uma Célula concreta."
+      },
+      "ReferenciaVisual": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "tema": {
+            "type": "string",
+            "title": "Tema"
+          },
+          "composicao": {
+            "$ref": "#/components/schemas/ComposicaoCarrossel"
+          },
+          "descricao": {
+            "type": "string",
+            "title": "Descricao"
+          },
+          "instrucao_de_design": {
+            "type": "string",
+            "title": "Instrucao De Design"
+          },
+          "analise": {
+            "$ref": "#/components/schemas/AnaliseVisualReferencia"
+          },
+          "aprovada": {
+            "type": "boolean",
+            "title": "Aprovada",
+            "default": true
+          },
+          "origem": {
+            "type": "string",
+            "title": "Origem",
+            "default": "Suno — referência interna"
+          },
+          "imagem_disponivel": {
+            "type": "boolean",
+            "title": "Imagem Disponivel",
+            "default": false
+          },
+          "estado_analise": {
+            "$ref": "#/components/schemas/EstadoAnaliseVisual",
+            "default": "nao_solicitada"
+          },
+          "provedor_analise": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provedor Analise"
+          },
+          "mensagem_analise": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Analise"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "titulo",
+          "tema",
+          "composicao",
+          "descricao",
+          "instrucao_de_design",
+          "analise"
+        ],
+        "title": "ReferenciaVisual",
+        "description": "Uma referência curada que orienta uma composição do catálogo fechado."
       },
       "Renomeacao": {
         "properties": {
@@ -2517,6 +4982,95 @@
         "title": "ResultadoComite",
         "description": "Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação."
       },
+      "ResultadoDaColeta": {
+        "properties": {
+          "janela_dias": {
+            "type": "integer",
+            "title": "Janela Dias"
+          },
+          "candidatos_novos": {
+            "type": "integer",
+            "title": "Candidatos Novos",
+            "default": 0
+          },
+          "perfis_consultados": {
+            "type": "integer",
+            "title": "Perfis Consultados",
+            "default": 0
+          },
+          "falhas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Falhas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "janela_dias"
+        ],
+        "title": "ResultadoDaColeta"
+      },
+      "ResumoDaAta": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "origem": {
+            "type": "string",
+            "title": "Origem"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaDaAta"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "data_referencia": {
+            "type": "string",
+            "format": "date",
+            "title": "Data Referencia"
+          },
+          "resumo": {
+            "type": "string",
+            "title": "Resumo"
+          },
+          "total_ancoras": {
+            "type": "integer",
+            "title": "Total Ancoras"
+          },
+          "calibrada": {
+            "type": "boolean",
+            "title": "Calibrada"
+          },
+          "demo_disponivel": {
+            "type": "boolean",
+            "title": "Demo Disponivel"
+          },
+          "extracao_completa": {
+            "type": "boolean",
+            "title": "Extracao Completa"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identificador",
+          "origem",
+          "categoria",
+          "titulo",
+          "data_referencia",
+          "resumo",
+          "total_ancoras",
+          "calibrada",
+          "demo_disponivel",
+          "extracao_completa"
+        ],
+        "title": "ResumoDaAta",
+        "description": "O que a tela mostra de uma Ata sem abrir o texto inteiro."
+      },
       "Saude": {
         "properties": {
           "ok": {
@@ -2526,12 +5080,17 @@
           "execucoes": {
             "type": "integer",
             "title": "Execucoes"
+          },
+          "real_disponivel": {
+            "type": "boolean",
+            "title": "Real Disponivel"
           }
         },
         "type": "object",
         "required": [
           "ok",
-          "execucoes"
+          "execucoes",
+          "real_disponivel"
         ],
         "title": "Saude"
       },
@@ -2557,8 +5116,25 @@
         "title": "SelecaoCuradoria",
         "description": "Regra determinística da seleção: unida aceita vários itens; separada, um."
       },
+      "SetorDaReferencia": {
+        "type": "string",
+        "enum": [
+          "investimentos",
+          "financas_pessoais",
+          "economia",
+          "mercado_financeiro",
+          "criptoativos",
+          "outros"
+        ],
+        "title": "SetorDaReferencia"
+      },
       "Slide": {
         "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/TipoSlide",
+            "description": "hook no primeiro slide, cta no último, ponto ou citacao no meio.",
+            "default": "ponto"
+          },
           "titulo": {
             "type": "string",
             "title": "Titulo"
@@ -2566,6 +5142,18 @@
           "corpo": {
             "type": "string",
             "title": "Corpo"
+          },
+          "destaque": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destaque",
+            "description": "Uma expressão do título a realçar; precisa aparecer literalmente nele."
           },
           "dado": {
             "anyOf": [
@@ -2587,6 +5175,70 @@
         ],
         "title": "Slide",
         "description": "Um registro do roteiro de slides do Carrossel. O Avaliador julga o texto, não a imagem."
+      },
+      "SomDeCena": {
+        "type": "string",
+        "enum": [
+          "whoosh",
+          "pop",
+          "clique",
+          "ding",
+          "swell"
+        ],
+        "title": "SomDeCena",
+        "description": "Os sons do catálogo, sintetizados em código (nenhum arquivo de áudio é versionado)."
+      },
+      "Sugestao": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/ResumoDaAta"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "itens",
+          "motivo"
+        ],
+        "title": "Sugestao"
+      },
+      "Sugestoes": {
+        "properties": {
+          "destaque_unico": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sugestao"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visao_unida": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sugestao"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "destaque_unico",
+          "visao_unida"
+        ],
+        "title": "Sugestoes",
+        "description": "As duas sugestões da curadoria. ``visao_unida`` é ``None`` com menos de 2 Atas que geram."
       },
       "Tentativa": {
         "properties": {
@@ -2611,6 +5263,43 @@
         ],
         "title": "Tentativa",
         "description": "Uma rodada do Ciclo de correção: a Célula e o Laudo que a julgou."
+      },
+      "TipoDeCena": {
+        "type": "string",
+        "enum": [
+          "gancho",
+          "dado_grande",
+          "texto_destaque",
+          "lista",
+          "comparacao",
+          "citacao",
+          "encerramento"
+        ],
+        "title": "TipoDeCena",
+        "description": "O layout de uma cena do Roteiro no design system (``suno.video.design``)."
+      },
+      "TipoSlide": {
+        "type": "string",
+        "enum": [
+          "hook",
+          "ponto",
+          "citacao",
+          "cta"
+        ],
+        "title": "TipoSlide",
+        "description": "O papel do slide no Carrossel; cada um tem seu template HTML (ADR 0020)."
+      },
+      "TransicaoDeEntrada": {
+        "type": "string",
+        "enum": [
+          "corte",
+          "fade",
+          "deslizar_esquerda",
+          "deslizar_cima",
+          "zoom"
+        ],
+        "title": "TransicaoDeEntrada",
+        "description": "Como a cena entra, vista da cena anterior. A primeira cena entra sempre em ``corte``."
       },
       "Unidade": {
         "type": "string",

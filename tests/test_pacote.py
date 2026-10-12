@@ -62,6 +62,7 @@ from suno.pacote.carrossel import (
 )
 from suno.pacote.legenda import AVISO_DE_NAO_RECOMENDACAO, MAXIMO_DE_HASHTAGS, montar_legenda
 from suno.pacote.visual import conferir_imagens, julgar_folha_de_contato, razao_de_contraste
+from suno.provedores.falso import ProvedorFalso
 
 IDENTIFICADOR = "copom-280-2026-08-05-0001"
 ANO_DA_ATA = 2026
@@ -438,7 +439,7 @@ def test_montar_pacote_so_atende_celula_aprovada_e_nao_toca_na_execucao(
     assert caminho_da_execucao.read_bytes() == antes, "montar o Pacote é leitura, nunca escrita"
 
 
-def test_matriz_reprovada_pelo_ciclo_transversal_nao_vira_pacote(
+def test_matriz_com_pendencia_nao_bloqueia_pacotes_de_celulas_aprovadas(
     execucao_em_disco: Path,
 ) -> None:
     arquivo = execucao_em_disco / IDENTIFICADOR / "execucao.json"
@@ -458,8 +459,15 @@ def test_matriz_reprovada_pelo_ciclo_transversal_nao_vira_pacote(
         encoding="utf-8",
     )
 
-    assert montar_pacote(IDENTIFICADOR, execucao_em_disco) == []
-    assert not (execucao_em_disco / IDENTIFICADOR / "pacote").exists()
+    pacotes = montar_pacote(IDENTIFICADOR, execucao_em_disco)
+
+    assert {(p.audiencia, p.formato) for p in pacotes} == {
+        (Audiencia.INICIANTE, Formato.CARROSSEL),
+        (Audiencia.INTERMEDIARIO, Formato.TEXTO_ANALITICO),
+    }
+    assert (
+        execucao_em_disco / IDENTIFICADOR / "pacote" / "iniciante-carrossel" / "pacote.json"
+    ).exists()
 
 
 def test_montar_pacote_remove_pasta_de_celula_que_deixou_de_ser_aprovada(
@@ -496,6 +504,46 @@ def test_pacote_do_carrossel_traz_imagens_folha_e_conferencia_limpa(
     assert do_carrossel.conferencia.defeitos == []
     assert not do_carrossel.conferencia.precisa_refazer_render
     assert not do_carrossel.aprovado_por_humano
+
+
+def test_eval_visual_avalia_o_carrossel_pronto_sem_aprovar_por_humano(
+    execucao_em_disco: Path,
+) -> None:
+    provedor = ProvedorFalso(
+        {
+            "juiz-visao:folha-de-contato": [
+                {
+                    "parece_quebrado": False,
+                    "legibilidade": "boa",
+                    "coerencia_visual": "boa",
+                    "aderencia_marca": "atencao",
+                    "observacoes": ["rever o peso do destaque no slide final"],
+                    "provedor": "falso",
+                }
+            ]
+        }
+    )
+
+    pacotes = montar_pacote(
+        IDENTIFICADOR, execucao_em_disco, provedor_visao=provedor
+    )
+    carrossel = next(item for item in pacotes if item.formato is Formato.CARROSSEL)
+
+    assert carrossel.conferencia.juiz_visao is not None
+    assert carrossel.conferencia.juiz_visao.aderencia_marca == "atencao"
+    assert carrossel.aprovado_por_humano is False
+    assert provedor.pedidos[-1].papel is PapelLLM.JUIZ_VISAO
+
+
+def test_falha_do_eval_visual_nao_bloqueia_o_pacote(execucao_em_disco: Path) -> None:
+    pacotes = montar_pacote(
+        IDENTIFICADOR, execucao_em_disco, provedor_visao=ProvedorFalso()
+    )
+    carrossel = next(item for item in pacotes if item.formato is Formato.CARROSSEL)
+
+    assert carrossel.conferencia.juiz_visao is None
+    assert carrossel.conferencia.mensagem_juiz_visao
+    assert len(carrossel.imagens) == 3
 
 
 def test_pacote_do_texto_analitico_grava_o_markdown_e_a_legenda(

@@ -26,22 +26,32 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from suno.avaliador import avaliar
 from suno.dominio import (
     Ancoras,
     Ata,
     Audiencia,
+    CategoriaDaAta,
     Celula,
     Correcao,
     Destino,
+    DuracaoDoVideo,
     ErroProvedor,
+    EtapaDaCelula,
     Formato,
     HistoricoCelula,
     Tentativa,
+    chaves_essenciais_da_ata,
 )
-from suno.gerador.moldes import MODELO_POR_FORMATO, montar_conteudo, montar_pedido
+from suno.gerador.moldes import (
+    INSTRUCAO_DA_VISAO_UNIDA,
+    MODELO_POR_FORMATO,
+    descricao_do_comunicado,
+    montar_conteudo,
+    montar_pedido,
+)
 from suno.provedores.base import Provedor
 
 if TYPE_CHECKING:
@@ -51,6 +61,9 @@ _registro = logging.getLogger(__name__)
 
 TETO_DE_RODADAS = 2
 """Duas correções depois da original: o ganho se concentra na primeira (ADR 0013)."""
+
+Andou = Callable[[Audiencia, Formato, EtapaDaCelula, int], None]
+"""Aviso de andamento de uma Célula: (Audiência, Formato, etapa, rodada). Quem escuta é a API."""
 
 CREDENCIAL_OCULTA = "<credencial oculta>"
 
@@ -83,6 +96,8 @@ def gerar_celula(
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
     orientacoes_transversais: list[str] | None = None,
+    duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
+    rascunho: str | None = None,
 ) -> Celula:
     """Uma chamada estruturada ao provedor. Sem ferramenta, sem decisão dinâmica (ADR 0010)."""
     pedido = montar_pedido(
@@ -93,10 +108,16 @@ def gerar_celula(
         rodada,
         correcoes,
         orientacoes_transversais,
+        comunicado=descricao_do_comunicado(ata.categoria),
+        instrucoes_do_conjunto=(
+            INSTRUCAO_DA_VISAO_UNIDA if ata.categoria is CategoriaDaAta.UNIDA else None
+        ),
+        duracao=duracao,
+        rascunho=rascunho,
     )
     modelo = MODELO_POR_FORMATO[formato]
     resposta_estruturada = provedor.completar_estruturado(pedido, modelo)
-    conteudo = montar_conteudo(resposta_estruturada, formato, ancoras)
+    conteudo = montar_conteudo(resposta_estruturada, formato, ancoras, duracao)
     return Celula(
         audiencia=audiencia,
         formato=formato,
@@ -115,6 +136,22 @@ def interrompido_por_provedor(historico: HistoricoCelula) -> bool:
     return historico.falha is not None
 
 
+def _avisar(
+    ao_andar: Andou | None,
+    audiencia: Audiencia,
+    formato: Formato,
+    etapa: EtapaDaCelula,
+    rodada: int,
+) -> None:
+    """Um callback quebrado (a tela caiu) nunca pode derrubar o Ciclo de uma Célula."""
+    if ao_andar is None:
+        return
+    try:
+        ao_andar(audiencia, formato, etapa, rodada)
+    except Exception:  # noqa: BLE001 - o aviso é de cortesia; a geração segue
+        _registro.exception("aviso de andamento falhou em %s:%s", audiencia, formato)
+
+
 def rodar_ciclo(
     ata: Ata,
     ancoras: Ancoras,
@@ -124,15 +161,36 @@ def rodar_ciclo(
     *,
     comite: "Comite | None" = None,
     orientacoes_transversais: list[str] | None = None,
+    ao_andar: Andou | None = None,
+    duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
 ) -> HistoricoCelula:
-    """Gera, avalia e corrige uma posição da Matriz até o teto de duas rodadas (ADR 0013)."""
+    """Gera, avalia e corrige uma posição da Matriz até o teto de duas rodadas (ADR 0013).
+
+    ``ao_andar`` recebe ``gerando`` na rodada 0, ``corrigindo`` nas seguintes e, no fim,
+    ``aprovada`` ou ``revisao_humana``.
+    """
     tentativas: list[Tentativa] = []
     provedores_usados: list[str] = []
     correcoes: list[Correcao] | None = None
     destino_final = Destino.REPROVADO_REVISAO_HUMANA
     falha: str | None = None
 
+    # Só uma Ata de outra categoria muda o conjunto essencial; o Copom segue pelo padrão.
+    essenciais = (
+        {}
+        if ata.categoria is CategoriaDaAta.COPOM
+        else {"chaves_essenciais": chaves_essenciais_da_ata(ata)}
+    )
+    ultima_rodada = 0
     for rodada in range(TETO_DE_RODADAS + 1):
+        ultima_rodada = rodada
+        _avisar(
+            ao_andar,
+            audiencia,
+            formato,
+            EtapaDaCelula.GERANDO if rodada == 0 else EtapaDaCelula.CORRIGINDO,
+            rodada,
+        )
         try:
             celula = gerar_celula(
                 ata,
@@ -143,8 +201,12 @@ def rodar_ciclo(
                 rodada,
                 correcoes,
                 orientacoes_transversais,
+                duracao,
+                rascunho=tentativas[-1].celula.conteudo.texto_avaliavel() if tentativas else None,
             )
-            laudo = avaliar(celula.conteudo, ancoras.todas(), audiencia, comite=comite)
+            laudo = avaliar(
+                celula.conteudo, ancoras.todas(), audiencia, comite=comite, **essenciais
+            )
         except ErroProvedor as erro:
             falha = (
                 f"o provedor {erro.provedor} falhou na rodada {rodada}: "
@@ -175,6 +237,15 @@ def rodar_ciclo(
         correcoes = list(laudo.correcoes)
         destino_final = Destino.REPROVADO_REVISAO_HUMANA
 
+    _avisar(
+        ao_andar,
+        audiencia,
+        formato,
+        EtapaDaCelula.APROVADA
+        if destino_final is Destino.APROVADO
+        else EtapaDaCelula.REVISAO_HUMANA,
+        ultima_rodada,
+    )
     return HistoricoCelula(
         audiencia=audiencia,
         formato=formato,

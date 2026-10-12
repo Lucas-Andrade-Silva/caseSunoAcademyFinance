@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from suno.dominio import Audiencia, Formato, HistoricoCelula
-from suno.gerador.ciclo import rodar_ciclo
+from suno.gerador.ciclo import Andou, rodar_ciclo
 from suno.gerador.curador import DossieCurado
 from suno.provedores.base import Provedor
 
@@ -32,8 +32,9 @@ class AgenteGeradorPersona:
         provedor: Provedor,
         *,
         comite: "Comite | None" = None,
+        ao_andar: Andou | None = None,
     ) -> list[HistoricoCelula]:
-        return self.gerar_formatos(dossie, provedor, list(Formato), comite=comite)
+        return self.gerar_formatos(dossie, provedor, list(Formato), comite=comite, ao_andar=ao_andar)
 
     def gerar_formatos(
         self,
@@ -43,8 +44,9 @@ class AgenteGeradorPersona:
         *,
         comite: "Comite | None" = None,
         orientacoes: dict[Formato, list[str]] | None = None,
+        ao_andar: Andou | None = None,
     ) -> list[HistoricoCelula]:
-        """Regenera somente os Formatos apontados pelo Judge, sempre pelas regras fixas."""
+        """Gera os Formatos pedidos (ou regenera os apontados pelo Judge), sempre pelas regras fixas."""
         escolhidos = [formato for formato in Formato if formato in set(formatos)]
         if not escolhidos:
             return []
@@ -60,6 +62,8 @@ class AgenteGeradorPersona:
                     provedor,
                     comite=comite,
                     orientacoes_transversais=orientacoes.get(formato),
+                    ao_andar=ao_andar,
+                    duracao=dossie.duracao,
                 )
                 for formato in escolhidos
             }

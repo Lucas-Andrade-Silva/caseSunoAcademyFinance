@@ -9,9 +9,8 @@ imagem. ``defeito=None`` quando passa: a lista completa é o que o H5 lê, não 
 Falha aqui é **defeito de render** — refazer o render, nunca reescrever a Célula. Por isso
 ``conferir_imagens`` não devolve Laudo, não devolve Destino e não toca em ``execucao.json``.
 
-O juiz de visão (``julgar_folha_de_contato``) fica montado mas desligado nesta etapa: ele está
-abaixo da linha dos seis entregáveis, por decisão do próprio ADR 0014. ``ConferenciaVisual``
-sai daqui sempre com ``juiz_visao=None``.
+O Eval visual (``julgar_folha_de_contato``) é uma camada aditiva. O chamador decide se há
+provedor disponível; sua ausência nunca bloqueia a revisão humana.
 """
 
 from __future__ import annotations
@@ -85,12 +84,15 @@ def _medir_dimensao(nome: str, caminho: Path) -> MedicaoVisual:
 
 def _medir_estouro(nome: str, caixa: dict[str, Any]) -> MedicaoVisual:
     """Mede o texto com a mesma letra do render e compara com o retângulo reservado."""
-    letra = tipografia(str(caixa["fonte"]), int(caixa["tamanho"]))
     x0, y0, x1, y1 = caixa["retangulo"]
     linhas = str(caixa["texto"]).split("\n")
-    entrelinha = int(caixa.get("entrelinha", 0))
-    largura_usada = max(medir_largura(linha, letra) for linha in linhas)
-    altura_usada = len(linhas) * altura_da_linha(letra) + (len(linhas) - 1) * entrelinha
+    if "usado" in caixa:  # medido no navegador (ADR 0020): scrollWidth x scrollHeight
+        largura_usada, altura_usada = (int(v) for v in caixa["usado"])
+    else:
+        letra = tipografia(str(caixa["fonte"]), int(caixa["tamanho"]))
+        entrelinha = int(caixa.get("entrelinha", 0))
+        largura_usada = max(medir_largura(linha, letra) for linha in linhas)
+        altura_usada = len(linhas) * altura_da_linha(letra) + (len(linhas) - 1) * entrelinha
     sobra_largura = max(0, largura_usada - (x1 - x0))
     sobra_altura = max(0, altura_usada - (y1 - y0))
     rotulo = caixa.get("nome", "sem nome")
@@ -180,23 +182,25 @@ def conferir_imagens(imagens: list[ImagemSlide], ancoras: Ancoras) -> Conferenci
 PAPEL_DO_JUIZ_DE_VISAO = (
     "Você olha uma folha de contato com todos os slides de um carrossel financeiro e responde"
     " só o que não se mede: o layout parece quebrado, há texto cortado ou sobreposto, o gráfico"
-    " comunica o mesmo que o texto ao lado, os slides são consistentes entre si."
+    " comunica o mesmo que o texto ao lado, os slides são consistentes entre si e a linguagem"
+    " visual permanece aderente à marca Suno. Avalie separadamente legibilidade, coerência"
+    " visual e aderência à marca como 'boa', 'atencao' ou 'ruim'."
     " Você NUNCA julga se o conteúdo recomenda comprar ou vender: isso é verificado no texto,"
     " antes da renderização, por regra fixa de código."
 )
 
 PERGUNTA_DO_JUIZ_DE_VISAO = (
     "Esta folha de contato parece quebrada? Responda em JSON com 'parece_quebrado' (booleano),"
-    " 'observacoes' (lista curta do que está errado) e 'provedor' (seu nome)."
+    " 'legibilidade', 'coerencia_visual' e 'aderencia_marca' ('boa', 'atencao' ou 'ruim'),"
+    " e 'observacoes' (lista curta do que está errado)."
 )
 
 
 def julgar_folha_de_contato(caminho: Path, provedor: Provedor) -> ParecerVisao:
     """A camada opcional do ADR 0014: uma chamada de visão por Célula de Carrossel.
 
-    Fica **fora** de ``montar_pacote`` nesta etapa, por decisão do próprio ADR 0014: o juiz de
-    visão está abaixo da linha dos seis entregáveis e cai antes de qualquer coisa que valha nota.
-    Quem ligar isto depois passa ``SUNO_JUIZ_VISAO=1`` e um provedor com entrada de imagem.
+    É chamado por ``montar_pacote`` quando existe provedor multimodal. Falha ou ausência do
+    provedor deixa o parecer vazio e mantém a decisão H5 inteiramente humana.
 
     A restrição de autopreferência do ADR 0008 não vale aqui: a imagem não foi feita por modelo
     nenhum, então qualquer provedor pode julgá-la.
@@ -216,4 +220,5 @@ def julgar_folha_de_contato(caminho: Path, provedor: Provedor) -> ParecerVisao:
         temperatura=0.0,
         esforco_raciocinio="baixo",
     )
-    return provedor.completar_estruturado(pedido, ParecerVisao)
+    parecer = provedor.completar_estruturado(pedido, ParecerVisao)
+    return parecer.model_copy(update={"provedor": provedor.nome})

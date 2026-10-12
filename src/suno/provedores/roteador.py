@@ -45,6 +45,8 @@ ORDEM_POR_PAPEL: dict[PapelLLM, tuple[str, ...]] = {
     PapelLLM.GERADOR: ("gemini", "groq", "sambanova"),
     PapelLLM.JUIZ: ("groq", "sambanova", "gemini"),
     PapelLLM.JUIZ_VISAO: ("gemini", "groq", "sambanova"),
+    PapelLLM.DIRETOR_ARTE: ("gemini", "groq", "sambanova"),
+    PapelLLM.ANALISTA_VISUAL: ("gemini", "groq", "sambanova"),
 }
 
 

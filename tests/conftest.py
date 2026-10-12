@@ -12,6 +12,9 @@ from pathlib import Path
 
 import pytest
 
+# A suíte roda sem Node: o motor de reserva (Pillow) é o determinístico em CI (ADR 0020).
+os.environ.setdefault("SUNO_RENDER", "pillow")
+
 RAIZ = Path(__file__).resolve().parent.parent
 DADOS = RAIZ / "data"
 ATAS = DADOS / "atas"

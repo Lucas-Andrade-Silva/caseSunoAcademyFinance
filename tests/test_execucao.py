@@ -38,6 +38,7 @@ from suno.gerador.execucao import (
     listar_execucoes,
     motivo_da_pendencia,
 )
+from suno.avaliador.juiz_transversal import ROTULO_JUIZ_TRANSVERSAL
 from suno.gerador.extracao import ROTULO_DO_PEDIDO, extrair_ancoras
 from suno.gerador.moldes import MODELO_POR_FORMATO, montar_conteudo
 from suno.ingestao.pdf import carregar_ata
@@ -196,6 +197,8 @@ def _rotulos_do_cenario() -> list[str]:
     rotulos += [f"celula:{a}:{f}:0" for a, f in MATRIZ]
     rotulos.append(f"celula:{REPROVACAO_CONSERTADA[0]}:{REPROVACAO_CONSERTADA[1]}:1")
     rotulos += [f"celula:{FILA_HUMANA[0]}:{FILA_HUMANA[1]}:{r}" for r in (1, 2)]
+    # Só um subconjunto sem a Célula que cai na H4 chega ao Judge (a Matriz de nove nunca o chama).
+    rotulos.append(f"{ROTULO_JUIZ_TRANSVERSAL}:0")
     return rotulos
 
 
@@ -207,7 +210,7 @@ def test_o_arquivo_de_respostas_prontas_tem_todos_os_rotulos_do_cenario(resposta
 
 def test_cada_resposta_pronta_valida_no_modelo_do_seu_formato(respostas_prontas: dict):
     for rotulo, fila in respostas_prontas.items():
-        if rotulo == ROTULO_DO_PEDIDO:
+        if not rotulo.startswith("celula:"):
             continue
         _, _, formato_bruto, _ = rotulo.split(":")
         modelo = MODELO_POR_FORMATO[Formato(formato_bruto)]

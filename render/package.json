@@ -1,0 +1,10 @@
+{
+  "name": "suno-render",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Captura os slides HTML do Carrossel em PNG (ADR 0020).",
+  "dependencies": {
+    "puppeteer": "24.8.2"
+  }
+}

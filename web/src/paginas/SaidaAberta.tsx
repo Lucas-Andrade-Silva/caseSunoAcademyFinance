@@ -1,23 +1,31 @@
 // A Saída aberta ("/saidas/:id"): nome editável, exportar, o resumo de estados e a Matriz
 // 3×3 (Audiências nas linhas, Formatos nas colunas). Células não pedidas ficam tracejadas
 // (spec do front, seção 4.4, opção A).
-import { Fragment, useState, type FormEvent } from "react";
+import { Fragment, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AUDIENCIAS, FORMATOS, obterResumo, renomearExecucao } from "../dados/cliente";
+import { mensagemDeFalha } from "../dados/cliente";
 import { usarRequisicao } from "../ganchos/usarRequisicao";
 import { Carregando, MensagemErro } from "../componentes/EstadoRequisicao";
 import CelulaDaMatriz from "../componentes/CelulaDaMatriz";
 import Chip from "../componentes/Chip";
 import LinksDeExportacao from "../componentes/LinksDeExportacao";
+import MatrizAoVivo from "../componentes/MatrizAoVivo";
+import { seloDaAta } from "../lib/fontes";
 import { chaveDaPosicao, contarPosicoes } from "../lib/matriz";
 import {
   formatarDataCurta,
   pluralizar,
   rotuloAudiencia,
   rotuloFormato,
+  rotuloDasAtas,
   rotuloModo,
   rotuloProvedor,
+  rotuloStatus,
 } from "../texto/rotulos";
+
+/** Saídas que ainda não gravaram o `execucao.json`: não há Laudo nem decisão para mostrar. */
+const SEM_EXECUCAO = ["na_fila", "gerando", "interrompida", "falhou"];
 
 export default function SaidaAberta() {
   const { id } = useParams<{ id: string }>();
@@ -28,11 +36,50 @@ export default function SaidaAberta() {
   const [novoNome, definirNovoNome] = useState("");
   const [enviando, definirEnviando] = useState(false);
   const [erroDoNome, definirErroDoNome] = useState<string | null>(null);
+  // Recarrega no máximo uma vez ao fim da geração: se o servidor disser que terminou mas ainda
+  // não houver execução gravada, a tela não entra em laço.
+  const jaRecarregou = useRef(false);
 
   if (estado.situacao === "carregando") return <Carregando rotulo="Carregando Saída…" />;
   if (estado.situacao === "erro") return <MensagemErro erro={estado.erro} />;
 
   const resumo = estado.dados;
+
+  if (SEM_EXECUCAO.includes(resumo.status)) {
+    const situacao = rotuloStatus(resumo.status);
+    return (
+      <div className="px-5 py-4">
+        <nav className="mb-1 text-[11.5px] text-suave">
+          <Link to="/saidas" className="hover:text-texto">
+            Saídas
+          </Link>{" "}
+          › {resumo.nome}
+        </nav>
+        <div className="mb-2 flex flex-wrap items-center gap-2.5">
+          <h1 className="text-[17px] font-bold">{resumo.nome}</h1>
+          <Chip tom={situacao.tom}>{situacao.texto}</Chip>
+        </div>
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <Chip tom="forte">{rotuloDasAtas(resumo.modo, resumo.ata, resumo.atas)}</Chip>
+          <Chip>{rotuloProvedor(resumo.provedor)}</Chip>
+          {seloDaAta(resumo.categoria ?? "copom") && (
+            <Chip tom="alerta">{seloDaAta(resumo.categoria ?? "copom")}</Chip>
+          )}
+          <Chip>{formatarDataCurta(resumo.iniciada_em)}</Chip>
+        </div>
+        <MatrizAoVivo
+          identificador={identificador}
+          linkDaSaida={false}
+          aoConcluir={() => {
+            if (jaRecarregou.current) return;
+            jaRecarregou.current = true;
+            recarregar((atual) => atual + 1);
+          }}
+        />
+      </div>
+    );
+  }
+
   const contagem = contarPosicoes(resumo.posicoes);
   const porPosicao = new Map(
     resumo.posicoes.map((p) => [chaveDaPosicao(p.audiencia, p.formato), p]),
@@ -55,7 +102,7 @@ export default function SaidaAberta() {
         recarregar((atual) => atual + 1);
       })
       .catch((falha: unknown) => {
-        definirErroDoNome(falha instanceof Error ? falha.message : String(falha));
+        definirErroDoNome(mensagemDeFalha(falha));
       })
       .finally(() => definirEnviando(false));
   }
@@ -118,9 +165,12 @@ export default function SaidaAberta() {
       </div>
 
       <div className="mt-2 flex flex-wrap gap-1.5">
-        <Chip tom="forte">{resumo.ata}</Chip>
+        <Chip tom="forte">{rotuloDasAtas(resumo.modo, resumo.ata, resumo.atas)}</Chip>
         {modo && <Chip>{modo}</Chip>}
         <Chip>{rotuloProvedor(resumo.provedor)}</Chip>
+        {seloDaAta(resumo.categoria ?? "copom") && (
+          <Chip tom="alerta">{seloDaAta(resumo.categoria ?? "copom")}</Chip>
+        )}
         <Chip>{formatarDataCurta(resumo.iniciada_em)}</Chip>
       </div>
 
@@ -146,7 +196,7 @@ export default function SaidaAberta() {
         </span>
       </p>
 
-      <div className="grid grid-cols-[84px_repeat(3,minmax(0,1fr))] gap-2.5">
+      <div className="grid grid-cols-[78px_repeat(3,minmax(0,1fr))] gap-1.5 sm:grid-cols-[84px_repeat(3,minmax(0,1fr))] sm:gap-2.5">
         <div />
         {FORMATOS.map((formato) => (
           <div

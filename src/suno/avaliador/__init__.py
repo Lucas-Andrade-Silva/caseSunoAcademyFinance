@@ -24,15 +24,27 @@ def avaliar(
     *,
     limiares: Limiares | None = None,
     comite: "Comite | None" = None,
+    chaves_essenciais: frozenset[str] | None = None,
 ) -> Laudo:
     """A única assinatura que atravessa a costura entre Gerador e Avaliador.
 
     ``limiares`` cai em ``LIMIARES_PROVISORIOS[audiencia]`` quando não informado.
     ``comite`` é ``None`` por padrão: o Laudo sai com ``comite=None``, nunca com nota zero.
+    ``chaves_essenciais`` é ``None`` por padrão e então vale o conjunto do Copom; só uma Ata de
+    outra categoria passa o conjunto genérico (``suno.dominio.chaves_essenciais_da``).
     """
     from suno.avaliador.laudo import avaliar as _avaliar
 
-    return _avaliar(conteudo, ancoras, audiencia, limiares=limiares, comite=comite)
+    if chaves_essenciais is None:
+        return _avaliar(conteudo, ancoras, audiencia, limiares=limiares, comite=comite)
+    return _avaliar(
+        conteudo,
+        ancoras,
+        audiencia,
+        limiares=limiares,
+        comite=comite,
+        chaves_essenciais=chaves_essenciais,
+    )
 
 
 __all__ = ["AgenteAvaliadorTransversal", "avaliar", "avaliar_matriz"]
