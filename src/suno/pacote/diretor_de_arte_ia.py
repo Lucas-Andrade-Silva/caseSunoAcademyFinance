@@ -16,6 +16,7 @@ from suno.dominio import (
     ComposicaoCarrossel,
     ErroProvedor,
     EscolhaDeLayout,
+    FamiliaVisual,
     IntensidadeVisual,
     Mensagem,
     PapelLLM,
@@ -24,6 +25,7 @@ from suno.dominio import (
     Slide,
 )
 from suno.pacote.direcao_de_arte import composicoes_compativeis, planejar_direcao_de_arte
+from suno.pacote.familias import familia_da_composicao
 from suno.provedores.base import Provedor
 
 
@@ -53,8 +55,10 @@ def _pedido(
     historico_recente: Iterable[ComposicaoCarrossel | str],
     sinais_humanos: dict[str, list[dict[str, int | str]]] | None = None,
     referencia_preferida: ReferenciaVisual | None = None,
+    familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO,
 ) -> PedidoLLM:
     entrada = {
+        "familia": familia.value,
         "slides": [
             {
                 "indice": indice,
@@ -62,6 +66,7 @@ def _pedido(
                 "titulo": slide.titulo,
                 "corpo": slide.corpo,
                 "tem_dado": bool(slide.dado),
+                "tem_foto": bool(slide.imagem),
             }
             for indice, slide in enumerate(slides)
         ],
@@ -95,7 +100,10 @@ def _pedido(
                 autor="sistema",
                 texto=(
                     "Você é o Diretor de Arte de um carrossel financeiro da Suno. Escolha uma "
-                    "composição e uma referência aprovada por slide. Preserve clareza, coerência "
+                    "composição e uma referência aprovada por slide, sempre da família visual "
+                    "indicada em 'familia' (as referências já são só dela): um carrossel usa uma "
+                    "só família. Prefira layouts de foto nos slides com 'tem_foto' e layouts de "
+                    "texto nos demais. Preserve clareza, coerência "
                     "do carrossel e diversidade; evite repetir composições consecutivas. Trate "
                     "aprovações humanas anteriores apenas como preferência fraca: elas nunca "
                     "substituem compatibilidade, clareza ou variedade. Não reescreva o texto, "
@@ -118,6 +126,7 @@ def _validar_e_converter(
     plano: PlanoDoDiretor,
     slides: list[Slide],
     referencias: list[ReferenciaVisual],
+    familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO,
 ) -> list[EscolhaDeLayout]:
     if [item.indice for item in plano.escolhas] != list(range(len(slides))):
         raise ValueError("o Diretor de Arte não devolveu exatamente uma escolha por slide")
@@ -125,7 +134,7 @@ def _validar_e_converter(
     escolhas: list[EscolhaDeLayout] = []
     anterior: ComposicaoCarrossel | None = None
     for slide, decisao in zip(slides, plano.escolhas):
-        compativeis = composicoes_compativeis(slide)
+        compativeis = composicoes_compativeis(slide, familia)
         if decisao.composicao not in compativeis:
             raise ValueError(
                 f"composição {decisao.composicao.value} incompatível com o slide {decisao.indice + 1}"
@@ -162,9 +171,14 @@ def planejar_com_diretor_de_arte(
     provedor: Provedor | None = None,
     sinais_humanos: dict[str, list[dict[str, int | str]]] | None = None,
     referencia_preferida: ReferenciaVisual | None = None,
+    familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO,
 ) -> ResultadoDirecao:
     lista = list(slides)
-    referencias = [item for item in referencias_aprovadas if item.aprovada]
+    referencias = [
+        item
+        for item in referencias_aprovadas
+        if item.aprovada and familia_da_composicao(item.composicao) is familia
+    ]
     historico = tuple(historico_recente)
     if provedor is not None and referencias and lista:
         try:
@@ -175,11 +189,12 @@ def planejar_com_diretor_de_arte(
                     historico,
                     sinais_humanos,
                     referencia_preferida,
+                    familia,
                 ),
                 PlanoDoDiretor,
             )
             return ResultadoDirecao(
-                escolhas=_validar_e_converter(plano, lista, referencias),
+                escolhas=_validar_e_converter(plano, lista, referencias, familia),
                 origem="ia",
                 provedor=provedor.nome,
             )
@@ -193,6 +208,7 @@ def planejar_com_diretor_de_arte(
             historico,
             referencias,
             referencia_preferida=referencia_preferida,
+            familia=familia,
         ),
         origem="deterministico",
         motivo_fallback=motivo,
