@@ -56,6 +56,30 @@ CATALOGO_PADRAO: tuple[Origem, ...] = (
         categoria=CategoriaDaAta.COMUNICADO_RELEVANTE,
     ),
     Origem(
+        id="cvm_demonstracoes",
+        nome="DFP, ITR e Formulários da CVM",
+        categoria=CategoriaDaAta.RELEASE,
+        ativa=True,
+    ),
+    Origem(
+        id="bcb_relatorios",
+        nome="Relatórios de Inflação e de Estabilidade",
+        categoria=CategoriaDaAta.COMUNICADO_RELEVANTE,
+        ativa=True,
+    ),
+    Origem(
+        id="bcb_resolucoes",
+        nome="Resoluções do CMN e do BCB",
+        categoria=CategoriaDaAta.COMUNICADO_RELEVANTE,
+        ativa=True,
+    ),
+    Origem(
+        id="b3_oficios",
+        nome="Ofícios e comunicados da B3",
+        categoria=CategoriaDaAta.COMUNICADO_RELEVANTE,
+        ativa=True,
+    ),
+    Origem(
         id="releases_b3",
         nome="Releases de Resultados (B3)",
         categoria=CategoriaDaAta.RELEASE,
