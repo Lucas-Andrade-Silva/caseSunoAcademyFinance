@@ -1,0 +1,20 @@
+{
+  "capa.html": {
+    "ref": "843161725_18445782742131819_3596397966328682243_n.jpg",
+    "descricao": "Capa escura: logo, titulo em Poppins com trecho em caixa vinho e pilula vermelha de chamada.",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 36, "obrigatorio": true, "nota": "Tres linhas de ~12 caracteres, uma por <span class=l>; as duas primeiras em branco, a ultima abriga o destaque. Estourar 13 caracteres por linha sai da area util."},
+      {"nome": "destaque", "tipo": "texto", "max_caracteres": 14, "obrigatorio": true, "nota": "Trecho final do titulo dentro da caixa vinho (ultima linha, apos 'voce'). Mais que ~14 caracteres ultrapassa a margem direita."},
+      {"nome": "chamada", "tipo": "texto", "max_caracteres": 18, "obrigatorio": false, "nota": "Texto da pilula vermelha, caixa-alta automatica (ex.: ARRASTE E CONFIRA)."}
+    ]
+  },
+  "noticia.html": {
+    "ref": "843161718_18445782763131819_3271486651606423650_n.jpg",
+    "descricao": "Slide claro de noticia: cabecalho @suno, foto arredondada, titulo Anton em caixa-alta, corpo curto centralizado.",
+    "slots": [
+      {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": true, "nota": "Foto 769x464 (razao ~1,66:1), cantos 28px, object-fit cover. Usar {{IMG:nome}}."},
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 66, "obrigatorio": true, "nota": "Ate 3 linhas de ~24 caracteres, caixa-alta automatica. Com 2 linhas o bloco titulo+corpo se recentraliza."},
+      {"nome": "corpo", "tipo": "texto", "max_caracteres": 150, "obrigatorio": true, "nota": "Ate 3 linhas de ~48 caracteres, cinza, centralizado. Texto informativo e neutro, sem recomendacao."}
+    ]
+  }
+}

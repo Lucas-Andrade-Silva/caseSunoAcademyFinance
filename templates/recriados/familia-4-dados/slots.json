@@ -1,0 +1,324 @@
+{
+  "titulo-e-linha-do-tempo": {
+    "ref": "825320918_18444208990131819_1053683511300997320_n.jpg",
+    "slots": [
+      {
+        "nome": "titulo",
+        "tipo": "texto",
+        "max_caracteres": 50,
+        "obrigatorio": true,
+        "nota": "Título grande de 2 linhas. Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "corpo",
+        "tipo": "texto",
+        "max_caracteres": 150,
+        "obrigatorio": true,
+        "nota": "Parágrafo de 3 linhas sob o título. Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "coluna_1_ano",
+        "tipo": "numero",
+        "max_caracteres": 4,
+        "obrigatorio": true,
+        "nota": "Ano, em negrito preto."
+      },
+      {
+        "nome": "coluna_1_titulo",
+        "tipo": "texto",
+        "max_caracteres": 32,
+        "obrigatorio": true,
+        "nota": "Caixa vermelha, caixa-alta; usar <br> para forçar a quebra em duas linhas (uma caixa por linha)."
+      },
+      {
+        "nome": "coluna_1_item_1",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_1_item_2",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_1_item_3",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_1_item_4",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": false,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_1_item_5",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": false,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_2_ano",
+        "tipo": "numero",
+        "max_caracteres": 4,
+        "obrigatorio": true,
+        "nota": "Ano, em negrito preto."
+      },
+      {
+        "nome": "coluna_2_titulo",
+        "tipo": "texto",
+        "max_caracteres": 32,
+        "obrigatorio": true,
+        "nota": "Caixa vermelha, caixa-alta; usar <br> para forçar a quebra em duas linhas (uma caixa por linha)."
+      },
+      {
+        "nome": "coluna_2_item_1",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_2_item_2",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_2_item_3",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_3_ano",
+        "tipo": "numero",
+        "max_caracteres": 4,
+        "obrigatorio": true,
+        "nota": "Ano, em negrito preto."
+      },
+      {
+        "nome": "coluna_3_titulo",
+        "tipo": "texto",
+        "max_caracteres": 32,
+        "obrigatorio": true,
+        "nota": "Caixa vermelha, caixa-alta; usar <br> para forçar a quebra em duas linhas (uma caixa por linha)."
+      },
+      {
+        "nome": "coluna_3_item_1",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_3_item_2",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_3_item_3",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": true,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      },
+      {
+        "nome": "coluna_3_item_4",
+        "tipo": "texto",
+        "max_caracteres": 52,
+        "obrigatorio": false,
+        "nota": "Item da coluna; o ícone (documento ou martelo) é fixo por posição; <br> opcional para quebra."
+      }
+    ]
+  },
+  "texto-com-foto-embaixo": {
+    "ref": "828532204_18444208999131819_3599153958489254132_n.jpg",
+    "slots": [
+      {
+        "nome": "corpo_1",
+        "tipo": "texto",
+        "max_caracteres": 125,
+        "obrigatorio": true,
+        "nota": "Parágrafo 1 (3 linhas). Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "corpo_2",
+        "tipo": "texto",
+        "max_caracteres": 100,
+        "obrigatorio": true,
+        "nota": "Parágrafo 2 (3 linhas). Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "corpo_3",
+        "tipo": "texto",
+        "max_caracteres": 105,
+        "obrigatorio": false,
+        "nota": "Parágrafo 3 (3 linhas); se omitido, remover o elemento e a foto sobe de forma manual. Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "imagem",
+        "tipo": "imagem",
+        "max_caracteres": 0,
+        "obrigatorio": true,
+        "nota": "{{IMG:nome}} de _imagens; 800x374, cantos 38px, object-fit cover. Padrão: dinheiro."
+      }
+    ]
+  },
+  "texto-duplo-com-foto": {
+    "ref": "830138594_18444209008131819_6682666712663857284_n.jpg",
+    "slots": [
+      {
+        "nome": "corpo_1",
+        "tipo": "texto",
+        "max_caracteres": 110,
+        "obrigatorio": true,
+        "nota": "Parágrafo 1 (3 linhas). Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "corpo_2",
+        "tipo": "texto",
+        "max_caracteres": 110,
+        "obrigatorio": true,
+        "nota": "Parágrafo 2 (3 linhas). Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "imagem",
+        "tipo": "imagem",
+        "max_caracteres": 0,
+        "obrigatorio": true,
+        "nota": "{{IMG:nome}}; 841x441, cantos 38px. Padrão bolsa-sp (nenhuma imagem serve para futebol)."
+      }
+    ]
+  },
+  "foto-no-meio": {
+    "ref": "830701361_18444209017131819_4697591662523264611_n.jpg",
+    "slots": [
+      {
+        "nome": "titulo",
+        "tipo": "texto",
+        "max_caracteres": 55,
+        "obrigatorio": true,
+        "nota": "Título de 3 linhas, corpo grande. Palavras em vermelho: envolver em <em>...</em>."
+      },
+      {
+        "nome": "imagem",
+        "tipo": "imagem",
+        "max_caracteres": 0,
+        "obrigatorio": true,
+        "nota": "{{IMG:nome}}; 800x420, cantos 38px. Padrão analise."
+      },
+      {
+        "nome": "corpo",
+        "tipo": "texto",
+        "max_caracteres": 140,
+        "obrigatorio": true,
+        "nota": "Parágrafo de 4 linhas. Palavras em vermelho: envolver em <em>...</em>."
+      }
+    ]
+  },
+  "numero-gigante": {
+    "ref": "830417761_18444208978131819_5217074812170780811_n.jpg",
+    "slots": [
+      {
+        "nome": "prefixo",
+        "tipo": "texto",
+        "max_caracteres": 12,
+        "obrigatorio": false,
+        "nota": "Texto curto antes do número, tamanho base (ex.: 'Hoje,')."
+      },
+      {
+        "nome": "numero",
+        "tipo": "numero",
+        "max_caracteres": 16,
+        "obrigatorio": true,
+        "nota": "Número+unidade gigante, vermelho vivo, 128px (ex.: '43,8 milhões'); quebra após o número."
+      },
+      {
+        "nome": "destaque",
+        "tipo": "texto",
+        "max_caracteres": 20,
+        "obrigatorio": false,
+        "nota": "Linha vermelha em tamanho médio (ex.: 'de brasileiros')."
+      },
+      {
+        "nome": "complemento",
+        "tipo": "texto",
+        "max_caracteres": 40,
+        "obrigatorio": true,
+        "nota": "Fecho em cinza-escuro, tamanho base, quebra em ~3 linhas."
+      },
+      {
+        "nome": "nota",
+        "tipo": "texto",
+        "max_caracteres": 80,
+        "obrigatorio": false,
+        "nota": "Nota alinhada à direita embaixo (3 linhas). Destaque em <em>...</em>."
+      }
+    ]
+  },
+  "texto-grande-gradiente": {
+    "ref": "831437365_18444208987131819_5469363809835643386_n.jpg",
+    "slots": [
+      {
+        "nome": "titulo",
+        "tipo": "texto",
+        "max_caracteres": 85,
+        "obrigatorio": true,
+        "nota": "Título de 5 linhas, 90px. Destaque em <em> (vermelho escuro)."
+      },
+      {
+        "nome": "corpo",
+        "tipo": "texto",
+        "max_caracteres": 130,
+        "obrigatorio": true,
+        "nota": "Parágrafo de 4 linhas sob o título. Palavras em vermelho: envolver em <em>...</em>."
+      }
+    ]
+  },
+  "cta-pilula": {
+    "ref": "829492277_18444208951131819_7780642092080453676_n.jpg",
+    "slots": [
+      {
+        "nome": "titulo",
+        "tipo": "texto",
+        "max_caracteres": 65,
+        "obrigatorio": true,
+        "nota": "3 linhas, uma por <br>; última em <em> vermelho. Logo ( SUNO ) fixo no topo."
+      },
+      {
+        "nome": "chamada",
+        "tipo": "texto",
+        "max_caracteres": 18,
+        "obrigatorio": true,
+        "nota": "Texto da pílula verde (ex.: 'Comente')."
+      },
+      {
+        "nome": "palavra_chave",
+        "tipo": "texto",
+        "max_caracteres": 10,
+        "obrigatorio": true,
+        "nota": "Palavra-chave em negrito dentro da pílula (ex.: 'ONE')."
+      },
+      {
+        "nome": "apoio",
+        "tipo": "texto",
+        "max_caracteres": 70,
+        "obrigatorio": true,
+        "nota": "Texto de apoio sob a pílula, 3 linhas. Sem promessa de ganho."
+      }
+    ]
+  }
+}

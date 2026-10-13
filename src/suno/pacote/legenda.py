@@ -67,9 +67,17 @@ def _abertura(ancoras: Ancoras) -> str:
     return f"O Copom definiu a Selic em {citacao}{ponto}"
 
 
-def montar_legenda(celula: Celula, ancoras: Ancoras) -> tuple[str, list[str]]:
-    """A legenda e as hashtags de uma Célula aprovada, prontas para um humano publicar."""
+def montar_legenda(
+    celula: Celula, ancoras: Ancoras, creditos: str = ""
+) -> tuple[str, list[str]]:
+    """A legenda e as hashtags de uma Célula aprovada, prontas para um humano publicar.
+
+    ``creditos`` é o bloco de créditos das fotos (CC BY exige o autor): vem depois do aviso,
+    porque é informação factual de licença e não texto editorial.
+    """
     partes = [_abertura(ancoras)]
     partes.extend(primeiras_frases(celula.conteudo.texto_avaliavel()))
     partes.append(AVISO_DE_NAO_RECOMENDACAO)
+    if creditos.strip():
+        partes.append(creditos.strip())
     return "\n\n".join(partes), hashtags_da_audiencia(celula.audiencia)

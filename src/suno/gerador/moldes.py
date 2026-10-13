@@ -164,7 +164,10 @@ INSTRUCAO_DO_FORMATO: dict[Formato, str] = {
         "slide) ou citacao (um trecho curto da Ata, parafraseado). Cada slide tem 'titulo' de "
         "até 8 palavras e 'corpo' de até 32; 'destaque' é opcional e repete literalmente uma "
         "expressão do título para realçar; 'dado' é opcional e recebe a chave da Âncora a "
-        "plotar naquele slide (só a chave, sem chaves duplas)."
+        "plotar naquele slide (só a chave, sem chaves duplas); 'imagem' é opcional e dá o "
+        "assunto da foto do slide em até quatro palavras de busca (ex.: 'sede do Banco "
+        "Central'): só um lugar, instituição ou objeto concreto, ou uma autoridade em "
+        "exercício do cargo; nunca uma pessoa privada, e nada que sugira comprar ou vender."
     ),
     Formato.ROTEIRO: (
         "Formato Roteiro: blocos de fala, cada um uma cena. O primeiro bloco é o gancho. "
@@ -490,6 +493,7 @@ def montar_conteudo(
                 corpo=preenchidos[2 * i + 1],
                 dado=slide.dado,
                 destaque=slide.destaque,
+                imagem=slide.imagem,
             )
             for i, slide in enumerate(resposta_estruturada.slides)
         ]

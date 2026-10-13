@@ -121,7 +121,7 @@ flowchart TD
 
     subgraph P["Pacote de publicação · só de Célula aprovada"]
         direction TB
-        IMG["Imagens do Carrossel<br/>matplotlib + Pillow<br/>PNG 1080×1350 · ADR 0009"]
+        IMG["Imagens do Carrossel<br/>famílias visuais + fotos licenciadas<br/>PNG 1080×1350 · ADR 0030 e 0031"]
         VIDEO["Vídeo<br/>fora do grafo, consome<br/>Roteiro aprovado · 9:16 · ADR 0004"]
         LEG["Legenda + hashtags"]
     end
@@ -221,15 +221,24 @@ fácil de avaliar, e por isso é o primeiro a ser implementado ponta a ponta.
 O Gerador produz o **roteiro de slides** — texto estruturado, um registro por slide com título,
 corpo e o campo opcional de dado a plotar. O Avaliador julga esse texto, não a imagem.
 
-A renderização é etapa posterior, determinística e sem rede: **matplotlib** desenha o gráfico a
-partir da tabela de Âncoras numéricas, **Pillow** compõe com a identidade visual, saída **PNG
-1080×1350 (4:5) em todos os slides de todas as nove Células**. Proporção variando entre Células
-faz o Instagram cortar o carrossel inteiro para igualar a primeira imagem — é requisito técnico,
-não estética.
+A renderização é etapa posterior e roda sem rede: templates HTML/CSS renderizados pelo Puppeteer,
+saída **PNG 1080×1350 (4:5) em todos os slides de todas as nove Células**. Proporção variando entre
+Células faz o Instagram cortar o carrossel inteiro para igualar a primeira imagem — é requisito
+técnico, não estética. O visual vem de **famílias visuais** recriadas dos carrosséis reais da Suno
+(Notícia, Explicativo, Jornal, Dados e Asset, além do layout escuro antigo): um carrossel usa uma
+família, e os slides variam de layout dentro dela
+([ADR 0030](adr/0030-familias-visuais-do-carrossel.md)). O texto de tamanho variável encolhe até
+caber; o número do slide sai da Âncora, nunca do template.
 
-Nenhuma imagem vem de terceiro, e geração por modelo de IA está fora do caminho crítico
-([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md)). Por ser
-determinística, a renderização é testável em CI como o Avaliador.
+**Fotos.** O Gerador sugere só o assunto da foto (`Slide.imagem`). A foto é real e de licença que
+permite reuso, vem da biblioteca local `data/imagens/` (a demo roda sem rede) ou do Wikimedia
+Commons com relevância verificada, e o crédito vai na legenda
+([ADR 0031](adr/0031-fotos-reais-e-licenciadas-nos-slides.md)). Sem foto, o layout degrada sozinho.
+Geração de imagem por modelo continua fora do caminho crítico.
+
+A reserva **Pillow + matplotlib** ([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md),
+[ADR 0020](adr/0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)) é o que o CI roda:
+determinística, sem navegador, com o layout escuro e sem foto.
 
 ### Roteiro
 
@@ -338,26 +347,32 @@ reprovação por tipo no relatório final.
 
 React + Vite + Tailwind sobre FastAPI, com cliente TypeScript gerado do OpenAPI
 ([ADR 0005](adr/0005-interface-em-react-vite-sobre-fastapi.md)), lendo do disco — o mesmo arquivo
-que o pytest lê e que o relatório cita. Três coisas que ela mostra e que a concorrência não mostra:
+que o pytest lê e que o relatório cita. Desde o [ADR 0028](adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)
+ela é uma ferramenta de produção de conteúdo, no padrão visual do editor do biosites, em seis guias:
 
-- **Âncoras destacadas** ao lado da Célula: quais Âncoras aquela Célula usou e o trecho da Ata de
-  cada uma. Expõe o que o Avaliador já calcula.
-- **Reprovação como view de primeira classe**: reprovado, e por quê, com o Limiar e a distância
-  medida. É a prova viva de que a linha que não se cruza funciona.
-- **Veredito em linguagem com o número ao lado** — "Alta aderência factual · 0,94". O rótulo é o
-  que se lê; o número é o que o case cobra. Destaque visual reservado à ausência de Recomendação.
+- **Ingestão**: as notícias (Atas) de cada origem, só as dos últimos 30 dias; a pessoa marca até 3 e
+  confirma com ATUALIZAR. Importar documento e buscar notícias novas ficam aqui. A busca consulta
+  Copom, CVM, BCB (relatórios e resoluções) e B3 e, com mais de 2 documentos novos, pede o período a
+  baixar ([ADR 0029](adr/0029-origens-de-noticias-e-busca-em-duas-etapas.md)).
+- **Texto analítico**, **Carrossel** e **Vídeo**: cada uma confirma as notícias, pergunta as
+  audiências e pede ao servidor uma Saída com o seu Formato. O texto ganha quatro formatos de
+  apresentação (e-mail, newsletter, site, artigo) e um editor; o carrossel, a escolha de composição,
+  paleta e ícones, a prévia num celular de feed e a exportação em PNG; o vídeo, os estilos de
+  narração e o prompt para a ferramenta de avatar. Em todas o Laudo aparece em barras horizontais
+  com os Limiares marcados.
+- **Histórico** e **Configurações** (modo Demo ou Real).
 
-Três guias: **Fontes** (de onde vêm as Atas), **Curadoria** (escolher o que entra, configurar e
-gerar) e **Saídas** (revisar). A geração roda em segundo plano na API, um job por vez
+A geração roda em segundo plano na API, um job por vez
 ([ADR 0017](adr/0017-api-dispara-a-geracao-em-segundo-plano.md)); fora do Copom a Saída é "não
 calibrada" ([ADR 0018](adr/0018-origens-e-categoria-da-ata.md)); a Visão unida junta de duas a
 cinco Atas com as Âncoras prefixadas por parte
-([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)).
+([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)) e, na tela, é o que acontece
+quando a pessoa guarda mais de uma notícia.
 
-As filas humanas viraram estados da Célula, resolvidos por uma Decisão humana (aprovar ou
-reprovar, com motivo): o desempate do Comitê (H3) e a revisão (H4) aparecem como chip na Célula, e
-a aprovação do Pacote (H5) fica no painel do Pacote. A Célula cujo Laudo detectou Recomendação não
-pode ser aprovada.
+O que o servidor já faz e a tela deixou de mostrar nesta versão: a Decisão humana (aprovar ou
+reprovar Célula, com a regra de que a Célula com Recomendação não pode ser aprovada), o Pacote de
+publicação, as Âncoras ao lado do conteúdo e o detalhe do Laudo por métrica. As rotas e os testes
+continuam; o Compliance segue sendo métrica do Laudo, não da tela.
 
 ## Parâmetros ainda não fixados
 

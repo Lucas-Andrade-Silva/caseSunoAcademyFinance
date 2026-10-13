@@ -168,7 +168,8 @@ def conferir_imagens(imagens: list[ImagemSlide], ancoras: Ancoras) -> Conferenci
         if manifesto is None:
             continue
         for caixa in manifesto.get("caixas", []):
-            medicoes.append(_medir_estouro(nome, caixa))
+            if not caixa.get("so_contraste"):  # slot dentro de um contêiner já medido
+                medicoes.append(_medir_estouro(nome, caixa))
             medicoes.append(_medir_contraste(nome, caixa))
         for numero in manifesto.get("numeros", []):
             medicoes.append(_medir_numero(nome, numero, ancoras))

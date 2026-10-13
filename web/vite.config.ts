@@ -17,9 +17,9 @@ export default defineConfig({
       manifest: {
         name: "Suno Content",
         short_name: "Suno Content",
-        description: "Painel de revisão do conteúdo gerado pelo Suno Content.",
-        theme_color: "#0e0e0f",
-        background_color: "#0e0e0f",
+        description: "Notícias do mercado em texto analítico, carrossel e roteiro de vídeo.",
+        theme_color: "#1b1b1b",
+        background_color: "#1b1b1b",
         display: "standalone",
         start_url: "/",
         icons: [
@@ -36,7 +36,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8000",
+        target: process.env.SUNO_API ?? "http://127.0.0.1:8000",
         changeOrigin: true,
       },
     },

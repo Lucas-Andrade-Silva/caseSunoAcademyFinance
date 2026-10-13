@@ -1,0 +1,35 @@
+{
+  "capa": {
+    "ref": "841928923_18445642513131819_6393156006567997808_n.jpg",
+    "slots": [
+      {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": true, "nota": "Foto de fundo inteira (1080x1350, object-fit cover, ancorada no topo); degradê preto e grade sutil sobrepostos pelo template. Preferir foto retrato ou com área livre embaixo."},
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 55, "obrigatorio": true, "nota": "Título branco centralizado, até 3 linhas (~18 caracteres por linha, 130px). A seta em círculo acompanha o fim do texto."}
+    ]
+  },
+  "texto-com-imagem": {
+    "ref": "838561271_18445642504131819_4511270723232712451_n.jpg",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 60, "obrigatorio": true, "nota": "Título vermelho com degradê, 3 linhas de ~26 caracteres. Mais de 3 linhas invade o corpo."},
+      {"nome": "corpo", "tipo": "texto", "max_caracteres": 120, "obrigatorio": true, "nota": "Parágrafo preto, até 3 linhas (~40 caracteres por linha). Linha em branco (\n\n) vira respiro entre parágrafos."},
+      {"nome": "destaque", "tipo": "texto", "max_caracteres": 115, "obrigatorio": false, "nota": "Frase em vermelho, até 3 linhas. Se vazio, deixa o espaço do bloco."},
+      {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": true, "nota": "Foto horizontal 856x346 com cantos de 28px, ancorada embaixo (object-fit cover)."}
+    ]
+  },
+  "texto-puro": {
+    "ref": "842235183_18445642474131819_729879170771046944_n.jpg",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 55, "obrigatorio": true, "nota": "Título vermelho com degradê, 3 linhas de ~21 caracteres (coluna de 820px)."},
+      {"nome": "corpo", "tipo": "texto", "max_caracteres": 230, "obrigatorio": true, "nota": "Texto preto em até 3 parágrafos separados por linha em branco (\n\n); ~36 caracteres por linha, até 8 linhas no total."},
+      {"nome": "destaque", "tipo": "texto", "max_caracteres": 90, "obrigatorio": false, "nota": "Fecho em vermelho, até 3 linhas. A soma de título + corpo + destaque deve caber até y=1200."}
+    ]
+  },
+  "texto-ilustracao": {
+    "ref": "842608915_18445642477131819_4960183717000179740_n.jpg",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 55, "obrigatorio": true, "nota": "Título vermelho com degradê, 3 linhas de ~24 caracteres."},
+      {"nome": "corpo", "tipo": "texto", "max_caracteres": 170, "obrigatorio": true, "nota": "Até 2 parágrafos (\n\n), ~40 caracteres por linha, até 5 linhas."},
+      {"nome": "destaque", "tipo": "texto", "max_caracteres": 60, "obrigatorio": false, "nota": "Pergunta ou fecho em vermelho, até 2 linhas. Texto informativo, sem chamada de compra ou venda."},
+      {"nome": "ilustracao", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": false, "nota": "SVG decorativo (linha ascendente com seta) na faixa inferior 1080x320; pode ser trocado por outra ilustração de linha vermelha."}
+    ]
+  }
+}

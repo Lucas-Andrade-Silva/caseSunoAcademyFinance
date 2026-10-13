@@ -1,0 +1,118 @@
+{
+  "familia": "noticia",
+  "nome": "Notícia",
+  "descricao": "Carrossel de notícia da conta @suno: capa escura com título em Poppins, trecho em caixa vinho e pílula vermelha de chamada; miolo claro com cabeçalho @suno, foto arredondada, título em Anton caixa-alta e corpo centralizado.",
+  "referencia": "templates/suno/carrossel1",
+  "layouts": {
+    "noticia_capa": {
+      "arquivo": "familias/noticia/capa.html",
+      "descricao": "Capa escura: logo, título branco com o trecho final em caixa vinho e pílula vermelha de chamada com seta.",
+      "papeis": [
+        "hook",
+        "cta"
+      ],
+      "fundo": "#05080B",
+      "pontos_por_papel": {
+        "hook": 9,
+        "cta": 6
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo_antes_do_realce",
+          "max_caracteres": 45
+        },
+        "destaque": {
+          "fonte": "realce",
+          "obrigatorio": false,
+          "max_caracteres": 25
+        },
+        "chamada": {
+          "fonte": "por_papel",
+          "obrigatorio": false,
+          "por_papel": {
+            "hook": "ARRASTE E CONFIRA",
+            "cta": "LEIA A ATA COMPLETA"
+          }
+        }
+      },
+      "referencia": {
+        "titulo": "Capa escura com título e caixa vinho",
+        "tema": "notícia da semana no mercado",
+        "descricao": "Fundo quase preto em degradê, logo da Suno em círculo branco, título branco leve com o trecho final sobre caixa vinho e pílula vermelha convidando a arrastar.",
+        "instrucao_de_design": "Fundo escuro sem foto; logo ( SUNO ) em círculo branco à esquerda; título grande em Poppins cinza-claro alinhado à esquerda com o trecho final sobre caixa vinho e alças azuis de seleção; abaixo, pílula vermelha em caixa-alta com seta em círculo.",
+        "analise": {
+          "posicao_do_titulo": "centro_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "escuro_degrade",
+          "elementos_visuais": [
+            "logo",
+            "caixa_de_destaque",
+            "pilula_de_chamada",
+            "seta_em_circulo"
+          ],
+          "estrutura_do_conteudo": [
+            "logo",
+            "titulo",
+            "chamada"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel1)"
+      }
+    },
+    "noticia_foto": {
+      "arquivo": "familias/noticia/noticia.html",
+      "descricao": "Slide claro de notícia: cabeçalho @suno, foto arredondada, título em Anton caixa-alta e corpo centralizado; sem foto, o texto ocupa o centro.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F0F0F0",
+      "pontos_por_papel": {
+        "ponto": 8,
+        "citacao": 6
+      },
+      "slots": {
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 63
+        },
+        "corpo": {
+          "fonte": "corpo",
+          "max_caracteres": 190
+        }
+      },
+      "referencia": {
+        "titulo": "Foto arredondada, título em Anton e corpo",
+        "tema": "notícia da semana no mercado",
+        "descricao": "Miolo claro com cabeçalho da conta @suno, foto de cantos arredondados, título em caixa-alta condensada e parágrafo curto centralizado.",
+        "instrucao_de_design": "Fundo claro com faixas verticais quase invisíveis; cabeçalho com avatar e @suno verificado no alto; foto horizontal arredondada; título em Anton caixa-alta escuro centralizado e corpo cinza centralizado; sem foto, o título e o corpo sobem para o centro do slide.",
+        "analise": {
+          "posicao_do_titulo": "inferior_centro",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "foto_arredondada_topo",
+          "tipo_de_fundo": "claro_com_faixas",
+          "elementos_visuais": [
+            "cabecalho_de_perfil",
+            "selo_verificado",
+            "foto_arredondada"
+          ],
+          "estrutura_do_conteudo": [
+            "cabecalho",
+            "foto",
+            "titulo",
+            "corpo"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel1)"
+      }
+    }
+  }
+}

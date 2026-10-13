@@ -1,0 +1,40 @@
+{
+  "capa-vermelha": {
+    "ref": "785745218_18095317112378626_2923580108917726420_n.webp",
+    "slots": [
+      {"nome": "sobretitulo", "tipo": "texto", "max_caracteres": 24, "obrigatorio": true, "nota": "Caixa-alta espaçada, fonte leve. Nunca usar 'garantidos'/'garantia' (compliance); padrão: RENDIMENTOS DO MÊS."},
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 20, "obrigatorio": true, "nota": "Contêiner das duas linhas do título gigante (caixa-alta, Inter 700)."},
+      {"nome": "titulo_linha1", "tipo": "texto", "max_caracteres": 8, "obrigatorio": true, "nota": "Linha 1, fonte maior (168px). Ex.: DIA DE."},
+      {"nome": "titulo_linha2", "tipo": "texto", "max_caracteres": 11, "obrigatorio": true, "nota": "Linha 2, fonte menor (128px), ocupa quase toda a largura. Ex.: DIVIDENDOS."},
+      {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": false, "nota": "Ilustração central (original: dinheiro e moedas 3D, não reproduzidas). Usa {{IMG:dinheiro}} em retângulo arredondado 320x210; trocar por ilustração própria."},
+      {"nome": "subtitulo", "tipo": "texto", "max_caracteres": 110, "obrigatorio": true, "nota": "Três linhas centralizadas; <b> destaca a primeira frase."},
+      {"nome": "botao", "tipo": "texto", "max_caracteres": 24, "obrigatorio": true, "nota": "Texto do botão verde, ex.: Confira o que caiu >>>."},
+      {"nome": "rodape", "tipo": "texto", "max_caracteres": 28, "obrigatorio": false, "nota": "Rodapé esquerdo, caixa-alta Poppins 700."}
+    ]
+  },
+  "aviso-legal": {
+    "ref": "785926699_18095317124378626_7624976055327463397_n.webp",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 26, "obrigatorio": true, "nota": "Título centralizado em caixa-alta."},
+      {"nome": "texto_juridico", "tipo": "texto", "max_caracteres": 760, "obrigatorio": true, "nota": "Bloco justificado de 625px; <b> para trechos em negrito. Texto padrão é o aviso original (manter)."},
+      {"nome": "link", "tipo": "texto", "max_caracteres": 60, "obrigatorio": false, "nota": "Trecho final em negrito (Saiba mais em: URL), dentro de texto_juridico."},
+      {"nome": "selo", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": false, "nota": "Selo de autorregulação recriado em HTML/CSS simples (não é o logotipo oficial); fixo, sem dados variáveis."}
+    ]
+  },
+  "tabela-fundos": {
+    "ref": "786453728_18095317103378626_5814669765939955442_n.webp",
+    "slots": [
+      {"nome": "titulo", "tipo": "texto", "max_caracteres": 24, "obrigatorio": true, "nota": "Título vermelho em Inter 700, ex.: Valores creditados."},
+      {"nome": "linhas_tabela", "tipo": "tabela", "max_caracteres": 0, "obrigatorio": true, "nota": "Contêiner das linhas; até 8 linhas de 63px (cada <div data-slot=linha>). Mais linhas estouram o cartão."},
+      {"nome": "linha", "tipo": "tabela", "max_caracteres": 0, "obrigatorio": true, "nota": "Uma linha repetível; ícone é círculo com iniciais (<s>) trocável."},
+      {"nome": "ticker", "tipo": "texto", "max_caracteres": 7, "obrigatorio": true, "nota": "Código do fundo, ex.: SNEL11."},
+      {"nome": "distribuicao", "tipo": "numero", "max_caracteres": 5, "obrigatorio": true, "nota": "Valor por cota sem 'R$', ex.: 0,10 (o 'R$' e 'POR COTA' são fixos)."},
+      {"nome": "dy_anualizado", "tipo": "numero", "max_caracteres": 7, "obrigatorio": true, "nota": "Com símbolo %, ex.: 15,38%."},
+      {"nome": "dy_mensal", "tipo": "numero", "max_caracteres": 6, "obrigatorio": true, "nota": "Com símbolo %, ex.: 1,20%."},
+      {"nome": "data_com", "tipo": "texto", "max_caracteres": 5, "obrigatorio": true, "nota": "DD/MM."},
+      {"nome": "data_pagamento", "tipo": "texto", "max_caracteres": 5, "obrigatorio": true, "nota": "DD/MM."},
+      {"nome": "texto_explicativo", "tipo": "texto", "max_caracteres": 140, "obrigatorio": false, "nota": "Três linhas centralizadas abaixo do cartão; <b> no trecho final. Não prometer retorno."},
+      {"nome": "rodape", "tipo": "texto", "max_caracteres": 28, "obrigatorio": false, "nota": "Rodapé esquerdo, caixa-alta."}
+    ]
+  }
+}
