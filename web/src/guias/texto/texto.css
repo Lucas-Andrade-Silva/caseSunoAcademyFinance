@@ -1,0 +1,233 @@
+/* A guia Texto analítico: a divisão editor | texto final, a superfície de escrita e o corpo do
+   texto dentro dos formatos. Fica na camada `components` para as utilidades do Tailwind
+   (`mt-8`, `text-[18px]`) continuarem ganhando de qualquer regra daqui. */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* ---------- A divisão ---------- */
+  .texto-guia {
+    position: relative;
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    background: #141414;
+  }
+
+  .texto-corpo {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .texto-fundo-do-editor {
+    display: none;
+  }
+
+  .texto-editor {
+    display: none;
+    background: #1b1b1b;
+  }
+
+  .texto-guia[data-editando="true"] .texto-editor {
+    display: block;
+  }
+
+  .texto-previa {
+    display: flex;
+    min-width: 0;
+    min-height: 70vh;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  /* Abaixo de 1024 px o editor fica em cima do texto final, sem animação. */
+  @media (min-width: 1024px) {
+    .texto-guia {
+      height: 100%;
+      min-height: 0;
+    }
+
+    .texto-corpo {
+      flex-direction: row;
+    }
+
+    .texto-previa {
+      min-height: 0;
+    }
+
+    /* O fundo claro do editor e a coluna dele crescem juntos, de 0 a metade da tela. O miolo
+       tem sempre a largura final, então nada se reorganiza enquanto a coluna desliza. */
+    .texto-fundo-do-editor,
+    .texto-editor {
+      display: block;
+      width: 0;
+      flex: none;
+      overflow: clip;
+      transition: width 250ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .texto-fundo-do-editor {
+      position: absolute;
+      inset: 0 auto 0 0;
+      z-index: 0;
+      background: #1b1b1b;
+    }
+
+    .texto-guia[data-editando="true"] .texto-fundo-do-editor,
+    .texto-guia[data-editando="true"] .texto-editor {
+      width: 50%;
+    }
+
+    .texto-editor-miolo {
+      width: 62.5vw; /* 50vw, com o zoom de 80% do app */
+      height: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .texto-fundo-do-editor,
+    .texto-editor {
+      transition: none;
+    }
+  }
+
+  /* ---------- A superfície de escrita (Tiptap) ---------- */
+  .texto-escrita {
+    min-height: 320px;
+    padding: 24px 28px 32px;
+    outline: none;
+    caret-color: #ffffff;
+    color: #ffffff;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .texto-escrita p {
+    margin: 0 0 0.8em;
+  }
+
+  .texto-escrita h1,
+  .texto-escrita h2,
+  .texto-escrita h3 {
+    font-weight: 600;
+  }
+
+  .texto-escrita h1 {
+    margin: 0 0 0.6em;
+    font-size: 26px;
+    line-height: 1.25;
+  }
+
+  .texto-escrita h2 {
+    margin: 1.3em 0 0.5em;
+    font-size: 20px;
+    line-height: 1.3;
+  }
+
+  .texto-escrita h3 {
+    margin: 1.1em 0 0.4em;
+    font-size: 17px;
+  }
+
+  .texto-escrita ul,
+  .texto-escrita ol {
+    margin: 0 0 0.8em;
+    padding-left: 1.5em;
+  }
+
+  .texto-escrita ul {
+    list-style: disc;
+  }
+
+  .texto-escrita ol {
+    list-style: decimal;
+  }
+
+  .texto-escrita li > p {
+    margin: 0 0 0.3em;
+  }
+
+  .texto-escrita blockquote {
+    margin: 0 0 0.8em;
+    padding-left: 1.2em;
+    font-style: italic;
+    color: #e4e4e4;
+  }
+
+  .texto-escrita strong {
+    font-weight: 700;
+  }
+
+  .texto-escrita hr {
+    margin: 1.4em 0;
+    border: 0;
+    border-top: 1px solid #3d3d3d;
+  }
+
+  .texto-superficie:focus-within {
+    box-shadow: 0 0 0 1px rgba(228, 228, 228, 0.35);
+  }
+
+  /* ---------- O corpo do texto nos formatos ---------- */
+  .corpo-do-texto {
+    font-family: var(--corpo-familia, "Hanken Grotesk Variable", system-ui, sans-serif);
+    font-size: var(--corpo-tamanho, 16px);
+    line-height: var(--corpo-entrelinha, 1.65);
+    color: var(--corpo-cor, #1a1a1a);
+  }
+
+  .corpo-do-texto p,
+  .corpo-do-texto ul,
+  .corpo-do-texto ol,
+  .corpo-do-texto blockquote {
+    margin: 0 0 var(--corpo-espaco, 1em);
+  }
+
+  .corpo-do-texto > :last-child {
+    margin-bottom: 0;
+  }
+
+  .corpo-do-texto ul {
+    list-style: disc;
+    padding-left: 1.4em;
+  }
+
+  .corpo-do-texto ol {
+    list-style: decimal;
+    padding-left: 1.5em;
+  }
+
+  .corpo-do-texto li {
+    margin-bottom: 0.35em;
+  }
+
+  .corpo-do-texto li > p {
+    margin: 0;
+  }
+
+  .corpo-do-texto h3 {
+    margin: 1.4em 0 0.4em;
+    font-size: 1.1em;
+    font-weight: 700;
+  }
+
+  .corpo-do-texto blockquote {
+    padding-left: 1.2em;
+    font-style: italic;
+    color: var(--corpo-suave, #4a4a4a);
+  }
+
+  .corpo-do-texto strong {
+    font-weight: 700;
+  }
+
+  .corpo-do-texto hr {
+    margin: 1.6em 0;
+    border: 0;
+    border-top: 1px solid currentColor;
+    opacity: 0.2;
+  }
+}
