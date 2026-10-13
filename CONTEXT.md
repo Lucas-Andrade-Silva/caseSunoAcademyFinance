@@ -148,3 +148,11 @@ revisor. Não vale para a Célula cujo Laudo detectou Recomendação: essa não 
 **Pedido**:
 As Células que a pessoa marcou na Matriz antes de gerar: de uma a nove, em combinações soltas.
 Fica gravado na Saída. Sem pedido gravado (execução antiga), valem as nove.
+
+**Janela de notícias**:
+Os últimos 30 dias. A Ingestão só mostra Atas com `data_referencia` dentro dela, e a busca nas Origens
+lista só o que saiu nela; é regra do produto.
+
+**Notícias guardadas**:
+As (até 3) Atas que a pessoa marcou na Ingestão e confirmou com ATUALIZAR. Valem só na sessão do
+navegador e são a entrada das guias Texto analítico, Carrossel e Vídeo. Na tela, uma Ata é uma "notícia".

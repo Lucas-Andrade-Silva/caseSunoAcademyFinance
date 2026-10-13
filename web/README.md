@@ -1,22 +1,28 @@
 # Suno Content — interface
 
-React + Vite + Tailwind sobre FastAPI (ADR 0005). Painel escuro, em preto e vermelho da Suno,
-com três guias:
+React + Vite + Tailwind sobre FastAPI (ADR 0005), no padrão visual do editor do biosites
+([ADR 0028](../docs/adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)): barra lateral
+arredondada, coluna de ajustes à esquerda e área de prévia à direita. Desenho completo em
+`docs/superpowers/specs/2026-10-12-front-biosites-design.md`.
 
-- **Fontes**: um trilho de cartões por Origem (Copom, Fatos Relevantes da CVM, Releases da B3 "em
-  breve" e documentos importados), a bolinha de seleção, **Importar documento** (PDF ou texto) e
-  **Atualizar fontes** (precisa de rede e falha sem travar a tela).
-- **Curadoria**, em três passos: **Escolher** (Destaque único, Visão unida ou "Montar a minha"),
-  **Configurar** (nome, Demo ou Real, a Matriz 3×3 clicável por Célula, linha ou coluna) e
-  **Gerando** (a Matriz ao vivo; dá para sair da tela, a geração continua no servidor).
-- **Saídas**: lista as execuções com a mini-Matriz, abre a Matriz 3×3, mostra cada Célula com o Laudo
-  e as Âncoras ao lado, monta o Pacote de publicação e deixa aprovar, reprovar, renomear e exportar.
+Seis guias, na ordem da barra:
 
-Fora do Copom a Saída leva o selo **não calibrado**. A Demo só existe para uma Ata com respostas
-prontas (hoje, a do Copom 280); o modo Real precisa de chave e modelo de provedor no `.env`.
+- **Ingestão**: uma linha por origem de notícias (Atas do Copom, Fatos Relevantes da CVM, DFP/ITR e
+  Formulários da CVM, Relatórios de Inflação e de Estabilidade, Resoluções do CMN e do BCB, Ofícios e
+  comunicados da B3, Releases da B3 "em breve", documentos importados) e o botão **Importar documento**. À direita, as notícias da
+  origem escolhida, **só as dos últimos 30 dias**; abrir uma mostra o texto estruturado. A pessoa marca
+  até 3 e **ATUALIZAR** as guarda para gerar conteúdo (a seleção some quando a aba fecha). O ícone de
+  atualizar, ao lado do título, consulta as origens ligadas (precisa de rede): com até 2 notícias novas
+  baixa direto; com mais, mostra a quantidade e deixa escolher o período a baixar (ADR 0029).
+- **Texto analítico**, **Carrossel** e **Vídeo**: abrem num popup que confirma as notícias e pergunta
+  as audiências (Iniciante, Intermediário, Avançado; pode mais de uma). Confirmar pede uma Saída ao
+  servidor com o Formato da guia; a geração continua se a pessoa trocar de guia.
+- **Histórico**: o que foi salvo neste navegador e as Saídas do servidor; abrir leva o conteúdo de volta
+  para a guia dele.
+- **Configurações** (engrenagem): modo Demo ou Real, nome do avatar e limpeza dos dados locais.
 
-O desenho completo está em `docs/superpowers/specs/2026-10-09-front-suno-design.md`, com os
-mockups em `docs/superpowers/specs/mockups-2026-10-09/`.
+A Demo só existe para uma Ata com respostas prontas (`data/respostas_prontas/`); o modo Real precisa de
+chave e modelo de provedor no `.env`. Com mais de uma notícia só o Real gera (Visão unida).
 
 ## Rodar em dev
 
@@ -32,15 +38,24 @@ npm install
 npm run dev
 ```
 
-O `vite.config.ts` faz proxy de `/api` para `http://127.0.0.1:8000`, então a SPA em
-`http://localhost:5173` fala com a API sem configurar CORS à mão.
+O `vite.config.ts` faz proxy de `/api` para `http://127.0.0.1:8000` (ou para `SUNO_API`, se definida),
+então a SPA em `http://localhost:5173` fala com a API sem configurar CORS à mão.
 
-Aprovar e reprovar **gravam** no `execucao.json` da execução. Para testar sem sujar a demo
-versionada, copie a pasta e aponte a API para a cópia:
+### A janela de 30 dias na demo
+
+As Atas versionadas em `data/atas/` têm datas fixas. Quando passam de 30 dias a Ingestão não as mostra.
+Para testar sem rede e sem sujar o que está versionado, copie `data/` para uma pasta de teste, ponha uma
+`data_referencia` recente no `.json` da Ata e suba a API de lá (os caminhos são relativos ao diretório
+atual):
 
 ```bash
-mkdir -p /tmp/suno-execucoes && cp -r data/execucoes/demo-copom-280 /tmp/suno-execucoes/
-SUNO_EXECUCOES=/tmp/suno-execucoes uv run python -m suno.cli servir
+mkdir -p /tmp/suno-teste && cp -r data /tmp/suno-teste/ && cd /tmp/suno-teste
+# edite data/atas/copom-280-2026-08-05.json: "data_referencia": "<uma data de até 30 dias atrás>"
+uv run --project <raiz-do-repositorio> python -m suno.cli servir --porta 8001
+```
+
+```bash
+cd web && SUNO_API=http://127.0.0.1:8001 npm run dev
 ```
 
 ## Construir para o FastAPI servir
@@ -53,8 +68,19 @@ npm run build
 
 Isso roda `tsc --noEmit` e depois `vite build`, gerando `web/dist/`. O `criar_app` do
 `src/suno/api/app.py` serve essa pasta como estático em `/`, com fallback para `index.html` em
-qualquer rota que não seja da API (atualizar a página em `/saidas/abc` funciona), quando
+qualquer rota que não seja da API (atualizar a página em `/carrossel` funciona), quando
 `web/dist/index.html` existe.
+
+## Estrutura (`src/`)
+
+| Pasta | O que tem |
+|---|---|
+| `nucleo/` | Estado e regras sem visual: cache e pré-carga (`dados.ts`, `precarga.ts`), janela de 30 dias, seleção, configurações, pedido ao servidor, sessões de geração, histórico, Laudo em barras. |
+| `interface/` | O sistema visual: barra lateral, linha, botão, pílulas, divisão em duas áreas, janela dividida, barras, carregamento, estados vazios, ícones. |
+| `guias/` | Uma pasta por guia. As de conteúdo têm também `PreviaSalva.tsx`, a prévia que o Histórico usa. |
+| `lib/` | `ata.ts` (estrutura o texto de uma Ata) e `fontes.ts` (selos e nomes padrão). |
+| `dados/cliente.ts` | Todo acesso à API; nenhum outro arquivo chama `fetch`. |
+| `texto/rotulos.ts` | Valores do domínio em palavras de tela. |
 
 ## Testes
 
@@ -63,9 +89,8 @@ cd web
 npm test
 ```
 
-Vitest, só para a lógica pura em `src/lib/` (estado e cor de cada posição da Matriz, seleção por
-Célula, linha e coluna, progresso da geração, seleção de Atas, motivo de não haver Pacote). Os
-componentes são conferidos por `tsc` e olhando o app rodando.
+Vitest, só para lógica pura (janela de 30 dias, pedido ao servidor, Laudo em barras, estrutura de Ata e o
+que cada guia tiver de lógica). Os componentes são conferidos por `tsc` e olhando o app rodando.
 
 ## Cliente da API
 
@@ -77,5 +102,4 @@ uv run python -c "import json, pathlib; from suno.api.openapi import gerar_schem
 cd web && npx openapi-typescript openapi.json -o src/api/schema.d.ts
 ```
 
-`tests/test_contrato_openapi.py` falha quando `web/openapi.json` diverge da API. Todo acesso à
-API na SPA passa por `web/src/dados/cliente.ts`; nenhum outro arquivo chama `fetch`.
+`tests/test_contrato_openapi.py` falha quando `web/openapi.json` diverge da API.

@@ -338,26 +338,32 @@ reprovação por tipo no relatório final.
 
 React + Vite + Tailwind sobre FastAPI, com cliente TypeScript gerado do OpenAPI
 ([ADR 0005](adr/0005-interface-em-react-vite-sobre-fastapi.md)), lendo do disco — o mesmo arquivo
-que o pytest lê e que o relatório cita. Três coisas que ela mostra e que a concorrência não mostra:
+que o pytest lê e que o relatório cita. Desde o [ADR 0028](adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)
+ela é uma ferramenta de produção de conteúdo, no padrão visual do editor do biosites, em seis guias:
 
-- **Âncoras destacadas** ao lado da Célula: quais Âncoras aquela Célula usou e o trecho da Ata de
-  cada uma. Expõe o que o Avaliador já calcula.
-- **Reprovação como view de primeira classe**: reprovado, e por quê, com o Limiar e a distância
-  medida. É a prova viva de que a linha que não se cruza funciona.
-- **Veredito em linguagem com o número ao lado** — "Alta aderência factual · 0,94". O rótulo é o
-  que se lê; o número é o que o case cobra. Destaque visual reservado à ausência de Recomendação.
+- **Ingestão**: as notícias (Atas) de cada origem, só as dos últimos 30 dias; a pessoa marca até 3 e
+  confirma com ATUALIZAR. Importar documento e buscar notícias novas ficam aqui. A busca consulta
+  Copom, CVM, BCB (relatórios e resoluções) e B3 e, com mais de 2 documentos novos, pede o período a
+  baixar ([ADR 0029](adr/0029-origens-de-noticias-e-busca-em-duas-etapas.md)).
+- **Texto analítico**, **Carrossel** e **Vídeo**: cada uma confirma as notícias, pergunta as
+  audiências e pede ao servidor uma Saída com o seu Formato. O texto ganha quatro formatos de
+  apresentação (e-mail, newsletter, site, artigo) e um editor; o carrossel, a escolha de composição,
+  paleta e ícones, a prévia num celular de feed e a exportação em PNG; o vídeo, os estilos de
+  narração e o prompt para a ferramenta de avatar. Em todas o Laudo aparece em barras horizontais
+  com os Limiares marcados.
+- **Histórico** e **Configurações** (modo Demo ou Real).
 
-Três guias: **Fontes** (de onde vêm as Atas), **Curadoria** (escolher o que entra, configurar e
-gerar) e **Saídas** (revisar). A geração roda em segundo plano na API, um job por vez
+A geração roda em segundo plano na API, um job por vez
 ([ADR 0017](adr/0017-api-dispara-a-geracao-em-segundo-plano.md)); fora do Copom a Saída é "não
 calibrada" ([ADR 0018](adr/0018-origens-e-categoria-da-ata.md)); a Visão unida junta de duas a
 cinco Atas com as Âncoras prefixadas por parte
-([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)).
+([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)) e, na tela, é o que acontece
+quando a pessoa guarda mais de uma notícia.
 
-As filas humanas viraram estados da Célula, resolvidos por uma Decisão humana (aprovar ou
-reprovar, com motivo): o desempate do Comitê (H3) e a revisão (H4) aparecem como chip na Célula, e
-a aprovação do Pacote (H5) fica no painel do Pacote. A Célula cujo Laudo detectou Recomendação não
-pode ser aprovada.
+O que o servidor já faz e a tela deixou de mostrar nesta versão: a Decisão humana (aprovar ou
+reprovar Célula, com a regra de que a Célula com Recomendação não pode ser aprovada), o Pacote de
+publicação, as Âncoras ao lado do conteúdo e o detalhe do Laudo por métrica. As rotas e os testes
+continuam; o Compliance segue sendo métrica do Laudo, não da tela.
 
 ## Parâmetros ainda não fixados
 

@@ -1,0 +1,489 @@
+/* O quadro do carrossel em 1080 x 1350 px, desenhado como os templates do servidor
+   (src/suno/pacote/templates/*.html e base.css): formas orgânicas atrás, título dominante em
+   Anton, painel de texto em Poppins, número do quadro, marca e pontos de paginação. As cores vêm
+   de quatro variáveis, que a paleta escolhida define. O tamanho é fixo de propósito: a prévia
+   escala o quadro com `transform` e a exportação o desenha como está. */
+
+.qd {
+  --qd-fundo: #140809;
+  --qd-texto: #ffffff;
+  --qd-destaque: #ff1a1a;
+  --qd-apoio: #af0404;
+  --qd-sobre-destaque: #ffffff;
+  position: relative;
+  flex: none;
+  width: 1080px;
+  height: 1350px;
+  overflow: hidden;
+  background: var(--qd-fundo);
+  color: var(--qd-texto);
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+}
+
+.qd *,
+.qd *::before,
+.qd *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- a arte de fundo: só decoração, sem texto ---- */
+.qd .arte {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.qd .arte > * {
+  position: absolute;
+}
+.qd .forma {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--qd-destaque) 82%, white) 0%,
+    var(--qd-destaque) 38%,
+    var(--qd-apoio) 100%
+  );
+}
+.qd .forma.escura {
+  background: linear-gradient(160deg, var(--qd-apoio) 0%, color-mix(in srgb, var(--qd-apoio) 50%, black) 100%);
+}
+.qd .brilho {
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+.qd .anel {
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 10%, transparent);
+}
+.qd .anel.fraco {
+  border-color: color-mix(in srgb, var(--qd-texto) 6%, transparent);
+}
+.qd .anel.forte {
+  border-color: color-mix(in srgb, var(--qd-texto) 18%, transparent);
+}
+.qd .linhas {
+  left: 0;
+  bottom: 0;
+  width: 1080px;
+  height: 520px;
+  opacity: 0.55;
+}
+
+/* ---- o topo e o rodapé ---- */
+.qd .topo {
+  position: absolute;
+  top: 64px;
+  left: 84px;
+  right: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 3;
+}
+.qd .marca {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+}
+.qd .marca b {
+  color: var(--qd-destaque);
+  font-weight: 400;
+}
+.qd .selo {
+  padding: 10px 26px;
+  border-radius: 40px;
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 55%, transparent);
+  font-size: 26px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--qd-fundo) 55%, transparent);
+}
+.qd .numero {
+  position: absolute;
+  bottom: 70px;
+  right: 84px;
+  font-size: 26px;
+  font-weight: 600;
+  z-index: 3;
+  color: color-mix(in srgb, var(--qd-texto) 80%, transparent);
+}
+.qd .pontos {
+  position: absolute;
+  bottom: 82px;
+  left: 84px;
+  display: flex;
+  gap: 12px;
+  z-index: 3;
+}
+.qd .pontos i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--qd-texto) 35%, transparent);
+}
+.qd .pontos i.ativo {
+  width: 48px;
+  background: var(--qd-destaque);
+}
+
+/* os ícones pedidos: uma fileira entre os pontos e o número, no rodapé */
+.qd .icones {
+  position: absolute;
+  left: 340px;
+  right: 170px;
+  bottom: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  z-index: 3;
+}
+.qd .icones span {
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  color: var(--qd-destaque);
+  background: color-mix(in srgb, var(--qd-fundo) 78%, transparent);
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 22%, transparent);
+}
+
+/* ---- o texto ---- */
+.qd .titulo {
+  position: absolute;
+  left: 84px;
+  width: 912px;
+  font-weight: 700;
+  line-height: 1.12;
+  overflow: hidden;
+  z-index: 2;
+  text-shadow: 0 6px 30px color-mix(in srgb, var(--qd-fundo) 35%, transparent);
+}
+.qd .corpo {
+  position: absolute;
+  left: 84px;
+  width: 912px;
+  font-size: 38px;
+  line-height: 1.45;
+  overflow: hidden;
+  z-index: 2;
+}
+.qd .realce {
+  background: var(--qd-destaque);
+  color: var(--qd-sobre-destaque);
+  padding: 0 14px;
+  border-radius: 10px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  text-shadow: none;
+}
+.qd .painel {
+  position: absolute;
+  left: 84px;
+  width: 912px;
+  z-index: 2;
+  border-radius: 32px;
+  background: color-mix(in srgb, var(--qd-fundo) 82%, transparent);
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 12%, transparent);
+  padding: 40px 44px;
+}
+.qd .painel .corpo {
+  position: static;
+  width: auto;
+}
+.qd .painel.acento {
+  border-left: 12px solid var(--qd-destaque);
+}
+
+/* ---- o gráfico do quadro de ponto ---- */
+.qd .grafico {
+  position: absolute;
+  left: 84px;
+  top: 790px;
+  width: 912px;
+  height: 400px;
+  z-index: 2;
+  background: color-mix(in srgb, var(--qd-fundo) 82%, transparent);
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 12%, transparent);
+  border-radius: 32px;
+}
+.qd .barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 120px;
+  height: 100%;
+  padding: 24px 0 18px;
+}
+.qd .barra {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.qd .barra .valor {
+  white-space: nowrap;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.qd .barra .bloco {
+  width: 100%;
+  border-radius: 14px 14px 0 0;
+}
+.qd .barra .rotulo {
+  font-size: 26px;
+  margin-top: 14px;
+}
+.qd .numero-grande {
+  text-align: center;
+  padding-top: 70px;
+}
+.qd .numero-grande .valor {
+  font-family: "Anton", sans-serif;
+  font-size: 150px;
+  font-weight: 400;
+  color: var(--qd-destaque);
+  white-space: nowrap;
+}
+.qd .numero-grande .rotulo {
+  font-size: 30px;
+  margin-top: 24px;
+}
+
+/* ---- editorial ---- */
+.qd.editorial .titulo {
+  top: 230px;
+  width: 570px;
+  height: 600px;
+  font-family: "Anton", sans-serif;
+  font-size: 108px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.qd.editorial .painel {
+  left: 620px;
+  top: 520px;
+  width: 376px;
+  height: 500px;
+  padding: 36px;
+}
+.qd.editorial .painel .corpo {
+  height: 424px;
+  font-size: 34px;
+}
+.qd.editorial .regua {
+  position: absolute;
+  left: 620px;
+  top: 450px;
+  width: 150px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--qd-destaque);
+  z-index: 2;
+}
+
+/* ---- minimalista ---- */
+.qd.minimalista .titulo {
+  top: 300px;
+  height: 430px;
+  font-family: "Anton", sans-serif;
+  font-size: 118px;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-align: center;
+}
+.qd.minimalista .corpo {
+  top: 790px;
+  left: 190px;
+  width: 700px;
+  height: 230px;
+  font-size: 36px;
+  text-align: center;
+}
+.qd.minimalista .regua {
+  position: absolute;
+  left: 440px;
+  top: 735px;
+  width: 200px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--qd-destaque);
+  z-index: 2;
+}
+
+/* ---- infográfico ---- */
+.qd.infografico .titulo {
+  top: 180px;
+  height: 220px;
+  font-size: 72px;
+}
+.qd.infografico .painel {
+  top: 430px;
+  width: 360px;
+  height: 610px;
+  padding: 38px;
+}
+.qd.infografico .painel .corpo {
+  height: 530px;
+  font-size: 34px;
+}
+.qd.infografico .grafico {
+  left: 480px;
+  top: 430px;
+  width: 516px;
+  height: 610px;
+}
+.qd.infografico .barras {
+  gap: 30px;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.qd.infografico .barra {
+  width: 190px;
+}
+.qd.infografico .barra .valor {
+  font-size: 30px;
+}
+.qd.infografico .numero-grande {
+  padding-top: 130px;
+}
+.qd.infografico .numero-grande .valor {
+  font-size: 132px;
+}
+
+/* ---- comparativo ---- */
+.qd.comparativo .titulo {
+  top: 180px;
+  height: 260px;
+  font-size: 70px;
+}
+.qd.comparativo .coluna {
+  position: absolute;
+  top: 440px;
+  width: 426px;
+  height: 390px;
+  border-radius: 30px;
+  padding: 38px;
+  z-index: 2;
+  background: color-mix(in srgb, var(--qd-fundo) 88%, transparent);
+  border: 2px solid color-mix(in srgb, var(--qd-texto) 14%, transparent);
+}
+.qd.comparativo .coluna.a {
+  left: 84px;
+  border-top: 10px solid color-mix(in srgb, var(--qd-texto) 45%, var(--qd-fundo));
+}
+.qd.comparativo .coluna.b {
+  right: 84px;
+  border-top: 10px solid var(--qd-destaque);
+}
+.qd.comparativo .coluna .rotulo-da-coluna {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  margin-bottom: 24px;
+  color: color-mix(in srgb, var(--qd-texto) 72%, transparent);
+}
+.qd.comparativo .coluna .corpo {
+  position: static;
+  width: auto;
+  height: 275px;
+  font-size: 34px;
+}
+.qd.comparativo .grafico {
+  top: 850px;
+  height: 330px;
+}
+.qd.comparativo .barras {
+  padding-top: 16px;
+}
+.qd.comparativo .barra .bloco {
+  max-height: 170px;
+}
+.qd.comparativo .numero-grande {
+  padding-top: 38px;
+}
+.qd.comparativo .numero-grande .valor {
+  font-size: 116px;
+}
+
+/* ---- estatístico ---- */
+.qd.estatistico .titulo {
+  top: 180px;
+  height: 210px;
+  font-size: 70px;
+  text-align: center;
+}
+.qd.estatistico .grafico {
+  top: 430px;
+  height: 500px;
+  border: none;
+  background: transparent;
+}
+.qd.estatistico .numero-grande {
+  padding-top: 55px;
+}
+.qd.estatistico .numero-grande .valor {
+  font-size: 210px;
+}
+.qd.estatistico .numero-grande .rotulo {
+  font-size: 38px;
+}
+.qd.estatistico .painel {
+  top: 960px;
+  height: 220px;
+  padding: 26px 40px;
+}
+.qd.estatistico .painel .corpo {
+  height: 165px;
+  font-size: 34px;
+  text-align: center;
+}
+
+/* ---- narrativo ---- */
+.qd.narrativo .etapa {
+  position: absolute;
+  left: 70px;
+  top: 150px;
+  z-index: 1;
+  font-family: "Anton", sans-serif;
+  font-size: 410px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--qd-texto) 7%, transparent);
+}
+.qd.narrativo .rotulo-da-etapa {
+  position: absolute;
+  left: 84px;
+  top: 270px;
+  z-index: 2;
+  color: var(--qd-destaque);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+.qd.narrativo .titulo {
+  top: 350px;
+  height: 360px;
+  font-family: "Anton", sans-serif;
+  font-size: 105px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.qd.narrativo .painel {
+  top: 780px;
+  height: 330px;
+}
+.qd.narrativo .painel .corpo {
+  height: 250px;
+  font-size: 38px;
+}
