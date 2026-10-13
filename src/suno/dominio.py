@@ -322,6 +322,39 @@ class ComposicaoCarrossel(StrEnum):
     COMPARATIVO = "comparativo"
     ESTATISTICO = "estatistico"
     NARRATIVO = "narrativo"
+    # Família Explicativo: capa com foto e miolo claro de título vermelho (carrossel2 da Suno).
+    EXPLICATIVO_CAPA = "explicativo_capa"
+    EXPLICATIVO_TEXTO_IMAGEM = "explicativo_texto_imagem"
+    EXPLICATIVO_TEXTO = "explicativo_texto"
+    EXPLICATIVO_TEXTO_ILUSTRACAO = "explicativo_texto_ilustracao"
+    # Família Notícia (carrossel1): capa escura e notícia com foto.
+    NOTICIA_CAPA = "noticia_capa"
+    NOTICIA_FOTO = "noticia_foto"
+    # Família Jornal / Suno Notícias (carrossel3): papel rasgado e serifa.
+    JORNAL_CAPA = "jornal_capa"
+    JORNAL_ITEM_NUMERADO = "jornal_item_numerado"
+    JORNAL_TEXTO = "jornal_texto"
+    # Família Dados (carrossel4): números e palavras em vermelho sobre fundo claro.
+    DADOS_TEXTO_FOTO_EMBAIXO = "dados_texto_foto_embaixo"
+    DADOS_TEXTO_DUPLO_FOTO = "dados_texto_duplo_foto"
+    DADOS_FOTO_NO_MEIO = "dados_foto_no_meio"
+    DADOS_NUMERO_GIGANTE = "dados_numero_gigante"
+    DADOS_TEXTO_GRANDE = "dados_texto_grande"
+    DADOS_CTA = "dados_cta"
+    # Família Asset (carrossel5): só por escolha explícita (marca Suno Asset).
+    ASSET_CAPA = "asset_capa"
+    ASSET_AVISO = "asset_aviso"
+
+
+class FamiliaVisual(StrEnum):
+    """Conjunto coerente de layouts, como os de uma conta da Suno. Um carrossel usa uma só."""
+
+    SUNO_ESCURO = "suno_escuro"
+    NOTICIA = "noticia"
+    EXPLICATIVO = "explicativo"
+    JORNAL = "jornal"
+    DADOS = "dados"
+    ASSET = "asset"
 
 
 class IntensidadeVisual(StrEnum):
@@ -381,6 +414,9 @@ class EscolhaDeLayout(BaseModel):
 class DirecaoDeArteCarrossel(BaseModel):
     """Plano efetivamente renderizado, com diversidade mensurável e auditável."""
 
+    familia: FamiliaVisual | None = Field(
+        default=None, description="A família visual do carrossel; ausente nos pacotes antigos."
+    )
     escolhas: list[EscolhaDeLayout] = Field(default_factory=list)
     distribuicao: dict[str, int] = Field(default_factory=dict)
     historico_considerado: list[ComposicaoCarrossel] = Field(default_factory=list)
@@ -406,6 +442,13 @@ class Slide(BaseModel):
     dado: str | None = Field(
         default=None,
         description="Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009).",
+    )
+    imagem: str | None = Field(
+        default=None,
+        description=(
+            "Assunto da foto do slide, em poucas palavras de busca (ex.: 'sede do Banco Central'). "
+            "Não aparece no post: só orienta a busca de uma foto licenciada."
+        ),
     )
 
 
@@ -1287,6 +1330,18 @@ class ImagemSlide(BaseModel):
     altura: int
 
 
+class FotoDoPacote(BaseModel):
+    """Uma foto real usada num slide, com a licença e o crédito que a acompanham."""
+
+    indice: int = Field(ge=0, description="Posição do slide, começando em zero.")
+    arquivo: str = Field(description="Nome do arquivo na biblioteca de imagens.")
+    assunto: str
+    autor: str
+    licenca: str
+    url_origem: str
+    credito: str
+
+
 class FeedbackVisualHumano(BaseModel):
     """A decisão H5: sinal de uso real, separado do parecer automático do Eval."""
 
@@ -1305,6 +1360,9 @@ class PacotePublicacao(BaseModel):
     legenda: str
     hashtags: list[str] = Field(default_factory=list)
     imagens: list[ImagemSlide] = Field(default_factory=list)
+    fotos: list[FotoDoPacote] = Field(
+        default_factory=list, description="As fotos reais dos slides e seus créditos."
+    )
     folha_de_contato: CaminhoPortavel | None = None
     video: CaminhoPortavel | None = None
     conferencia: ConferenciaVisual = Field(default_factory=ConferenciaVisual)

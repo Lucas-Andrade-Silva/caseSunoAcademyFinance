@@ -15,6 +15,7 @@ from suno.pacote.direcao_de_arte import (
     planejar_direcao_de_arte,
     resumir_direcao_renderizada,
 )
+from suno.pacote.familias import COMPOSICOES_LEGADAS
 from suno.pacote.visual import conferir_imagens
 from suno.pacote.referencias_visuais import REFERENCIAS_INICIAIS
 from tests.test_pacote import ancoras  # noqa: F401 - fixture
@@ -66,7 +67,7 @@ def _slides_representativos() -> list[Slide]:
     ]
 
 
-def test_catalogo_tem_as_seis_composicoes_e_templates() -> None:
+def test_catalogo_cobre_todas_as_composicoes_e_cada_uma_tem_template() -> None:
     assert set(CATALOGO_DE_LAYOUTS) == set(ComposicaoCarrossel)
     for layout in CATALOGO_DE_LAYOUTS.values():
         assert (carrossel_html.PASTA_DOS_TEMPLATES / layout.arquivo).is_file()
@@ -79,7 +80,7 @@ def test_plano_considera_conteudo_e_usa_as_seis_composicoes() -> None:
     assert composicoes[0] is ComposicaoCarrossel.EDITORIAL
     assert composicoes[1] is ComposicaoCarrossel.ESTATISTICO
     assert composicoes[2] is ComposicaoCarrossel.COMPARATIVO
-    assert set(composicoes) == set(ComposicaoCarrossel)
+    assert set(composicoes) == COMPOSICOES_LEGADAS
     assert all(atual is not anterior for anterior, atual in zip(composicoes, composicoes[1:]))
 
 
@@ -157,7 +158,7 @@ def test_as_seis_composicoes_renderizam_sem_defeito(tmp_path: Path, ancoras) -> 
     ]
 
     assert {item["layout"] for item in manifestos} == {
-        composicao.value for composicao in ComposicaoCarrossel
+        composicao.value for composicao in COMPOSICOES_LEGADAS
     }
     assert all(item["direcao_de_arte"]["motivos"] for item in manifestos)
     assert all(item["direcao_de_arte"]["referencia_visual"] for item in manifestos)
