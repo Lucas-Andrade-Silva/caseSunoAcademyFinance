@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
@@ -19,10 +19,12 @@ from suno.dominio import (
     ComposicaoCarrossel,
     DirecaoDeArteCarrossel,
     EscolhaDeLayout,
+    FamiliaVisual,
     ReferenciaVisual,
     Slide,
     TipoSlide,
 )
+from suno.pacote import familias
 
 
 @dataclass(frozen=True)
@@ -32,6 +34,10 @@ class LayoutCarrossel:
     descricao: str
     tipos_compativeis: frozenset[TipoSlide]
     exige_dado: bool = False
+    familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO
+    usa_imagem: bool = False
+    orientado_a_dados: bool = False
+    pontos_por_papel: dict[TipoSlide, int] = field(default_factory=dict, compare=False)
 
 
 TODOS_OS_TIPOS = frozenset(TipoSlide)
@@ -57,12 +63,14 @@ CATALOGO_DE_LAYOUTS: dict[ComposicaoCarrossel, LayoutCarrossel] = {
         descricao="Texto e visualização da Âncora numérica no mesmo campo visual.",
         tipos_compativeis=TIPOS_DE_CORPO,
         exige_dado=True,
+        orientado_a_dados=True,
     ),
     ComposicaoCarrossel.COMPARATIVO: LayoutCarrossel(
         composicao=ComposicaoCarrossel.COMPARATIVO,
         arquivo="comparativo.html",
         descricao="Duas áreas contrastantes para relações de antes/depois ou oposição.",
         tipos_compativeis=TIPOS_DE_CORPO,
+        orientado_a_dados=True,
     ),
     ComposicaoCarrossel.ESTATISTICO: LayoutCarrossel(
         composicao=ComposicaoCarrossel.ESTATISTICO,
@@ -70,6 +78,7 @@ CATALOGO_DE_LAYOUTS: dict[ComposicaoCarrossel, LayoutCarrossel] = {
         descricao="Uma Âncora numérica recebe a maior hierarquia do slide.",
         tipos_compativeis=TIPOS_ESTATISTICOS,
         exige_dado=True,
+        orientado_a_dados=True,
     ),
     ComposicaoCarrossel.NARRATIVO: LayoutCarrossel(
         composicao=ComposicaoCarrossel.NARRATIVO,
@@ -78,6 +87,24 @@ CATALOGO_DE_LAYOUTS: dict[ComposicaoCarrossel, LayoutCarrossel] = {
         tipos_compativeis=TODOS_OS_TIPOS,
     ),
 }
+
+def _layout_da_familia(layout: familias.LayoutDeFamilia) -> LayoutCarrossel:
+    return LayoutCarrossel(
+        composicao=layout.composicao,
+        arquivo=layout.arquivo,
+        descricao=layout.descricao,
+        tipos_compativeis=layout.papeis,
+        exige_dado=layout.exige_dado,
+        familia=layout.familia,
+        usa_imagem=layout.usa_imagem,
+        orientado_a_dados=layout.orientado_a_dados,
+        pontos_por_papel=dict(layout.pontos_por_papel),
+    )
+
+
+CATALOGO_DE_LAYOUTS.update(
+    {composicao: _layout_da_familia(layout) for composicao, layout in familias.carregar_layouts().items()}
+)
 
 _TERMOS_DE_COMPARACAO = (
     "antes",
@@ -101,37 +128,81 @@ def _parece_comparacao(slide: Slide) -> bool:
     return any(termo in texto for termo in _TERMOS_DE_COMPARACAO)
 
 
+FAMILIAS_AUTOMATICAS: tuple[FamiliaVisual, ...] = (
+    FamiliaVisual.NOTICIA,
+    FamiliaVisual.EXPLICATIVO,
+    FamiliaVisual.JORNAL,
+    FamiliaVisual.DADOS,
+)
+"""As famílias que a escolha automática pode usar. ``asset`` fica de fora de propósito: carrega a
+marca e o aviso legal da Suno Asset (fundos) e só entra quando alguém a pede."""
+
+
+def escolher_familia(
+    slides: Iterable[Slide],
+    historico_recente: Iterable[ComposicaoCarrossel | str] = (),
+    referencia_preferida: ReferenciaVisual | None = None,
+) -> FamiliaVisual:
+    """A família do carrossel inteiro: um carrossel usa uma só, como os posts reais da Suno.
+
+    A referência escolhida na curadoria manda. Sem ela, vence a família menos usada no histórico
+    recente que consegue cobrir todos os slides; o empate sai de um hash do conteúdo, então a
+    mesma entrada repete a mesma escolha. Sem nenhuma elegível, volta ao layout escuro antigo.
+    """
+    if referencia_preferida is not None:
+        return familias.familia_da_composicao(referencia_preferida.composicao)
+    lista = list(slides)
+    elegiveis = [
+        familia
+        for familia in FAMILIAS_AUTOMATICAS
+        if lista and all(_candidatos(slide, familia) for slide in lista)
+    ]
+    if not elegiveis:
+        return FamiliaVisual.SUNO_ESCURO
+    recentes = [
+        familias.familia_da_composicao(ComposicaoCarrossel(item))
+        for item in list(historico_recente)[-12:]
+    ]
+    usos = Counter(recentes)
+    material = "|".join(f"{slide.titulo}|{slide.corpo}" for slide in lista).encode()
+    desempate = int.from_bytes(hashlib.blake2s(material, digest_size=2).digest(), "big")
+    return min(
+        elegiveis,
+        key=lambda familia: (
+            usos[familia],
+            (FAMILIAS_AUTOMATICAS.index(familia) - desempate) % len(FAMILIAS_AUTOMATICAS),
+        ),
+    )
+
+
 def _desempate(slide: Slide, composicao: ComposicaoCarrossel, indice: int) -> int:
     """Varia empates pelo conteúdo, mas repete a mesma decisão para a mesma entrada."""
     material = f"{indice}|{slide.titulo}|{slide.corpo}|{composicao.value}".encode()
     return int.from_bytes(hashlib.blake2s(material, digest_size=2).digest(), "big")
 
 
-def _candidatos(slide: Slide) -> list[LayoutCarrossel]:
+def _candidatos(
+    slide: Slide, familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO
+) -> list[LayoutCarrossel]:
     candidatos = [
         layout
         for layout in CATALOGO_DE_LAYOUTS.values()
-        if slide.tipo in layout.tipos_compativeis and (not layout.exige_dado or slide.dado)
+        if layout.familia is familia
+        and slide.tipo in layout.tipos_compativeis
+        and (not layout.exige_dado or slide.dado)
     ]
     if slide.dado:
-        orientados_a_dados = [
-            layout
-            for layout in candidatos
-            if layout.composicao
-            in {
-                ComposicaoCarrossel.INFOGRAFICO,
-                ComposicaoCarrossel.COMPARATIVO,
-                ComposicaoCarrossel.ESTATISTICO,
-            }
-        ]
+        orientados_a_dados = [layout for layout in candidatos if layout.orientado_a_dados]
         if orientados_a_dados:
             return orientados_a_dados
     return candidatos
 
 
-def composicoes_compativeis(slide: Slide) -> frozenset[ComposicaoCarrossel]:
+def composicoes_compativeis(
+    slide: Slide, familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO
+) -> frozenset[ComposicaoCarrossel]:
     """Catálogo permitido para um slide; compartilhado com a validação do Diretor IA."""
-    return frozenset(layout.composicao for layout in _candidatos(slide))
+    return frozenset(layout.composicao for layout in _candidatos(slide, familia))
 
 
 def _pontuar(
@@ -144,6 +215,19 @@ def _pontuar(
     motivos: list[str] = []
     palavras = _quantidade_de_palavras(slide)
     comparacao = _parece_comparacao(slide)
+    layout = CATALOGO_DE_LAYOUTS[composicao]
+
+    bonus_do_papel = layout.pontos_por_papel.get(slide.tipo, 0)
+    if bonus_do_papel:
+        pontos += bonus_do_papel
+        motivos.append("papel do slide neste layout")
+    if layout.usa_imagem:
+        if slide.imagem:
+            pontos += 5
+            motivos.append("há foto para este slide")
+        else:
+            pontos -= 7
+            motivos.append("layout de foto sem foto disponível")
 
     if slide.tipo is TipoSlide.HOOK:
         bonus = {
@@ -223,11 +307,15 @@ def planejar_direcao_de_arte(
     historico_recente: Iterable[ComposicaoCarrossel | str] = (),
     referencias_aprovadas: Iterable[ReferenciaVisual] = (),
     referencia_preferida: ReferenciaVisual | None = None,
+    familia: FamiliaVisual = FamiliaVisual.SUNO_ESCURO,
 ) -> list[EscolhaDeLayout]:
     """Escolhe uma composição por slide sem aleatoriedade ou chamada externa.
 
     ``historico_recente`` permite que o chamador penalize layouts vistos em outros
-    carrosséis. Os usos do próprio carrossel são sempre considerados.
+    carrosséis. Os usos do próprio carrossel são sempre considerados. ``familia`` restringe o
+    catálogo aos layouts de uma família: um carrossel usa uma só, como os posts reais da Suno.
+    O ``Slide.imagem`` deve vir preenchido só quando a foto foi de fato resolvida: o plano
+    evita layout de foto quando não há foto.
     """
     lista = list(slides)
     recentes = [ComposicaoCarrossel(item) for item in historico_recente][-12:]
@@ -242,7 +330,7 @@ def planejar_direcao_de_arte(
     escolhas: list[EscolhaDeLayout] = []
 
     for indice, slide in enumerate(lista):
-        candidatos = _candidatos(slide)
+        candidatos = _candidatos(slide, familia)
         if escolhas and len(candidatos) > 1:
             anterior = escolhas[-1].composicao
             candidatos_sem_repetir = [
@@ -298,6 +386,7 @@ def resumir_direcao_renderizada(
     origem_do_plano: str = "deterministico",
     provedor: str | None = None,
     motivo_fallback: str | None = None,
+    familia: FamiliaVisual | None = None,
 ) -> DirecaoDeArteCarrossel | None:
     """Reconstrói o plano a partir dos manifestos que comprovam o que foi renderizado."""
     escolhas: list[EscolhaDeLayout] = []
@@ -327,6 +416,7 @@ def resumir_direcao_renderizada(
         for anterior, atual in zip(escolhas, escolhas[1:])
     )
     return DirecaoDeArteCarrossel(
+        familia=familia,
         escolhas=escolhas,
         distribuicao=dict(sorted(distribuicao.items())),
         historico_considerado=[

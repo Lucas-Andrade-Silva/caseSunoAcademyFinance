@@ -1,4 +1,4 @@
-"""As seis referências internas alimentam a direção de arte sem depender de rede."""
+"""As referências internas (uma por layout) alimentam a direção de arte sem depender de rede."""
 
 from __future__ import annotations
 
@@ -8,7 +8,8 @@ from pathlib import Path
 
 from PIL import Image
 
-from suno.dominio import ComposicaoCarrossel, Slide, TipoSlide
+from suno.dominio import ComposicaoCarrossel, FamiliaVisual, Slide, TipoSlide
+from suno.pacote import familias
 from suno.pacote.analise_visual import normalizar_imagem
 from suno.pacote.direcao_de_arte import planejar_direcao_de_arte
 from suno.pacote.referencias_visuais import (
@@ -22,7 +23,7 @@ def test_biblioteca_nasce_com_uma_referencia_financeira_por_composicao(tmp_path:
 
     referencias = repositorio.listar(apenas_aprovadas=True)
 
-    assert len(referencias) == 6
+    assert len(referencias) == len(ComposicaoCarrossel)
     assert {referencia.composicao for referencia in referencias} == set(ComposicaoCarrossel)
     assert all(referencia.tema and referencia.instrucao_de_design for referencia in referencias)
     assert all(referencia.analise.estrutura_do_conteudo for referencia in referencias)
@@ -41,7 +42,7 @@ def test_semeadura_e_idempotente_e_preserva_curadoria_local(tmp_path: Path) -> N
 
     referencias = repositorio.listar()
 
-    assert len(referencias) == 6
+    assert len(referencias) == len(REFERENCIAS_INICIAIS)
     alterada = next(
         item for item in referencias if item.identificador == REFERENCIAS_INICIAIS[0].identificador
     )
@@ -77,10 +78,10 @@ def test_importacao_manual_nasce_reprovada_e_pode_ser_aprovada(tmp_path: Path) -
     )
 
     assert importada.aprovada is False
-    assert len(repositorio.listar(apenas_aprovadas=True)) == 6
+    assert len(repositorio.listar(apenas_aprovadas=True)) == len(REFERENCIAS_INICIAIS)
     aprovada = repositorio.definir_aprovacao(importada.identificador, True)
     assert aprovada.aprovada is True
-    assert len(repositorio.listar(apenas_aprovadas=True)) == 7
+    assert len(repositorio.listar(apenas_aprovadas=True)) == len(REFERENCIAS_INICIAIS) + 1
 
 
 def test_migracao_expansiva_preserva_banco_da_fase_anterior(tmp_path: Path) -> None:
@@ -100,8 +101,12 @@ def test_migracao_expansiva_preserva_banco_da_fase_anterior(tmp_path: Path) -> N
 
     referencias = repositorio.listar()
 
-    assert len(referencias) == 6
-    assert all(not item.imagem_disponivel for item in referencias)
+    assert len(referencias) == len(REFERENCIAS_INICIAIS)
+    # Nenhuma imagem foi enviada: só as referências das famílias têm miniatura, a do próprio layout.
+    assert all(
+        item.imagem_disponivel == (familias.familia_da_composicao(item.composicao) is not FamiliaVisual.SUNO_ESCURO)
+        for item in referencias
+    )
     assert all(item.estado_analise.value == "nao_solicitada" for item in referencias)
 
 
@@ -114,3 +119,23 @@ def test_normalizacao_remove_formato_original_e_limita_dimensao(tmp_path: Path) 
     with Image.open(destino) as imagem:
         assert imagem.format == "PNG"
         assert max(imagem.size) == 1600
+
+
+# ---------------------------------------------------------------------------
+# Miniaturas dos layouts das famílias visuais
+# ---------------------------------------------------------------------------
+
+
+def test_referencia_de_familia_traz_a_miniatura_do_layout_e_a_antiga_nao(tmp_path: Path) -> None:
+    from suno.pacote import familias
+
+    repositorio = RepositorioReferenciasVisuais(tmp_path / "suno.sqlite3")
+    referencias = {r.composicao: r for r in repositorio.listar()}
+
+    for composicao in familias.carregar_layouts():
+        referencia = referencias[composicao]
+        assert referencia.imagem_disponivel, f"{composicao.value} sem miniatura"
+        caminho = repositorio.caminho_da_imagem(referencia.identificador)
+        with Image.open(caminho) as aberta:
+            assert aberta.size[0] * 5 == aberta.size[1] * 4, "miniatura em 4:5"
+    assert not referencias[ComposicaoCarrossel.EDITORIAL].imagem_disponivel

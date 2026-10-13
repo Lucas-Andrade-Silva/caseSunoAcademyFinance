@@ -7,11 +7,12 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from suno.api.app import criar_app
-from suno.dominio import PapelLLM
+from suno.dominio import ComposicaoCarrossel, PapelLLM
+from suno.pacote.referencias_visuais import REFERENCIAS_INICIAIS
 from suno.provedores.falso import ProvedorFalso
 
 
-def test_api_lista_as_seis_referencias_iniciais(tmp_path: Path) -> None:
+def test_api_lista_as_referencias_iniciais(tmp_path: Path) -> None:
     pasta_execucoes = tmp_path / "execucoes"
     cliente = TestClient(
         criar_app(
@@ -26,14 +27,9 @@ def test_api_lista_as_seis_referencias_iniciais(tmp_path: Path) -> None:
 
     assert resposta.status_code == 200
     referencias = resposta.json()
-    assert len(referencias) == 6
+    assert len(referencias) == len(REFERENCIAS_INICIAIS)
     assert {item["composicao"] for item in referencias} == {
-        "editorial",
-        "minimalista",
-        "infografico",
-        "comparativo",
-        "estatistico",
-        "narrativo",
+        composicao.value for composicao in ComposicaoCarrossel
     }
     assert all(item["aprovada"] for item in referencias)
     assert (pasta_execucoes / "suno.sqlite3").is_file()

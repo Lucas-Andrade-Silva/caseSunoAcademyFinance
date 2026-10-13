@@ -1,0 +1,328 @@
+{
+  "familia": "dados",
+  "nome": "Dados",
+  "descricao": "Carrossel de dados da conta @suno: fundo claro em degradê, texto leve em cinza com trechos em vermelho, fotos de cantos arredondados, número gigante e encerramento com pílula verde.",
+  "referencia": "templates/suno/carrossel4",
+  "layouts": {
+    "dados_texto_grande": {
+      "arquivo": "familias/dados/texto_grande.html",
+      "descricao": "Título enorme de várias linhas em cinza com trecho em vermelho e um parágrafo embaixo; abertura ou ponto só de texto.",
+      "papeis": [
+        "hook",
+        "ponto"
+      ],
+      "usa_imagem": false,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "hook": 9,
+        "ponto": 3
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo_realcado",
+          "max_caracteres": 70
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 170
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 120
+        }
+      },
+      "referencia": {
+        "titulo": "Título gigante em cinza com trecho vermelho",
+        "tema": "dados e números de um assunto de mercado",
+        "descricao": "Fundo claro em degradê com título enorme de várias linhas em cinza que escurece, um trecho em vermelho e um parágrafo menor embaixo.",
+        "instrucao_de_design": "Fundo cinza claríssimo em degradê; título em Poppins leve de 90 px com entrelinha rente, cinza em gradiente com o trecho principal em vermelho escuro; parágrafo menor logo abaixo com a frase de fecho em vermelho. Nenhuma imagem: o texto é o desenho.",
+        "analise": {
+          "posicao_do_titulo": "centro_esquerda",
+          "proeminencia_do_titulo": "muito_alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "titulo_gigante",
+            "trecho_vermelho"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "corpo",
+            "frase_de_fecho"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    },
+    "dados_foto_no_meio": {
+      "arquivo": "familias/dados/foto_no_meio.html",
+      "descricao": "Título grande no alto, foto de cantos arredondados no meio e parágrafo embaixo.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "ponto": 6,
+        "citacao": 4
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo_realcado",
+          "max_caracteres": 63
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 170
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 120
+        }
+      },
+      "referencia": {
+        "titulo": "Título, foto arredondada e parágrafo",
+        "tema": "dados e números de um assunto de mercado",
+        "descricao": "Título grande em cinza com trecho em vermelho, foto horizontal de cantos arredondados no meio e parágrafo curto embaixo.",
+        "instrucao_de_design": "Fundo claro em degradê; título de três linhas em Poppins leve; foto horizontal com cantos de 38 px ocupando o miolo; parágrafo menor embaixo com a frase de fecho em vermelho. Sem foto, o título e o parágrafo se recentralizam.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "muito_alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "foto_arredondada_no_meio",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "foto_arredondada",
+            "trecho_vermelho"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "foto",
+            "corpo"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    },
+    "dados_texto_foto_embaixo": {
+      "arquivo": "familias/dados/texto_foto_embaixo.html",
+      "descricao": "Dois ou três parágrafos curtos em cinza, o último em vermelho, e foto arredondada ancorada embaixo.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "ponto": 5,
+        "citacao": 6
+      },
+      "slots": {
+        "paragrafo_1": {
+          "fonte": "paragrafo_1",
+          "max_caracteres": 150
+        },
+        "paragrafo_2": {
+          "fonte": "paragrafo_2",
+          "obrigatorio": false,
+          "max_caracteres": 150
+        },
+        "paragrafo_3": {
+          "fonte": "paragrafo_3",
+          "obrigatorio": false,
+          "max_caracteres": 150
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        }
+      },
+      "referencia": {
+        "titulo": "Parágrafos e foto arredondada embaixo",
+        "tema": "dados e números de um assunto de mercado",
+        "descricao": "Parágrafos soltos em cinza leve, o último em vermelho, e uma foto horizontal de cantos arredondados colada na base.",
+        "instrucao_de_design": "Fundo claro em degradê; dois ou três parágrafos de texto leve com respiro entre eles, o de fecho em vermelho; foto de 800 px de largura com cantos de 38 px ancorada embaixo. Sem foto, o texto sobe para o centro.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "media",
+          "densidade_textual": "alta",
+          "uso_de_imagem": "foto_arredondada_embaixo",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "foto_arredondada",
+            "paragrafo_vermelho"
+          ],
+          "estrutura_do_conteudo": [
+            "paragrafos",
+            "foto"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    },
+    "dados_texto_duplo_foto": {
+      "arquivo": "familias/dados/texto_duplo_foto.html",
+      "descricao": "Dois parágrafos curtos em cinza, o último em vermelho, e uma foto larga embaixo.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "ponto": 4,
+        "citacao": 5
+      },
+      "slots": {
+        "paragrafo_1": {
+          "fonte": "paragrafo_1",
+          "max_caracteres": 150
+        },
+        "paragrafo_2": {
+          "fonte": "paragrafo_2",
+          "obrigatorio": false,
+          "max_caracteres": 150
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        }
+      },
+      "referencia": {
+        "titulo": "Dois parágrafos e foto larga",
+        "tema": "dados e números de um assunto de mercado",
+        "descricao": "Dois parágrafos de texto leve, o segundo em vermelho, e uma foto larga de cantos arredondados embaixo.",
+        "instrucao_de_design": "Fundo claro em degradê; dois parágrafos com respiro, o de fecho em vermelho, e uma foto larga de 841 px com cantos de 38 px na metade de baixo. Sem foto, os parágrafos se centralizam.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "media",
+          "densidade_textual": "media",
+          "uso_de_imagem": "foto_larga_embaixo",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "foto_arredondada",
+            "paragrafo_vermelho"
+          ],
+          "estrutura_do_conteudo": [
+            "paragrafos",
+            "foto"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    },
+    "dados_numero_gigante": {
+      "arquivo": "familias/dados/numero_gigante.html",
+      "descricao": "Número enorme em vermelho (sempre uma Âncora), complemento em cinza e nota alinhada à direita embaixo.",
+      "papeis": [
+        "ponto"
+      ],
+      "usa_imagem": false,
+      "exige_dado": true,
+      "orientado_a_dados": true,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "ponto": 6
+      },
+      "slots": {
+        "numero": {
+          "fonte": "numero",
+          "max_caracteres": 20
+        },
+        "complemento": {
+          "fonte": "titulo",
+          "max_caracteres": 63
+        },
+        "nota": {
+          "fonte": "corpo",
+          "obrigatorio": false,
+          "max_caracteres": 200
+        }
+      },
+      "referencia": {
+        "titulo": "Número gigante em vermelho",
+        "tema": "dados e números de um assunto de mercado",
+        "descricao": "Número monumental em vermelho vivo no alto, complemento em cinza logo abaixo e uma nota curta alinhada à direita na base.",
+        "instrucao_de_design": "Fundo claro em degradê; o número da Âncora em 128 px, vermelho, leve; abaixo o complemento em cinza de 90 px; nota pequena alinhada à direita na parte de baixo. O número nunca é digitado: vem da Âncora.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "muito_alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "numero_monumental",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "numero_gigante",
+            "nota_a_direita"
+          ],
+          "estrutura_do_conteudo": [
+            "numero",
+            "complemento",
+            "nota"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    },
+    "dados_cta": {
+      "arquivo": "familias/dados/cta.html",
+      "descricao": "Encerramento: logo ( SUNO ), título, pílula verde com a chamada e texto de apoio.",
+      "papeis": [
+        "cta"
+      ],
+      "usa_imagem": false,
+      "fundo": "#F7F7F7",
+      "pontos_por_papel": {
+        "cta": 9
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo_realcado",
+          "max_caracteres": 63
+        },
+        "chamada": {
+          "fonte": "por_papel",
+          "max_caracteres": 24,
+          "por_papel": {
+            "cta": "Leia a Ata completa"
+          }
+        },
+        "apoio": {
+          "fonte": "corpo",
+          "max_caracteres": 120
+        }
+      },
+      "referencia": {
+        "titulo": "Encerramento com pílula verde",
+        "tema": "fecho de carrossel",
+        "descricao": "Logo da Suno no topo, título em cinza com trecho vermelho, pílula verde com a chamada e uma linha de apoio.",
+        "instrucao_de_design": "Fundo claro em degradê; logo ( SUNO ) em cinza com parênteses vermelhos; título de três linhas; pílula verde de cantos arredondados com a chamada em verde escuro; texto de apoio curto embaixo. Sem promessa de ganho.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "claro_em_degrade",
+          "elementos_visuais": [
+            "logo",
+            "pilula_verde"
+          ],
+          "estrutura_do_conteudo": [
+            "logo",
+            "titulo",
+            "pilula",
+            "apoio"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel4)"
+      }
+    }
+  }
+}

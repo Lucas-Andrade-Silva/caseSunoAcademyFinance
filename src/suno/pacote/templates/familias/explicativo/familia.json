@@ -1,0 +1,218 @@
+{
+  "familia": "explicativo",
+  "nome": "Explicativo",
+  "descricao": "Carrossel explicativo da conta @suno: capa com foto e degradê preto; miolo claro com título vermelho, corpo preto e frase de fecho em vermelho.",
+  "referencia": "templates/suno/carrossel2",
+  "layouts": {
+    "explicativo_capa": {
+      "arquivo": "familias/explicativo/capa.html",
+      "descricao": "Capa: foto de fundo inteira com degradê preto, logo e título branco com seta em círculo vermelho.",
+      "papeis": [
+        "hook"
+      ],
+      "usa_imagem": true,
+      "fundo": "#000000",
+      "pontos_por_papel": {
+        "hook": 9
+      },
+      "slots": {
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 55
+        }
+      },
+      "referencia": {
+        "titulo": "Capa com foto e degradê preto",
+        "tema": "explicação de um assunto de mercado",
+        "descricao": "Foto do assunto em tela cheia que escurece até o preto, logo da Suno e título branco leve com seta vermelha.",
+        "instrucao_de_design": "Use foto inteira com degradê preto subindo da base; logo ( SUNO ) centrado, título branco em Poppins leve com entrelinha apertada e a seta em círculo vermelho colada ao fim do texto.",
+        "analise": {
+          "posicao_do_titulo": "inferior_centro",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "foto_tela_cheia",
+          "tipo_de_fundo": "foto_com_degrade_preto",
+          "elementos_visuais": [
+            "logo",
+            "seta_em_circulo",
+            "grade_sutil"
+          ],
+          "estrutura_do_conteudo": [
+            "foto",
+            "logo",
+            "titulo"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel2)"
+      }
+    },
+    "explicativo_texto_imagem": {
+      "arquivo": "familias/explicativo/texto_imagem.html",
+      "descricao": "Título vermelho, corpo, frase de fecho em vermelho e foto arredondada embaixo.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F4F4F4",
+      "pontos_por_papel": {
+        "ponto": 6,
+        "citacao": 4
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 60
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 130
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 115
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        }
+      },
+      "referencia": {
+        "titulo": "Título vermelho, texto e foto arredondada",
+        "tema": "explicação de um assunto de mercado",
+        "descricao": "Miolo claro com título vermelho em degradê, parágrafo preto, frase de fecho em vermelho e foto de cantos arredondados embaixo.",
+        "instrucao_de_design": "Fundo claro com grade quase invisível; título vermelho grande no alto à esquerda; corpo preto e a última frase em vermelho; foto horizontal arredondada ancorada embaixo e a seta em círculo no canto.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "foto_arredondada_embaixo",
+          "tipo_de_fundo": "claro_com_grade",
+          "elementos_visuais": [
+            "seta_em_circulo",
+            "foto_arredondada"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "corpo",
+            "frase_de_fecho",
+            "foto"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel2)"
+      }
+    },
+    "explicativo_texto": {
+      "arquivo": "familias/explicativo/texto.html",
+      "descricao": "Só texto: título vermelho, corpo e frase de fecho em vermelho.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "fundo": "#F4F4F4",
+      "pontos_por_papel": {
+        "ponto": 4,
+        "citacao": 6
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 55
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 230
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 90
+        }
+      },
+      "referencia": {
+        "titulo": "Título vermelho e texto corrido",
+        "tema": "explicação de um assunto de mercado",
+        "descricao": "Miolo claro só com texto: título vermelho, parágrafos pretos e fecho em vermelho.",
+        "instrucao_de_design": "Mesmo miolo claro, sem imagem: o texto ocupa a metade superior com respiro generoso; use quando o argumento pede leitura, não ilustração.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "alta",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "claro_com_grade",
+          "elementos_visuais": [
+            "seta_em_circulo"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "corpo",
+            "frase_de_fecho"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel2)"
+      }
+    },
+    "explicativo_texto_ilustracao": {
+      "arquivo": "familias/explicativo/texto_ilustracao.html",
+      "descricao": "Texto com fecho em vermelho e uma linha ascendente decorativa embaixo; serve de encerramento.",
+      "papeis": [
+        "cta",
+        "ponto"
+      ],
+      "fundo": "#F4F4F4",
+      "pontos_por_papel": {
+        "cta": 9,
+        "ponto": 1
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 55
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 170
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 60
+        },
+        "ilustracao": {
+          "fonte": "manter",
+          "tipo": "imagem",
+          "obrigatorio": false
+        }
+      },
+      "referencia": {
+        "titulo": "Texto com linha ascendente de encerramento",
+        "tema": "fecho de carrossel explicativo",
+        "descricao": "Miolo claro com texto e fecho em vermelho e uma linha vermelha ascendente na base.",
+        "instrucao_de_design": "Texto no alto e uma linha vermelha ascendente com seta na faixa inferior, para encerrar o carrossel com sensação de próximo passo; sem promessa de ganho.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "ilustracao_de_linha",
+          "tipo_de_fundo": "claro_com_grade",
+          "elementos_visuais": [
+            "linha_ascendente",
+            "seta_em_circulo"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "corpo",
+            "frase_de_fecho",
+            "ilustracao"
+          ]
+        },
+        "origem": "Suno — carrossel real @suno (templates/suno/carrossel2)"
+      }
+    }
+  }
+}

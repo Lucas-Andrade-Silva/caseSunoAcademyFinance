@@ -1,0 +1,29 @@
+<!-- ref: 843161725_18445782742131819_3596397966328682243_n.jpg -->
+<!doctype html><meta charset="utf-8">{{FONTES}}
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{margin:0;width:1080px;height:1350px;overflow:hidden}
+body{position:relative;font-family:"Poppins",sans-serif;color:#fff;
+  background:linear-gradient(155deg,#10151b 0%,#0a0e13 35%,#030405 75%,#000 100%)}
+.bloco{position:absolute;left:103px;top:0;bottom:0;width:930px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-top:20px}
+.logo{margin-left:15px;width:115px;height:115px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:400;font-size:15px;letter-spacing:.22em;color:#222}
+.logo .p{color:#d9262c;font-size:26px;font-weight:300;letter-spacing:0;transform:scaleX(.7);line-height:1}
+.logo .t{margin:0 3px 0 6px;transform:translateY(1px)}
+.texto{margin-top:30px;width:930px;max-height:520px;overflow:hidden;padding:.16em .1em .1em .14em;font-size:106px;color:#ececec}
+.titulo{font-weight:400;line-height:1.2;letter-spacing:-.055em;color:#ececec}
+.realce{background:linear-gradient(#740508,#740508) no-repeat 0 56%/100% .98em;padding:0 .04em 0 .11em;margin-left:-.11em;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;color:#ececec}
+.acao{margin:38px 0 0 16px;display:flex;align-items:center;gap:8px}
+.chamada{height:78px;padding:0 42px;border-radius:39px;background:linear-gradient(180deg,#f50000 0%,#c70000 60%,#a80000 100%);
+  display:inline-flex;align-items:center;justify-content:center;font-weight:500;font-size:35px;letter-spacing:-.06em;color:#fff;
+  text-transform:uppercase;white-space:nowrap}
+.seta{flex:none;position:relative;width:56px;height:56px;border-radius:50%;background:#3a3a3c;border:1.5px solid #5a1a1c;display:flex;align-items:center;justify-content:center}
+.seta i{display:block;width:38px;height:38px;border-radius:50%;background:#e00000}
+.seta svg{position:absolute;left:12px;top:12px}
+</style>
+<div class="bloco">
+<div class="logo"><span class="p">(</span><span class="t">SUNO</span><span class="p">)</span></div>
+<div class="texto" data-ajustar data-caixa="area"><h1 class="titulo"><span data-slot="titulo">Notícias da semana que você</span> <span class="realce" data-slot="destaque">precisa ler.</span></h1></div>
+<div class="acao"><span class="chamada" data-slot="chamada">Arraste e confira</span><span class="seta"><i></i><svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#1a0000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14h17M15 7l7 7-7 7"/></svg></span></div>
+</div>

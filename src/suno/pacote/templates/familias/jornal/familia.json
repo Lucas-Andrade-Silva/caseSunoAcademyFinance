@@ -1,0 +1,190 @@
+{
+  "familia": "jornal",
+  "nome": "Jornal (Suno Notícias)",
+  "descricao": "Carrossel da conta @sunonoticias: papel off-white com faixa de papel rasgado, tipografia serifada e número do item em vermelho. Marca própria: só entra por escolha explícita.",
+  "referencia": "templates/suno/carrossel3",
+  "layouts": {
+    "jornal_capa": {
+      "arquivo": "familias/jornal/capa.html",
+      "descricao": "Capa: foto de largura total no topo com borda de papel rasgado, cabeçalho do perfil, título serifado em caixa-alta e subtítulo.",
+      "papeis": [
+        "hook"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F1F1F1",
+      "pontos_por_papel": {
+        "hook": 9
+      },
+      "slots": {
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        },
+        "nome_perfil": {
+          "fonte": "fixo:Suno Notícias",
+          "obrigatorio": false
+        },
+        "arroba": {
+          "fonte": "fixo:@sunonoticias",
+          "obrigatorio": false
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 60
+        },
+        "subtitulo": {
+          "fonte": "corpo",
+          "obrigatorio": false,
+          "max_caracteres": 150
+        }
+      },
+      "referencia": {
+        "titulo": "Capa jornal com foto e papel rasgado",
+        "tema": "notícia ou explicação de um assunto de mercado",
+        "descricao": "Foto de largura total no topo que termina em borda de papel rasgado; abaixo, o perfil da Suno Notícias, título serifado em caixa-alta e subtítulo em Inter.",
+        "instrucao_de_design": "Foto em largura total no topo (cerca de metade da altura), com a borda inferior em papel rasgado cinza com textura de malha; cabeçalho do perfil com selo de verificado; título em serifa bold condensada, caixa-alta, até 3 linhas; subtítulo curto em sans regular; sem promessa nem recomendação.",
+        "analise": {
+          "posicao_do_titulo": "inferior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "foto_largura_total_no_topo",
+          "tipo_de_fundo": "papel_rasgado_claro",
+          "elementos_visuais": [
+            "papel_rasgado",
+            "perfil_com_selo",
+            "textura_de_papel"
+          ],
+          "estrutura_do_conteudo": [
+            "foto",
+            "perfil",
+            "titulo",
+            "subtitulo"
+          ]
+        },
+        "origem": "Suno — carrossel real @sunonoticias (templates/suno/carrossel3)"
+      }
+    },
+    "jornal_item_numerado": {
+      "arquivo": "familias/jornal/item_numerado.html",
+      "descricao": "Item numerado: número em vermelho, título serifado, corpo e foto arredondada embaixo.",
+      "papeis": [
+        "ponto"
+      ],
+      "usa_imagem": true,
+      "fundo": "#F1F1F1",
+      "pontos_por_papel": {
+        "ponto": 7
+      },
+      "slots": {
+        "nome_perfil": {
+          "fonte": "fixo:Suno Notícias",
+          "obrigatorio": false
+        },
+        "arroba": {
+          "fonte": "fixo:@sunonoticias",
+          "obrigatorio": false
+        },
+        "numero_item": {
+          "fonte": "ordem_sem_capa",
+          "max_caracteres": 3
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 60
+        },
+        "corpo": {
+          "fonte": "corpo",
+          "max_caracteres": 230
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        }
+      },
+      "referencia": {
+        "titulo": "Item numerado com foto arredondada",
+        "tema": "um ponto de uma lista sobre um assunto de mercado",
+        "descricao": "Papel claro com faixa rasgada no topo, perfil, número em vermelho seguido do título serifado, parágrafo em serifa regular e foto de cantos arredondados na base.",
+        "instrucao_de_design": "Faixa de papel rasgado no topo; número do item em vermelho com ponto colado ao título em serifa bold; corpo em serifa regular com respiro generoso; foto horizontal com cantos de 10px ancorada na base.",
+        "analise": {
+          "posicao_do_titulo": "superior_esquerda",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "media",
+          "uso_de_imagem": "foto_arredondada_embaixo",
+          "tipo_de_fundo": "papel_rasgado_claro",
+          "elementos_visuais": [
+            "papel_rasgado",
+            "numero_vermelho",
+            "perfil_com_selo",
+            "foto_arredondada"
+          ],
+          "estrutura_do_conteudo": [
+            "perfil",
+            "numero",
+            "titulo",
+            "corpo",
+            "foto"
+          ]
+        },
+        "origem": "Suno — carrossel real @sunonoticias (templates/suno/carrossel3)"
+      }
+    },
+    "jornal_texto": {
+      "arquivo": "familias/jornal/texto.html",
+      "descricao": "Texto serifado em coluna única, com a última frase em negrito grande; serve para citação e encerramento.",
+      "papeis": [
+        "citacao",
+        "cta",
+        "ponto"
+      ],
+      "fundo": "#F1F1F1",
+      "pontos_por_papel": {
+        "citacao": 7,
+        "cta": 7,
+        "ponto": 3
+      },
+      "slots": {
+        "nome_perfil": {
+          "fonte": "fixo:Suno Notícias",
+          "obrigatorio": false
+        },
+        "arroba": {
+          "fonte": "fixo:@sunonoticias",
+          "obrigatorio": false
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 230
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 80
+        }
+      },
+      "referencia": {
+        "titulo": "Texto serifado com fecho em negrito",
+        "tema": "argumento ou encerramento de um carrossel de mercado",
+        "descricao": "Papel claro com faixa rasgada no topo, perfil e coluna de texto serifado; a frase final aparece em negrito grande.",
+        "instrucao_de_design": "Sem foto: coluna única centrada na vertical sob o perfil, texto em serifa regular com respiro e a última frase em serifa bold grande; use para uma citação da Ata ou para o encerramento, sem apelo comercial.",
+        "analise": {
+          "posicao_do_titulo": "sem_titulo_separado",
+          "proeminencia_do_titulo": "media",
+          "densidade_textual": "alta",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "papel_rasgado_claro",
+          "elementos_visuais": [
+            "papel_rasgado",
+            "perfil_com_selo"
+          ],
+          "estrutura_do_conteudo": [
+            "perfil",
+            "corpo",
+            "frase_de_fecho"
+          ]
+        },
+        "origem": "Suno — carrossel real @sunonoticias (templates/suno/carrossel3)"
+      }
+    }
+  }
+}

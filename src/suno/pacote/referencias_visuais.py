@@ -19,9 +19,10 @@ from suno.dominio import (
     EstadoAnaliseVisual,
     ReferenciaVisual,
 )
+from suno.pacote import familias
 
 
-REFERENCIAS_INICIAIS: tuple[ReferenciaVisual, ...] = (
+_REFERENCIAS_LEGADAS: tuple[ReferenciaVisual, ...] = (
     ReferenciaVisual(
         identificador="suno-editorial-cenario-de-juros",
         titulo="Cenário de juros em perspectiva",
@@ -145,6 +146,34 @@ REFERENCIAS_INICIAIS: tuple[ReferenciaVisual, ...] = (
 )
 
 
+def _referencias_das_familias() -> tuple[ReferenciaVisual, ...]:
+    """Uma referência por layout das famílias, vinda do ``familia.json`` (carrosséis reais da Suno)."""
+    sementes = []
+    for layout in familias.carregar_layouts().values():
+        dados = layout.referencia
+        if dados is None:
+            raise ValueError(f"{layout.composicao.value}: o manifesto não traz a referência visual")
+        sementes.append(
+            ReferenciaVisual(
+                identificador="suno-" + layout.composicao.value.replace("_", "-"),
+                titulo=dados["titulo"],
+                tema=dados["tema"],
+                composicao=layout.composicao,
+                descricao=dados["descricao"],
+                instrucao_de_design=dados["instrucao_de_design"],
+                analise=AnaliseVisualReferencia(**dados["analise"]),
+                origem=dados.get("origem", "Suno — carrossel real"),
+            )
+        )
+    return tuple(sementes)
+
+
+REFERENCIAS_INICIAIS: tuple[ReferenciaVisual, ...] = (
+    *_REFERENCIAS_LEGADAS,
+    *_referencias_das_familias(),
+)
+
+
 class ReferenciaVisualDuplicada(ValueError):
     pass
 
@@ -257,7 +286,8 @@ class RepositorioReferenciasVisuais:
                 analise=AnaliseVisualReferencia.model_validate(json.loads(linha[6])),
                 aprovada=bool(linha[7]),
                 origem=linha[8],
-                imagem_disponivel=bool(linha[9]),
+                imagem_disponivel=bool(linha[9])
+                or familias.miniatura_do_layout(ComposicaoCarrossel(linha[3])) is not None,
                 estado_analise=EstadoAnaliseVisual(linha[10]),
                 provedor_analise=linha[11],
                 mensagem_analise=linha[12],
@@ -366,7 +396,11 @@ class RepositorioReferenciasVisuais:
         if linha is None:
             raise ReferenciaVisualNaoEncontrada(identificador)
         if not linha[0]:
-            raise FileNotFoundError(identificador)
+            # Referência de família visual: sem imagem enviada, vale a miniatura do layout.
+            miniatura = familias.miniatura_do_layout(self.obter(identificador).composicao)
+            if miniatura is None:
+                raise FileNotFoundError(identificador)
+            return miniatura
         return Path(str(linha[0]))
 
     def registrar_analise(

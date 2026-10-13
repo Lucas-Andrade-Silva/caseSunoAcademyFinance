@@ -29,6 +29,7 @@ from suno.dominio import (
     ReferenciaVisual,
     Slide,
 )
+from suno.pacote import familias
 from suno.pacote.carrossel import SELO_DA_AUDIENCIA
 from suno.pacote.direcao_de_arte import (
     CATALOGO_DE_LAYOUTS,
@@ -168,7 +169,18 @@ def _preencher(
     ancoras: Ancoras,
     css: str,
     escolha: EscolhaDeLayout,
+    imagem_uri: str | None = None,
 ) -> tuple[str, list[dict[str, str]]]:
+    layout_da_familia = familias.carregar_layouts().get(escolha.composicao)
+    if layout_da_familia is not None:
+        return familias.preencher_layout(
+            layout_da_familia,
+            slide,
+            ancoras=ancoras,
+            indice=indice,
+            total=total,
+            imagem_uri=imagem_uri,
+        )
     layout = CATALOGO_DE_LAYOUTS[escolha.composicao]
     modelo = (PASTA_DOS_TEMPLATES / layout.arquivo).read_text(encoding="utf-8")
     grafico, numeros = "", []
@@ -204,8 +216,13 @@ def renderizar(
     historico_layouts: tuple[ComposicaoCarrossel | str, ...] = (),
     referencias_aprovadas: tuple[ReferenciaVisual, ...] = (),
     plano_direcao: tuple[EscolhaDeLayout, ...] | None = None,
+    imagens: dict[int, Path] | None = None,
 ) -> list[Path]:
-    """Grava ``slide-<nn>.png`` e ``slide-<nn>.json`` em ``pasta`` e devolve os PNGs."""
+    """Grava ``slide-<nn>.png`` e ``slide-<nn>.json`` em ``pasta`` e devolve os PNGs.
+
+    ``imagens`` leva a foto já resolvida de cada slide (índice → arquivo). Sem foto, o layout da
+    família degrada sozinho (classe ``sem-imagem``).
+    """
     css = (PASTA_DOS_TEMPLATES / "base.css").read_text(encoding="utf-8")
     css = css.replace("{{FONTE_TITULO}}", (PASTA_DAS_FONTES / FONTE_DO_TITULO).as_uri())
     for marcador, arquivo in FONTES_DO_TEXTO.items():
@@ -223,8 +240,16 @@ def renderizar(
     with tempfile.TemporaryDirectory(prefix="suno-render-") as temporaria:
         trabalho: list[dict[str, str]] = []
         for indice, (slide, escolha) in enumerate(zip(slides, plano)):
+            foto = (imagens or {}).get(indice)
             conteudo, numeros = _preencher(
-                slide, audiencia, indice, len(slides), ancoras, css, escolha
+                slide,
+                audiencia,
+                indice,
+                len(slides),
+                ancoras,
+                css,
+                escolha,
+                imagem_uri=foto.resolve().as_uri() if foto is not None else None,
             )
             numeros_por_slide.append(numeros)
             nome = f"slide-{indice + 1:02d}"
