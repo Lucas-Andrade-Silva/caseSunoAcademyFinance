@@ -1,0 +1,49 @@
+<!-- ref: 785745218_18095317112378626_2923580108917726420_n.webp -->
+<!doctype html><meta charset="utf-8">{{FONTES}}
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{position:relative;width:1080px;height:1350px;overflow:hidden;background:#9e171c;font-family:"Inter",sans-serif;color:#fff}
+/* textura de tecido: faixas diagonais suaves de luz e sombra */
+.tecido{position:absolute;inset:0;background:
+ radial-gradient(ellipse 70% 30% at 20% 62%,rgba(255,70,70,.16),transparent 70%),
+ radial-gradient(ellipse 60% 26% at 85% 90%,rgba(255,60,60,.17),transparent 70%),
+ radial-gradient(ellipse 40% 60% at 5% 35%,rgba(70,0,5,.30),transparent 70%),
+ radial-gradient(ellipse 50% 40% at 95% 20%,rgba(255,80,80,.10),transparent 70%),
+ linear-gradient(168deg,rgba(0,0,0,0) 0%,rgba(60,0,5,.22) 22%,rgba(0,0,0,0) 34%,rgba(255,60,60,.10) 52%,rgba(60,0,5,.20) 66%,rgba(0,0,0,0) 78%,rgba(255,60,60,.12) 90%),
+ linear-gradient(180deg,#a11a1f,#9b161b 50%,#a31b20)}
+.moldura{position:absolute;left:100px;top:186px;width:879px;height:957px;border:1.5px solid rgba(255,255,255,.28);border-radius:84px}
+.moeda{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 38% 35%,#ffe56a 0%,#f6bf1c 45%,#d99100 100%);box-shadow:inset -8px -6px 0 rgba(160,90,0,.55),0 8px 16px rgba(0,0,0,.25)}
+.sup{position:absolute;left:0;right:0;text-align:center}
+.sobre{top:259px;font-weight:300;font-size:37px;letter-spacing:.2em;line-height:40px;text-transform:uppercase;padding-left:.2em}
+.titulo{top:349px;font-weight:700;letter-spacing:-.035em;line-height:1;text-transform:uppercase}
+.titulo .l1{display:block;font-size:168px;line-height:170px}
+.titulo .l2{display:block;font-size:128px;line-height:150px;margin-top:-8px}
+.arte{position:absolute;left:380px;top:665px;width:320px;height:210px}
+.arte img{width:100%;height:100%;object-fit:cover;border-radius:34px;box-shadow:0 22px 40px rgba(0,0,0,.35);transform:rotate(-4deg)}
+.sub{top:930px;font-size:31px;line-height:37.5px;font-weight:400;padding:0 195px;letter-spacing:-.005em}
+.sub b{font-weight:600}
+.botao{position:absolute;left:334px;top:1101px;width:411px;height:74px;border-radius:20px;background:#1fb54c;color:#fff;font-weight:600;font-size:31px;display:flex;align-items:center;justify-content:center;letter-spacing:-.01em}
+.rodape{position:absolute;left:106px;top:1270px;font-family:"Poppins",sans-serif;font-weight:700;font-size:25.5px;letter-spacing:.01em;line-height:28px;text-transform:uppercase}
+.logo{position:absolute;left:806px;top:1250px;width:190px;height:68px;text-align:center;font-family:"Anton",sans-serif;text-transform:uppercase}
+.logo .p{position:absolute;top:0;font-family:"Poppins",sans-serif;font-weight:400;font-size:78px;line-height:60px;color:#e5393d;transform:scaleX(.5)}
+.logo .pe{left:-4px}.logo .pd{right:-4px}
+.logo .a{position:absolute;left:0;right:0;top:2px;font-size:35px;line-height:40px;letter-spacing:0;color:#fff}
+.logo .b{position:absolute;left:0;right:0;top:41px;font-size:22px;line-height:24px;letter-spacing:.2px;color:#fff;font-family:"Inter",sans-serif;font-weight:600;transform:scaleX(.85)}
+</style>
+<body>
+<div class="tecido"></div>
+<!-- moedas: ilustração 3D original não reproduzida; discos dourados decorativos em CSS -->
+<div class="moeda" style="left:-52px;top:50px;width:128px;height:148px;transform:rotate(-24deg)"></div>
+<div class="moeda" style="left:975px;top:628px;width:150px;height:92px;transform:rotate(14deg)"></div>
+<div class="moeda" style="left:-50px;top:1040px;width:150px;height:116px;transform:rotate(-30deg)"></div>
+<div class="moldura"></div>
+<div class="sup sobre" data-slot="sobretitulo">Rendimentos do mês</div>
+<div class="sup titulo" data-slot="titulo"><span class="l1" data-slot="titulo_linha1">Dia de</span><span class="l2" data-slot="titulo_linha2">Dividendos</span></div>
+<!-- slot imagem: ilustração de dinheiro/moedas (original é 3D de terceiros) -->
+<div class="arte" data-slot="imagem"><img src="{{IMG:dinheiro}}" alt=""></div>
+<div class="sup sub" data-slot="subtitulo"><b>O dia do pagamento chegou.</b> Os rendimentos da Suno Asset estão sendo creditados na conta dos cotistas!</div>
+<div class="botao" data-slot="botao">Confira o que caiu &gt;&gt;&gt;</div>
+<div class="rodape" data-slot="rodape">Informativo a cotistas</div>
+<div class="logo"><span class="p pe">(</span><span class="a">DATACOM</span><span class="b">SUNO ASSET</span><span class="p pd">)</span></div>
+</body>
