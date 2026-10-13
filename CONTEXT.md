@@ -134,6 +134,24 @@ O conjunto pronto para um humano publicar: vídeo, legenda, hashtags e imagens d
 Célula aprovada.
 _Avoid_: post, bundle, export, entrega
 
+**Família visual**:
+O conjunto coerente de Layouts de uma conta da Suno (Notícia, Explicativo, Jornal, Dados, Asset,
+mais o Suno escuro, que são os seis Layouts antigos). Um Carrossel usa uma só; os slides variam
+de Layout dentro dela. Vem dos carrosséis reais da Suno em `templates/suno/`. Asset só entra por
+pedido, porque carrega a marca e o aviso legal da Suno Asset.
+_Avoid_: tema, estilo, template (template é o arquivo HTML de um Layout)
+
+**Layout**:
+Um tipo de slide dentro de uma Família visual (capa, texto com foto, número gigante). No código é
+um valor de `ComposicaoCarrossel`, prefixado pela família.
+_Avoid_: composição visual solta, modelo, página
+
+**Foto do slide**:
+A foto real, de licença que permite reuso, que um slide mostra. O Gerador só diz o assunto
+(`Slide.imagem`); a foto vem da biblioteca local ou do Wikimedia Commons, com relevância
+verificada, e o crédito vai na legenda.
+_Avoid_: imagem gerada, banco de imagens, stock
+
 ### A interface
 
 **Saída**:

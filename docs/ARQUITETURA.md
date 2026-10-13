@@ -121,7 +121,7 @@ flowchart TD
 
     subgraph P["Pacote de publicação · só de Célula aprovada"]
         direction TB
-        IMG["Imagens do Carrossel<br/>matplotlib + Pillow<br/>PNG 1080×1350 · ADR 0009"]
+        IMG["Imagens do Carrossel<br/>famílias visuais + fotos licenciadas<br/>PNG 1080×1350 · ADR 0030 e 0031"]
         VIDEO["Vídeo<br/>fora do grafo, consome<br/>Roteiro aprovado · 9:16 · ADR 0004"]
         LEG["Legenda + hashtags"]
     end
@@ -221,15 +221,24 @@ fácil de avaliar, e por isso é o primeiro a ser implementado ponta a ponta.
 O Gerador produz o **roteiro de slides** — texto estruturado, um registro por slide com título,
 corpo e o campo opcional de dado a plotar. O Avaliador julga esse texto, não a imagem.
 
-A renderização é etapa posterior, determinística e sem rede: **matplotlib** desenha o gráfico a
-partir da tabela de Âncoras numéricas, **Pillow** compõe com a identidade visual, saída **PNG
-1080×1350 (4:5) em todos os slides de todas as nove Células**. Proporção variando entre Células
-faz o Instagram cortar o carrossel inteiro para igualar a primeira imagem — é requisito técnico,
-não estética.
+A renderização é etapa posterior e roda sem rede: templates HTML/CSS renderizados pelo Puppeteer,
+saída **PNG 1080×1350 (4:5) em todos os slides de todas as nove Células**. Proporção variando entre
+Células faz o Instagram cortar o carrossel inteiro para igualar a primeira imagem — é requisito
+técnico, não estética. O visual vem de **famílias visuais** recriadas dos carrosséis reais da Suno
+(Notícia, Explicativo, Jornal, Dados e Asset, além do layout escuro antigo): um carrossel usa uma
+família, e os slides variam de layout dentro dela
+([ADR 0030](adr/0030-familias-visuais-do-carrossel.md)). O texto de tamanho variável encolhe até
+caber; o número do slide sai da Âncora, nunca do template.
 
-Nenhuma imagem vem de terceiro, e geração por modelo de IA está fora do caminho crítico
-([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md)). Por ser
-determinística, a renderização é testável em CI como o Avaliador.
+**Fotos.** O Gerador sugere só o assunto da foto (`Slide.imagem`). A foto é real e de licença que
+permite reuso, vem da biblioteca local `data/imagens/` (a demo roda sem rede) ou do Wikimedia
+Commons com relevância verificada, e o crédito vai na legenda
+([ADR 0031](adr/0031-fotos-reais-e-licenciadas-nos-slides.md)). Sem foto, o layout degrada sozinho.
+Geração de imagem por modelo continua fora do caminho crítico.
+
+A reserva **Pillow + matplotlib** ([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md),
+[ADR 0020](adr/0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)) é o que o CI roda:
+determinística, sem navegador, com o layout escuro e sem foto.
 
 ### Roteiro
 

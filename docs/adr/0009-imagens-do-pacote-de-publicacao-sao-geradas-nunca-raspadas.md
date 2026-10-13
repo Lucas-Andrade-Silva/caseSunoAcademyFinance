@@ -1,5 +1,9 @@
 # As imagens do Pacote de publicação são geradas pelo sistema, nunca raspadas de terceiros
 
+> **A proibição de foto de terceiros foi substituída pelo [ADR 0031](0031-fotos-reais-e-licenciadas-nos-slides.md):
+> os slides usam fotos reais de licença que permite reuso. Continuam valendo o 1080×1350 e a regra de
+> não raspar notícia.**
+>
 > **Mecanismo de render superado pelo [ADR 0020](0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)** (HTML/CSS + Puppeteer); matplotlib + Pillow ficam como reserva. A regra de não raspar e o 1080×1350 continuam.
 
 O Formato Carrossel precisa de imagem. O caminho óbvio — buscar a foto de uma notícia ou uma

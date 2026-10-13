@@ -3,6 +3,11 @@
 Substitui o mecanismo de render do [ADR 0009](0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md)
 (matplotlib + Pillow). A regra do 0009 continua: imagem é gerada pelo sistema, nunca raspada, 1080×1350.
 
+> **Ampliado pelo [ADR 0030](0030-familias-visuais-do-carrossel.md):** além dos seis layouts escuros
+> abaixo, o Carrossel tem famílias visuais recriadas dos posts reais da Suno, e as fotos reais
+> entram pelo [ADR 0031](0031-fotos-reais-e-licenciadas-nos-slides.md). O motor e a reserva Pillow
+> continuam como aqui.
+
 ## Decisão
 
 O Gemini gera só a **estrutura e o texto**: cada Slide tem `tipo` (`hook`, `ponto`, `citacao`,
