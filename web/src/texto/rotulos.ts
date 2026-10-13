@@ -10,7 +10,6 @@ import type {
   MotivoReprovacao,
   DuracaoDoVideo,
 } from "../dados/cliente";
-import type { TomChip } from "../lib/matriz";
 
 const NUMERO = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
@@ -204,26 +203,6 @@ export function rotuloDasAtas(
 /** `falso` é a demo sem rede; qualquer outro é provedor de verdade. */
 export function rotuloProvedor(provedor: string): string {
   return provedor === "falso" ? "Demo" : `Real · ${provedor}`;
-}
-
-/** O status da Saída na lista e no cabeçalho. */
-export function rotuloStatus(status: string): { texto: string; tom: TomChip } {
-  switch (status) {
-    case "na_fila":
-      return { texto: "Na fila", tom: "neutro" };
-    case "gerando":
-      return { texto: "Gerando", tom: "alerta" };
-    case "aguardando_revisao":
-      return { texto: "Aguardando revisão", tom: "alerta" };
-    case "concluida":
-      return { texto: "Concluída", tom: "ok" };
-    case "interrompida":
-      return { texto: "Interrompida", tom: "ruim" };
-    case "falhou":
-      return { texto: "Falhou", tom: "ruim" };
-    default:
-      return { texto: status, tom: "neutro" };
-  }
 }
 
 /** Onde a execução inteira está, em uma frase para a barra de progresso. */

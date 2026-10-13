@@ -6,6 +6,7 @@
     python -m suno.cli video      --execucao <id> --audiencia iniciante
     python -m suno.cli plano      --execucao <id> --audiencia iniciante
     python -m suno.cli servir     [--porta 8000]
+    python -m suno.cli imagens    listar | buscar "<assunto>" [--rede] | aprovar <id>
 
 Só ``argparse``, da biblioteca padrão. Cada subcomando delega ao módulo dono; este arquivo
 não contém lógica de negócio.
@@ -72,11 +73,22 @@ def cmd_executar(args: argparse.Namespace) -> int:
 def cmd_pacote(args: argparse.Namespace) -> int:
     from suno.pacote import montar_pacote
 
-    pacotes = montar_pacote(args.execucao, _pasta_execucoes(args.execucoes))
+    from suno.dominio import FamiliaVisual
+
+    pacotes = montar_pacote(
+        args.execucao,
+        _pasta_execucoes(args.execucoes),
+        familia_visual=FamiliaVisual(args.familia) if args.familia else None,
+        buscar_fotos=args.buscar_fotos,
+    )
     print(f"execucao={args.execucao} pacotes={len(pacotes)}")
     for p in pacotes:
         defeitos = ";".join(m.defeito.value for m in p.conferencia.defeitos) or "sem defeito de render"
-        print(f"  {p.audiencia.value:<14} {p.formato.value:<16} imagens={len(p.imagens)} video={'sim' if p.video else 'nao'} {defeitos}")
+        familia = p.direcao_de_arte.familia.value if p.direcao_de_arte and p.direcao_de_arte.familia else "-"
+        print(
+            f"  {p.audiencia.value:<14} {p.formato.value:<16} imagens={len(p.imagens)} fotos={len(p.fotos)} "
+            f"familia={familia} video={'sim' if p.video else 'nao'} {defeitos}"
+        )
     return 0
 
 
@@ -119,6 +131,46 @@ def cmd_servir(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_imagens(args: argparse.Namespace) -> int:
+    from suno.dominio import ErroProvedor, PapelLLM
+    from suno.imagens import BibliotecaDeImagens, ImagemInexistente, resolver_imagem
+
+    biblioteca = BibliotecaDeImagens(args.pasta)
+    if args.acao == "listar":
+        for e in biblioteca.listar():
+            estado = "aprovada" if e.aprovada else "rejeitada" if e.rejeitada else "pendente"
+            print(f"{e.id:<24} {estado:<9} {e.licenca:<12} {e.autor[:30]:<30} tags={','.join(e.tags)}")
+        return 0
+    if args.acao == "aprovar":
+        try:
+            biblioteca.aprovar(args.id)
+        except ImagemInexistente:
+            print(f"imagem {args.id!r} não está no índice", file=sys.stderr)
+            return 1
+        print(f"aprovada: {args.id}")
+        return 0
+    provedor_visao = None
+    if args.rede:
+        try:
+            from suno.provedores.roteador import roteador_para
+
+            provedor_visao = roteador_para(PapelLLM.JUIZ_VISAO)
+        except ErroProvedor as erro:
+            print(f"sem juiz de visão ({erro}): a foto baixada fica pendente de aprovação humana", file=sys.stderr)
+    imagem = resolver_imagem(
+        args.consulta, biblioteca, contexto=args.contexto, permitir_rede=args.rede, provedor_visao=provedor_visao
+    )
+    if imagem is None:
+        pendentes = [e.id for e in biblioteca.listar() if not e.aprovada and not e.rejeitada]
+        print("nenhuma imagem aprovada para esse assunto")
+        if args.rede and pendentes:
+            print(f"pendentes de aprovação humana: {', '.join(pendentes)} (use: imagens aprovar <id>)")
+        return 1
+    print(f"arquivo={imagem.arquivo} origem={imagem.origem} validada_por={imagem.validada_por} {imagem.largura}x{imagem.altura}")
+    print(imagem.credito())
+    return 0
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="suno", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="comando", required=True)
@@ -138,6 +190,17 @@ def construir_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("pacote", help="monta o Pacote de publicação das Células aprovadas")
     p.add_argument("--execucao", required=True)
     p.add_argument("--execucoes", default=None)
+    p.add_argument(
+        "--familia",
+        choices=["suno_escuro", "noticia", "explicativo", "jornal", "dados", "asset"],
+        default=None,
+        help="família visual do Carrossel (padrão: escolha automática entre notícia, explicativo, jornal e dados)",
+    )
+    p.add_argument(
+        "--buscar-fotos",
+        action="store_true",
+        help="busca no Wikimedia Commons as fotos que a biblioteca local não tem (precisa de rede; a demo não usa)",
+    )
     p.set_defaults(funcao=cmd_pacote)
 
     p = sub.add_parser("buscar-ata", help="H1: baixa uma Ata do BCB para data/atas/ (precisa de rede)")
@@ -165,6 +228,18 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--porta", type=int, default=8000)
     p.add_argument("--execucoes", default=None)
     p.set_defaults(funcao=cmd_servir)
+
+    p = sub.add_parser("imagens", help="fotos reais dos slides: biblioteca local e Wikimedia Commons")
+    p.add_argument("--pasta", default="data/imagens", help="pasta da biblioteca (padrão: data/imagens)")
+    acoes = p.add_subparsers(dest="acao", required=True)
+    acoes.add_parser("listar", help="lista as fotos do índice e seu estado")
+    a = acoes.add_parser("buscar", help="resolve um assunto em uma foto aprovada e imprime o crédito")
+    a.add_argument("consulta")
+    a.add_argument("--contexto", default="", help="o que o slide diz, para o juiz de visão")
+    a.add_argument("--rede", action="store_true", help="busca no Commons se a biblioteca não tiver (precisa de rede)")
+    a = acoes.add_parser("aprovar", help="aprova à mão uma foto pendente")
+    a.add_argument("id")
+    p.set_defaults(funcao=cmd_imagens)
     return parser
 
 

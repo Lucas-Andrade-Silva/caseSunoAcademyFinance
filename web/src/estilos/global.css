@@ -1,25 +1,52 @@
 @import "tailwindcss";
+@import "@fontsource-variable/hanken-grotesk/wght.css";
+@import "@fontsource-variable/lora/wght.css";
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
 
-/* Tema só escuro, com as cores da Suno. O vermelho foi estimado de uma captura de tela do
-   app deles: o hex oficial substitui `--color-suno` quando existir. Cada `--color-*` vira
-   utilidade do Tailwind (`bg-fundo`, `text-suave`, `border-suno/45`...). */
+/* Tema escuro do editor do biosites. Os valores saíram de amostras de pixel das capturas
+   de tela: fundo #1b1b1b, superfície de linhas e barra lateral #2a2a2a, prévia #141414,
+   branco de destaque #e4e4e4. Cada `--color-*` vira utilidade do Tailwind (`bg-fundo`,
+   `text-mudo`...). */
 @theme {
-  --color-fundo: #0e0e0f;
-  --color-lateral: #141415;
-  --color-cartao: #1c1c1e;
-  --color-cartao-2: #242427;
-  --color-linha: #2c2c30;
-  --color-texto: #f3f3f4;
-  --color-suave: #8d8d93;
-  --color-suno: #ef4b3f;
-  --color-ok: #3ecf8e;
-  --color-alerta: #f5b042;
+  --color-fundo: #1b1b1b;
+  --color-superficie: #2a2a2a;
+  --color-superficie-alta: #383838;
+  --color-previa: #141414;
+  --color-ilha: #0e0e0e;
+  --color-texto: #ffffff;
+  --color-claro: #e4e4e4;
+  --color-mudo: #747474;
+  --color-apagado: #8d8f91;
+  --color-etiqueta: #969696;
+  --color-coral: #ff5f5f;
+  --color-coral-claro: #ff7c7c;
+  --color-azul: #0057ff;
+  --color-marinho: #0e0c60;
+  --color-roxo: #5c0a9d;
+  --color-amarelo: #cac200;
+  --color-verde: #8bc34a;
+  --color-ok: #7be0a2;
   --font-sans:
-    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    "Hanken Grotesk Variable", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --ease-saida: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root {
   color-scheme: dark;
+  --rail: 70px;
+  --rail-margem: 20px;
+  --area-da-rail: 110px;
+}
+
+/* O editor de referência é desenhado para telas largas: a 100% as medidas dele ficam 25% maiores
+   aqui. Em telas largas o app inteiro encolhe para 80%, e as larguras em `vw` compensam. */
+@media (min-width: 1024px) {
+  html {
+    zoom: 0.8;
+  }
 }
 
 html,
@@ -32,10 +59,124 @@ body {
   background: var(--color-fundo);
   color: var(--color-texto);
   font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
-/* Estilo mínimo para o Texto analítico renderizado em Markdown (react-markdown),
-   sem depender de um plugin de tipografia. */
+@layer base {
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Foco visível no tom da paleta: anel branco fino, nunca o azul do navegador. */
+  :focus-visible {
+    outline: 2px solid var(--color-claro);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--color-claro);
+    color: var(--color-ilha);
+  }
+
+  /* Barras de rolagem finas, do tom das superfícies. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3d3d3d transparent;
+  }
+}
+
+/* As vistas (guias) ficam todas montadas e se revezam por translação e opacidade: a vista que
+   entra desliza do lado em que a guia está na barra, e a que sai desliza para o lado oposto. */
+.vista {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 360ms var(--ease-saida),
+    transform 360ms var(--ease-saida),
+    visibility 0s linear 360ms;
+}
+
+.vista[data-posicao="antes"] {
+  transform: translateY(-36px);
+}
+
+.vista[data-posicao="depois"] {
+  transform: translateY(36px);
+}
+
+.vista[data-posicao="ativa"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vista {
+    transition: opacity 120ms linear, visibility 0s linear 120ms;
+    transform: none !important;
+  }
+}
+
+/* A barrinha branca da guia ativa desliza entre os ícones. */
+.indicador {
+  transition: transform 360ms var(--ease-saida);
+}
+
+/* Troca de conteúdo dentro de uma vista (lista de origens → texto, edição → prévia). */
+@keyframes surge {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.surge {
+  animation: surge 320ms var(--ease-saida) both;
+}
+
+@keyframes pulsa {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.pulsa {
+  animation: pulsa 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surge,
+  .pulsa {
+    animation: none;
+  }
+}
+
+/* O Texto analítico em Markdown (react-markdown), sem plugin de tipografia. */
 .markdown :is(h1, h2, h3) {
   font-weight: 600;
   margin-top: 1rem;

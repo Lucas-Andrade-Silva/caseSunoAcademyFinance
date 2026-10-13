@@ -48,3 +48,9 @@ data/fontes/*
 
 # Render do Carrossel (ADR 0020)
 render/node_modules/
+
+# Famílias visuais (ADR 0030): as comparações original × recriado e os PNG de teste de
+# templates/recriados/ são artefato de trabalho, regerável com _ferramentas/renderizar.py. Ficam
+# versionados os HTML recriados, as galerias (_galeria/) e as fotos (data/imagens/).
+templates/recriados/familia-*/png/
+templates/recriados/familia-*/comparacao/

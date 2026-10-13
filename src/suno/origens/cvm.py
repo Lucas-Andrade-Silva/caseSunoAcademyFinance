@@ -43,8 +43,11 @@ def _cliente_padrao() -> httpx.Client:
     return httpx.Client(headers={"User-Agent": _user_agent()}, timeout=60.0, follow_redirects=True)
 
 
-def _linhas_do_zip(conteudo: bytes) -> list[dict[str, str]]:
-    """Os Fatos Relevantes do CSV, com Link e Protocolo, do mais recente ao mais antigo."""
+def _linhas_do_zip(
+    conteudo: bytes, aceitar: Callable[[dict[str, str]], bool] | None = None
+) -> list[dict[str, str]]:
+    """As linhas do CSV que ``aceitar`` deixa passar (padrão: Fatos Relevantes), com Link e
+    Protocolo, da mais recente à mais antiga."""
     with zipfile.ZipFile(io.BytesIO(conteudo)) as arquivo:
         nomes = [n for n in arquivo.namelist() if n.lower().endswith(".csv")]
         if not nomes:
@@ -54,7 +57,7 @@ def _linhas_do_zip(conteudo: bytes) -> list[dict[str, str]]:
     fatos = [
         linha
         for linha in leitor
-        if (linha.get("Categoria") or "").strip() == CATEGORIA_NO_CSV
+        if (aceitar(linha) if aceitar else (linha.get("Categoria") or "").strip() == CATEGORIA_NO_CSV)
         and (linha.get("Link_Download") or "").strip()
         and (linha.get("Protocolo_Entrega") or "").strip()
     ]

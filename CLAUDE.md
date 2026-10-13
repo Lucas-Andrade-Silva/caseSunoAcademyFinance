@@ -10,7 +10,7 @@ O conteúdo nunca produz **Recomendação**. Recomendar compra ou venda é ativi
 regulada no Brasil; este sistema informa e educa. Compliance é métrica do Laudo e reprova
 a Célula que cruzar a linha — não é instrução de prompt.
 
-## O caminho óbvio está errado nestes cinco pontos
+## O caminho óbvio está errado nestes seis pontos
 
 Cada um foi verificado. O palpite natural, aqui, é o errado.
 
@@ -27,6 +27,10 @@ Cada um foi verificado. O palpite natural, aqui, é o errado.
   → [ADR 0004](docs/adr/0004-renderizacao-de-video-fora-do-grafo.md)
 - **Publicação**: o sistema entrega o Pacote de publicação pronto e um humano publica.
   Instagram, TikTok e Drive são destinos manuais, sem integração de API.
+- **Carrossel**: o visual vem de famílias recriadas dos posts reais da Suno, uma por carrossel,
+  com fotos reais de licença livre e crédito na legenda. Não invente layout nem imagem.
+  → [ADR 0030](docs/adr/0030-familias-visuais-do-carrossel.md),
+  [ADR 0031](docs/adr/0031-fotos-reais-e-licenciadas-nos-slides.md)
 
 ## A demo roda sem rede
 

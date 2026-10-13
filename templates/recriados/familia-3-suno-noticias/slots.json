@@ -1,0 +1,51 @@
+{
+  "familia": "Suno Notícias / editorial (papel off-white com faixa de papel rasgado)",
+  "canvas": "1080x1350",
+  "templates": {
+    "capa.html": {
+      "ref": "838698806_18244933165310759_812872110155553546_n.jpg",
+      "slots": [
+        {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": true, "nota": "Foto de largura total no topo (1080x640, cover). Exemplo: bolsa-sp. A borda rasgada do papel sobrepõe a foto."},
+        {"nome": "nome_perfil", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: Suno Notícias (o selo de verificado é SVG)."},
+        {"nome": "arroba", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: @sunonoticias."},
+        {"nome": "titulo", "tipo": "texto", "max_caracteres": 60, "obrigatorio": true, "nota": "Caixa-alta automática, serifa bold condensada, 3 linhas (aprox. 20 caracteres por linha)."},
+        {"nome": "subtitulo", "tipo": "texto", "max_caracteres": 110, "obrigatorio": false, "nota": "Inter regular, 2 linhas de ~50 caracteres. Use <br> para a quebra."}
+      ]
+    },
+    "item-numerado-com-foto.html": {
+      "ref": "843117138_18244933117310759_832076344057684473_n.jpg",
+      "slots": [
+        {"nome": "nome_perfil", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: Suno Notícias."},
+        {"nome": "arroba", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: @sunonoticias."},
+        {"nome": "numero_item", "tipo": "numero", "max_caracteres": 3, "obrigatorio": true, "nota": "Número em vermelho com ponto, ex.: 5."},
+        {"nome": "titulo", "tipo": "texto", "max_caracteres": 45, "obrigatorio": true, "nota": "Serifa bold, até 2 linhas (cerca de 28 caracteres por linha). Ex.: Joesley Day: - 8,80%."},
+        {"nome": "corpo", "tipo": "texto", "max_caracteres": 260, "obrigatorio": true, "nota": "1 a 2 parágrafos <p> em serifa regular, até 5 linhas ao todo (~38 caracteres por linha). <strong> permitido."},
+        {"nome": "imagem", "tipo": "imagem", "max_caracteres": 0, "obrigatorio": true, "nota": "Foto 824x422 com cantos de 10px, ancorada na base. Exemplo: fila-combustivel (a mais próxima de greve/pregão)."}
+      ]
+    },
+    "texto-serifado.html": {
+      "ref": "838782924_18244933120310759_8399555037788748387_n.jpg",
+      "slots": [
+        {"nome": "nome_perfil", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: Suno Notícias."},
+        {"nome": "arroba", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: @sunonoticias."},
+        {"nome": "corpo", "tipo": "texto", "max_caracteres": 380, "obrigatorio": true, "nota": "2 a 3 parágrafos <p> em serifa; <strong> para destaque em negrito. Até ~9 linhas de ~38 caracteres. A coluna se centraliza verticalmente."},
+        {"nome": "destaque", "tipo": "texto", "max_caracteres": 60, "obrigatorio": false, "nota": "Frase final em serifa bold grande (2 linhas), para chamada informativa. Vazio = oculto. Sem apelo comercial nem recomendação."}
+      ]
+    },
+    "painel-rentabilidade.html": {
+      "ref": "837090897_18244933114310759_6380931590128944405_n.jpg",
+      "slots": [
+        {"nome": "nome_perfil", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: Suno Notícias."},
+        {"nome": "arroba", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Fixo: @sunonoticias."},
+        {"nome": "titulo", "tipo": "texto", "max_caracteres": 80, "obrigatorio": true, "nota": "Serifa bold, 3 linhas de ~24 caracteres."},
+        {"nome": "valor", "tipo": "numero", "max_caracteres": 9, "obrigatorio": true, "nota": "Rentabilidade acumulada em verde, ex.: 506,80% (o triângulo ▲ é CSS)."},
+        {"nome": "periodo", "tipo": "texto", "max_caracteres": 24, "obrigatorio": true, "nota": "Ex.: Fev 2017 - Set 2026."},
+        {"nome": "serie", "tipo": "serie", "max_caracteres": 0, "obrigatorio": true, "nota": "Minigráfico SVG 292x90: troque o atributo d do <path> da linha (e da área sob o fim da linha) pelos pontos da série."},
+        {"nome": "benchmarks", "tipo": "serie", "max_caracteres": 0, "obrigatorio": true, "nota": "Lista de 3 linhas (data-slot=benchmark): nome (até 19 caracteres, trunca com …), valor e barra. Largura da barra = valor x 0,17 px."},
+        {"nome": "nota", "tipo": "texto", "max_caracteres": 60, "obrigatorio": false, "nota": "Rodapé do painel (Rentabilidade referente ao mesmo período da Carteira.)."},
+        {"nome": "marca", "tipo": "texto", "max_caracteres": 20, "obrigatorio": false, "nota": "Assinatura em serifa: Carteira Suno."},
+        {"nome": "aviso", "tipo": "texto", "max_caracteres": 60, "obrigatorio": true, "nota": "Aviso obrigatório em corpo pequeno: Rentabilidade passada não garante resultado futuro."}
+      ]
+    }
+  }
+}

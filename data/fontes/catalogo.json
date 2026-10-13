@@ -17,6 +17,38 @@
       "aviso": null
     },
     {
+      "id": "cvm_demonstracoes",
+      "nome": "DFP, ITR e Formulários da CVM",
+      "categoria": "release",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
+      "id": "bcb_relatorios",
+      "nome": "Relatórios de Inflação e de Estabilidade",
+      "categoria": "comunicado_relevante",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
+      "id": "bcb_resolucoes",
+      "nome": "Resoluções do CMN e do BCB",
+      "categoria": "comunicado_relevante",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
+      "id": "b3_oficios",
+      "nome": "Ofícios e comunicados da B3",
+      "categoria": "comunicado_relevante",
+      "ativa": true,
+      "disponivel": true,
+      "aviso": null
+    },
+    {
       "id": "releases_b3",
       "nome": "Releases de Resultados (B3)",
       "categoria": "release",

@@ -29,14 +29,22 @@ from suno.dominio import (
     ConferenciaVisual,
     Execucao,
     ErroProvedor,
+    FamiliaVisual,
     Formato,
+    FotoDoPacote,
     ImagemSlide,
     PacotePublicacao,
     PapelLLM,
     ReferenciaVisual,
 )
-from suno.pacote.carrossel import folha_de_contato, renderizar_carrossel
-from suno.pacote.direcao_de_arte import resumir_direcao_renderizada
+from suno.imagens import BibliotecaDeImagens, bloco_de_creditos
+from suno.pacote.carrossel import folha_de_contato, motor_de_render, renderizar_carrossel
+from suno.pacote.direcao_de_arte import (
+    composicoes_compativeis,
+    escolher_familia,
+    resumir_direcao_renderizada,
+)
+from suno.pacote.fotos import FotoDoSlide, resolver_fotos
 from suno.pacote.diretor_de_arte_ia import planejar_com_diretor_de_arte
 from suno.pacote.historico_layouts import (
     NOME_DO_BANCO,
@@ -117,24 +125,56 @@ def _montar_uma(
     provedor_visao: Provedor | None = None,
     sinais_humanos: dict[str, list[dict[str, int | str]]] | None = None,
     referencia_preferida: ReferenciaVisual | None = None,
+    familia_visual: FamiliaVisual | None = None,
+    biblioteca_de_fotos: BibliotecaDeImagens | None = None,
+    buscar_fotos: bool = False,
 ) -> PacotePublicacao:
     pasta_do_pacote.mkdir(parents=True, exist_ok=True)
-    legenda, hashtags = montar_legenda(celula, execucao.ancoras)
 
+    fotos: dict[int, FotoDoSlide] = {}
     imagens: list[ImagemSlide] = []
     folha: Path | None = None
     conferencia = ConferenciaVisual()
     direcao_de_arte = None
     video: Path | None = None
 
+    familia = FamiliaVisual.SUNO_ESCURO
     if celula.formato is Formato.CARROSSEL:
+        slides = celula.conteudo.slides or []
+        # As famílias visuais só existem no motor de navegador; a reserva Pillow segue com o
+        # layout escuro de sempre e não usa foto.
+        com_familias = motor_de_render() == "puppeteer"
+        if com_familias:
+            fotos = resolver_fotos(
+                slides,
+                biblioteca_de_fotos,
+                permitir_rede=buscar_fotos,
+                provedor_visao=provedor_visao,
+            )
+        # O plano só enxerga a foto que de fato existe: sem ela, evita layout de foto.
+        slides_do_plano = [
+            slide if indice in fotos else slide.model_copy(update={"imagem": None})
+            for indice, slide in enumerate(slides)
+        ]
+        if com_familias:
+            familia = familia_visual or escolher_familia(
+                slides_do_plano, historico_layouts, referencia_preferida
+            )
+        sem_layout = sorted(
+            {s.tipo.value for s in slides_do_plano if not composicoes_compativeis(s, familia)}
+        )
+        if sem_layout:
+            raise ValueError(
+                f"a família {familia.value} não tem layout para os papéis: {', '.join(sem_layout)}"
+            )
         resultado_direcao = planejar_com_diretor_de_arte(
-            celula.conteudo.slides or [],
+            slides_do_plano,
             referencias_aprovadas,
             historico_layouts,
             provedor=provedor_direcao,
             sinais_humanos=sinais_humanos,
             referencia_preferida=referencia_preferida,
+            familia=familia,
         )
         imagens = renderizar_carrossel(
             celula,
@@ -143,6 +183,7 @@ def _montar_uma(
             historico_layouts=historico_layouts,
             referencias_aprovadas=referencias_aprovadas,
             plano_direcao=tuple(resultado_direcao.escolhas),
+            fotos={indice: foto.caminho for indice, foto in fotos.items()},
         )
         folha = folha_de_contato(imagens, pasta_do_pacote / NOME_DA_FOLHA)
         conferencia = conferir_imagens(imagens, execucao.ancoras)
@@ -169,6 +210,7 @@ def _montar_uma(
             origem_do_plano=resultado_direcao.origem,
             provedor=resultado_direcao.provedor,
             motivo_fallback=resultado_direcao.motivo_fallback,
+            familia=familia if com_familias else None,
         )
     elif celula.formato is Formato.TEXTO_ANALITICO:
         (pasta_do_pacote / NOME_DO_TEXTO).write_text(celula.conteudo.texto or "", encoding="utf-8")
@@ -189,6 +231,8 @@ def _montar_uma(
                 medicoes=_medir_video_se_disponivel(video, celula.conteudo.duracao_alvo_s)
             )
 
+    creditos = bloco_de_creditos([foto.imagem for foto in fotos.values()])
+    legenda, hashtags = montar_legenda(celula, execucao.ancoras, creditos)
     (pasta_do_pacote / NOME_DA_LEGENDA).write_text(
         f"{legenda}\n\n{' '.join(hashtags)}\n", encoding="utf-8"
     )
@@ -199,6 +243,18 @@ def _montar_uma(
         legenda=legenda,
         hashtags=hashtags,
         imagens=imagens,
+        fotos=[
+            FotoDoPacote(
+                indice=indice,
+                arquivo=foto.caminho.name,
+                assunto=(celula.conteudo.slides or [])[indice].imagem or "",
+                autor=foto.imagem.autor,
+                licenca=foto.imagem.licenca,
+                url_origem=foto.imagem.url_origem,
+                credito=foto.credito(),
+            )
+            for indice, foto in sorted(fotos.items())
+        ],
         folha_de_contato=folha,
         video=video,
         conferencia=conferencia,
@@ -217,6 +273,9 @@ def montar_pacote(
     alvo: tuple[Audiencia, Formato] | None = None,
     provedor_direcao: Provedor | None = None,
     provedor_visao: Provedor | None = None,
+    familia_visual: FamiliaVisual | None = None,
+    biblioteca_de_fotos: BibliotecaDeImagens | None = None,
+    buscar_fotos: bool = False,
 ) -> list[PacotePublicacao]:
     """Um Pacote por Célula aprovada, em ``<pasta_execucoes>/<id>/pacote/<audiencia>-<formato>/``.
 
@@ -308,6 +367,9 @@ def montar_pacote(
             provedor_visao=provedor_visao,
             sinais_humanos=sinais_humanos,
             referencia_preferida=referencia_preferida,
+            familia_visual=familia_visual,
+            biblioteca_de_fotos=biblioteca_de_fotos,
+            buscar_fotos=buscar_fotos,
         )
         pacotes.append(pacote)
         if pacote.direcao_de_arte is not None:

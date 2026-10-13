@@ -10,8 +10,8 @@ const api = criarCliente();
 
 export type Audiencia = components["schemas"]["Audiencia"];
 export type Formato = components["schemas"]["Formato"];
-type Ata = components["schemas"]["Ata"];
-type Execucao = components["schemas"]["Execucao"];
+export type Ata = components["schemas"]["Ata"];
+export type Execucao = components["schemas"]["Execucao"];
 export type ExecucaoResumo = components["schemas"]["ExecucaoResumo"];
 export type AncoraNumerica = components["schemas"]["AncoraNumerica"];
 export type Conteudo = components["schemas"]["Conteudo"];
@@ -31,15 +31,19 @@ export type FormatoExportacao = components["schemas"]["FormatoExportacao"];
 export type Andamento = components["schemas"]["Andamento"];
 export type AndamentoDaCelula = components["schemas"]["AndamentoDaCelula"];
 export type ModoDeGeracao = components["schemas"]["ModoDeGeracao"];
-type NovaSaida = components["schemas"]["NovaSaida"];
+export type NovaSaida = components["schemas"]["NovaSaida"];
 type Origem = components["schemas"]["Origem"];
 export type OrigemComAtas = components["schemas"]["OrigemComAtas"];
 type ListaDeOrigens = components["schemas"]["ListaDeOrigens"];
 export type ResumoDaAta = components["schemas"]["ResumoDaAta"];
 export type Sugestao = components["schemas"]["Sugestao"];
 type Sugestoes = components["schemas"]["Sugestoes"];
-type EstadoDaAtualizacao = components["schemas"]["EstadoDaAtualizacao"];
+export type EstadoDaAtualizacao = components["schemas"]["EstadoDaAtualizacao"];
+export type Disponivel = components["schemas"]["Disponivel"];
 type EstadoDaMontagem = components["schemas"]["EstadoDaMontagem"];
+export type ComposicaoCarrossel = components["schemas"]["ComposicaoCarrossel"];
+export type Slide = components["schemas"]["Slide"];
+
 export type DuracaoDoVideo = components["schemas"]["DuracaoDoVideo"];
 export type PlanoDeEdicao = components["schemas"]["PlanoDeEdicao"];
 export type ReferenciaVisual = components["schemas"]["ReferenciaVisual"];
@@ -318,6 +322,20 @@ export function alterarOrigem(
 /** Busca nas Origens ligadas, em segundo plano. Responde na hora com o estado. */
 export function atualizarFontes(): Promise<EstadoDaAtualizacao> {
   return extrair(api.POST("/api/fontes/atualizar", {}));
+}
+
+export function obterAtualizacao(): Promise<EstadoDaAtualizacao> {
+  return extrair(api.GET("/api/fontes/atualizacao", {}));
+}
+
+/** Baixa o que a consulta achou no período (datas "AAAA-MM-DD", incluídas). */
+export function baixarPeriodo(de: string, ate: string): Promise<EstadoDaAtualizacao> {
+  return extrair(api.POST("/api/fontes/atualizar/baixar", { body: { de, ate } }));
+}
+
+/** Descarta a consulta que espera o período. */
+export function cancelarAtualizacao(): Promise<EstadoDaAtualizacao> {
+  return extrair(api.POST("/api/fontes/atualizar/cancelar", {}));
 }
 
 export function obterSugestoes(): Promise<Sugestoes> {

@@ -1,0 +1,115 @@
+{
+  "familia": "asset",
+  "nome": "Suno Asset",
+  "descricao": "Família da Suno Asset (gestora de fundos): capa vermelha com textura de tecido e botão verde, e slide de aviso legal. Tem marca própria e só entra por escolha explícita; o aviso legal é o da gestora para fundos e exige revisão do compliance antes de acompanhar outro conteúdo.",
+  "referencia": "templates/suno/carrossel5",
+  "layouts": {
+    "asset_capa": {
+      "arquivo": "familias/asset/capa.html",
+      "descricao": "Capa vermelha da Suno Asset: fundo de tecido vermelho com moldura arredondada fina, sobretítulo fixo, título grande em caixa-alta (1 a 3 linhas), foto opcional, subtítulo, botão verde e rodapé fixos e logo SUNO ( ASSET ).",
+      "papeis": [
+        "hook"
+      ],
+      "usa_imagem": true,
+      "fundo": "#9E171C",
+      "pontos_por_papel": {
+        "hook": 5
+      },
+      "slots": {
+        "sobretitulo": {
+          "fonte": "fixo:ANÁLISE DO MERCADO"
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 50
+        },
+        "imagem": {
+          "fonte": "imagem",
+          "obrigatorio": false
+        },
+        "subtitulo": {
+          "fonte": "corpo",
+          "max_caracteres": 160
+        },
+        "botao": {
+          "fonte": "fixo:Saiba mais >>>"
+        },
+        "rodape": {
+          "fonte": "fixo:Conteúdo informativo"
+        }
+      },
+      "referencia": {
+        "titulo": "Capa vermelha com título em caixa-alta e botão verde",
+        "tema": "capa de conteúdo da Suno Asset",
+        "descricao": "Fundo vermelho de tecido com moldura arredondada fina, sobretítulo espaçado, título gigante branco em caixa-alta, ilustração ou foto ao centro, subtítulo e botão verde.",
+        "instrucao_de_design": "Fundo vermelho texturizado e moldura de cantos bem arredondados em branco translúcido; sobretítulo em caixa-alta espaçada, título branco em sans pesada com entrelinha colada, foto de cantos arredondados levemente girada, subtítulo centralizado de três linhas e botão verde com setas >>>; logo SUNO ( ASSET ) no canto. Marca da Suno Asset: use só quando a conta for explicitamente a da gestora.",
+        "analise": {
+          "posicao_do_titulo": "centro",
+          "proeminencia_do_titulo": "alta",
+          "densidade_textual": "baixa",
+          "uso_de_imagem": "foto_central_arredondada",
+          "tipo_de_fundo": "vermelho_com_textura_de_tecido",
+          "elementos_visuais": [
+            "moldura_arredondada",
+            "botao_verde",
+            "moedas_decorativas",
+            "logo"
+          ],
+          "estrutura_do_conteudo": [
+            "sobretitulo",
+            "titulo",
+            "foto",
+            "subtitulo",
+            "botao"
+          ]
+        },
+        "origem": "Suno Asset — carrossel real @suno (templates/suno/carrossel5)"
+      }
+    },
+    "asset_aviso": {
+      "arquivo": "familias/asset/aviso.html",
+      "descricao": "Slide de aviso legal sobre papel claro: título centralizado, texto jurídico fixo justificado, logo SUNO ( ASSET ) e selo ANBIMA simplificado. O texto jurídico é o aviso da Suno Asset para fundos de investimento e deve ser revisado pelo compliance antes de uso com outro conteúdo.",
+      "papeis": [
+        "cta"
+      ],
+      "fundo": "#EFEFEE",
+      "pontos_por_papel": {
+        "cta": 6,
+        "ponto": 1,
+        "citacao": 1
+      },
+      "slots": {
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 45
+        },
+        "texto_juridico": {
+          "fonte": "manter"
+        }
+      },
+      "referencia": {
+        "titulo": "Aviso legal sobre papel claro",
+        "tema": "aviso legal de fundos de investimento",
+        "descricao": "Fundo de papel claro com título em caixa-alta, bloco de texto jurídico justificado em fonte leve e o logo SUNO ( ASSET ) com selo de autorregulação laranja.",
+        "instrucao_de_design": "Papel claro com textura sutil; título centralizado em caixa-alta pesada, texto jurídico justificado em coluna estreita com negrito nas frases-chave e logo SUNO ( ASSET ) com selo laranja embaixo. O texto jurídico é fixo (aviso da Suno Asset para fundos) e precisa de revisão do compliance antes de acompanhar outro conteúdo.",
+        "analise": {
+          "posicao_do_titulo": "superior_centro",
+          "proeminencia_do_titulo": "media",
+          "densidade_textual": "alta",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "claro_texturizado",
+          "elementos_visuais": [
+            "logo",
+            "selo_laranja"
+          ],
+          "estrutura_do_conteudo": [
+            "titulo",
+            "texto_juridico",
+            "logo"
+          ]
+        },
+        "origem": "Suno Asset — carrossel real @suno (templates/suno/carrossel5)"
+      }
+    }
+  }
+}

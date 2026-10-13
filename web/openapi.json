@@ -152,6 +152,64 @@
         }
       }
     },
+    "/api/fontes/atualizar/baixar": {
+      "post": {
+        "summary": "Baixar Periodo",
+        "description": "Baixa o que a consulta achou no período escolhido (precisa de uma consulta esperando).",
+        "operationId": "baixar_periodo_api_fontes_atualizar_baixar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodoDoDownload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaAtualizacao"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fontes/atualizar/cancelar": {
+      "post": {
+        "summary": "Cancelar Atualizacao",
+        "description": "Descarta a consulta que espera o período.",
+        "operationId": "cancelar_atualizacao_api_fontes_atualizar_cancelar_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstadoDaAtualizacao"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/fontes/atualizacao": {
       "get": {
         "summary": "Obter Atualizacao",
@@ -2562,7 +2620,24 @@
           "infografico",
           "comparativo",
           "estatistico",
-          "narrativo"
+          "narrativo",
+          "explicativo_capa",
+          "explicativo_texto_imagem",
+          "explicativo_texto",
+          "explicativo_texto_ilustracao",
+          "noticia_capa",
+          "noticia_foto",
+          "jornal_capa",
+          "jornal_item_numerado",
+          "jornal_texto",
+          "dados_texto_foto_embaixo",
+          "dados_texto_duplo_foto",
+          "dados_foto_no_meio",
+          "dados_numero_gigante",
+          "dados_texto_grande",
+          "dados_cta",
+          "asset_capa",
+          "asset_aviso"
         ],
         "title": "ComposicaoCarrossel",
         "description": "A composição visual escolhida pela direção de arte, separada do papel narrativo."
@@ -2949,6 +3024,17 @@
       },
       "DirecaoDeArteCarrossel": {
         "properties": {
+          "familia": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamiliaVisual"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A família visual do carrossel; ausente nos pacotes antigos."
+          },
           "escolhas": {
             "items": {
               "$ref": "#/components/schemas/EscolhaDeLayout"
@@ -3012,6 +3098,35 @@
         "type": "object",
         "title": "DirecaoDeArteCarrossel",
         "description": "Plano efetivamente renderizado, com diversidade mensurável e auditável."
+      },
+      "Disponivel": {
+        "properties": {
+          "origem": {
+            "type": "string",
+            "title": "Origem"
+          },
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "data": {
+            "type": "string",
+            "format": "date",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origem",
+          "identificador",
+          "titulo",
+          "data"
+        ],
+        "title": "Disponivel"
       },
       "DuracaoDoVideo": {
         "type": "string",
@@ -3109,7 +3224,9 @@
             "type": "string",
             "enum": [
               "ocioso",
-              "rodando",
+              "consultando",
+              "aguardando_filtro",
+              "baixando",
               "ok",
               "erro"
             ],
@@ -3149,6 +3266,52 @@
               }
             ],
             "title": "Concluida Em"
+          },
+          "janela_dias": {
+            "type": "integer",
+            "title": "Janela Dias",
+            "default": 30
+          },
+          "desde": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Desde"
+          },
+          "ate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ate"
+          },
+          "disponiveis": {
+            "items": {
+              "$ref": "#/components/schemas/Disponivel"
+            },
+            "type": "array",
+            "title": "Disponiveis"
+          },
+          "a_baixar": {
+            "type": "integer",
+            "title": "A Baixar",
+            "default": 0
+          },
+          "baixados": {
+            "type": "integer",
+            "title": "Baixados",
+            "default": 0
           }
         },
         "type": "object",
@@ -3544,6 +3707,19 @@
         "title": "Faixa",
         "description": "Intervalo fechado em ``minimo``, aberto em ``maximo``. ``None`` é sem limite daquele lado."
       },
+      "FamiliaVisual": {
+        "type": "string",
+        "enum": [
+          "suno_escuro",
+          "noticia",
+          "explicativo",
+          "jornal",
+          "dados",
+          "asset"
+        ],
+        "title": "FamiliaVisual",
+        "description": "Conjunto coerente de layouts, como os de uma conta da Suno. Um carrossel usa uma só."
+      },
       "FaseDaExecucao": {
         "type": "string",
         "enum": [
@@ -3653,6 +3829,53 @@
           "zip"
         ],
         "title": "FormatoExportacao"
+      },
+      "FotoDoPacote": {
+        "properties": {
+          "indice": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Indice",
+            "description": "Posição do slide, começando em zero."
+          },
+          "arquivo": {
+            "type": "string",
+            "title": "Arquivo",
+            "description": "Nome do arquivo na biblioteca de imagens."
+          },
+          "assunto": {
+            "type": "string",
+            "title": "Assunto"
+          },
+          "autor": {
+            "type": "string",
+            "title": "Autor"
+          },
+          "licenca": {
+            "type": "string",
+            "title": "Licenca"
+          },
+          "url_origem": {
+            "type": "string",
+            "title": "Url Origem"
+          },
+          "credito": {
+            "type": "string",
+            "title": "Credito"
+          }
+        },
+        "type": "object",
+        "required": [
+          "indice",
+          "arquivo",
+          "assunto",
+          "autor",
+          "licenca",
+          "url_origem",
+          "credito"
+        ],
+        "title": "FotoDoPacote",
+        "description": "Uma foto real usada num slide, com a licença e o crédito que a acompanham."
       },
       "GravidadeProblemaTransversal": {
         "type": "string",
@@ -4379,6 +4602,14 @@
             "type": "array",
             "title": "Imagens"
           },
+          "fotos": {
+            "items": {
+              "$ref": "#/components/schemas/FotoDoPacote"
+            },
+            "type": "array",
+            "title": "Fotos",
+            "description": "As fotos reais dos slides e seus créditos."
+          },
           "folha_de_contato": {
             "anyOf": [
               {
@@ -4684,6 +4915,27 @@
           "ultimo_post_em"
         ],
         "title": "PerfilEmAlta"
+      },
+      "PeriodoDoDownload": {
+        "properties": {
+          "de": {
+            "type": "string",
+            "format": "date",
+            "title": "De"
+          },
+          "ate": {
+            "type": "string",
+            "format": "date",
+            "title": "Ate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "de",
+          "ate"
+        ],
+        "title": "PeriodoDoDownload",
+        "description": "O período, dentro da janela de 30 dias, que a pessoa escolheu baixar (datas incluídas)."
       },
       "PlanoDeEdicao": {
         "properties": {
@@ -5166,6 +5418,18 @@
             ],
             "title": "Dado",
             "description": "Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009)."
+          },
+          "imagem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imagem",
+            "description": "Assunto da foto do slide, em poucas palavras de busca (ex.: 'sede do Banco Central'). Não aparece no post: só orienta a busca de uma foto licenciada."
           }
         },
         "type": "object",
