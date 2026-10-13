@@ -82,7 +82,11 @@ from suno.gerador.execucao import (
     gravar_execucao,
     listar_execucoes,
 )
-from suno.origens.atualizacao import Atualizador, EstadoDaAtualizacao
+from suno.origens.atualizacao import (
+    Atualizador,
+    EstadoDaAtualizacao,
+    PedidoDeDownloadRecusado,
+)
 from suno.origens.catalogo import (
     PASTA_FONTES,
     Origem,
@@ -240,6 +244,13 @@ class OrigemComAtas(Origem):
     """Uma Origem do catálogo com as Atas que ela tem em disco (a Fonte e seus itens, na tela)."""
 
     atas: list[ResumoDaAta]
+
+
+class PeriodoDoDownload(BaseModel):
+    """O período, dentro da janela de 30 dias, que a pessoa escolheu baixar (datas incluídas)."""
+
+    de: date
+    ate: date
 
 
 class ListaDeOrigens(BaseModel):
@@ -583,6 +594,19 @@ def criar_app(
     def atualizar_fontes() -> EstadoDaAtualizacao:
         """Busca nas Origens ligadas, em segundo plano. Precisa de rede e falha sem travar a tela."""
         return atualizador.iniciar()
+
+    @app.post("/api/fontes/atualizar/baixar", status_code=http.HTTP_202_ACCEPTED)
+    def baixar_periodo(corpo: PeriodoDoDownload) -> EstadoDaAtualizacao:
+        """Baixa o que a consulta achou no período escolhido (precisa de uma consulta esperando)."""
+        try:
+            return atualizador.baixar(corpo.de, corpo.ate)
+        except PedidoDeDownloadRecusado as erro:
+            raise HTTPException(422, str(erro)) from None
+
+    @app.post("/api/fontes/atualizar/cancelar")
+    def cancelar_atualizacao() -> EstadoDaAtualizacao:
+        """Descarta a consulta que espera o período."""
+        return atualizador.cancelar()
 
     @app.get("/api/fontes/atualizacao")
     def obter_atualizacao() -> EstadoDaAtualizacao:

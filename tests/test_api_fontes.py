@@ -55,7 +55,16 @@ def test_a_lista_traz_a_copom_280_com_resumo_e_a_cvm_desligada(tmp_path: Path):
     corpo = _cliente(tmp_path).get("/api/fontes").json()
 
     origens = {o["id"]: o for o in corpo["origens"]}
-    assert list(origens) == ["copom", "cvm_fatos_relevantes", "releases_b3", "importados"]
+    assert list(origens) == [
+        "copom",
+        "cvm_fatos_relevantes",
+        "cvm_demonstracoes",
+        "bcb_relatorios",
+        "bcb_resolucoes",
+        "b3_oficios",
+        "releases_b3",
+        "importados",
+    ]
     assert origens["copom"]["ativa"] is True
     ata = origens["copom"]["atas"][0]
     assert ata["identificador"] == ATA
@@ -246,15 +255,25 @@ def test_a_sugestao_inclui_a_origem_ligada_e_ignora_a_desligada(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_atualizar_sem_rede_devolve_o_erro_sem_derrubar_a_listagem(tmp_path: Path):
-    def cair(destino):
+class _ColetorSemRede:
+    origem = "copom"
+    espera_s = 0.0
+
+    def listar(self, cliente, desde, hoje):
         raise ErroDeIngestao("falha ao listar Atas no BCB: sem rede")
 
+
+class _ClienteFalso:
+    def close(self) -> None:
+        pass
+
+
+def test_atualizar_sem_rede_devolve_o_erro_sem_derrubar_a_listagem(tmp_path: Path):
     atualizador = Atualizador(
         PASTA_ATAS,
         tmp_path / "fontes",
-        buscar_copom=cair,
-        buscar_cvm=lambda destino: [],
+        coletores={"copom": _ColetorSemRede()},
+        fabrica_de_cliente=_ClienteFalso,
     )
     cliente = _cliente(tmp_path, atualizador=atualizador)
 
@@ -268,6 +287,36 @@ def test_atualizar_sem_rede_devolve_o_erro_sem_derrubar_a_listagem(tmp_path: Pat
     listagem = cliente.get("/api/fontes")
     assert listagem.status_code == 200
     assert listagem.json()["atualizacao"]["estado"] == "erro"
+
+
+def test_baixar_sem_consulta_esperando_responde_422(tmp_path: Path):
+    cliente = _cliente(tmp_path)
+
+    resposta = cliente.post("/api/fontes/atualizar/baixar", json={"de": "2026-10-01", "ate": "2026-10-12"})
+
+    assert resposta.status_code == 422
+    assert "não há consulta" in resposta.json()["detail"]
+
+
+def test_cancelar_sem_consulta_devolve_ocioso(tmp_path: Path):
+    cliente = _cliente(tmp_path)
+
+    assert cliente.post("/api/fontes/atualizar/cancelar").json()["estado"] == "ocioso"
+
+
+def test_o_catalogo_lista_as_novas_origens(tmp_path: Path):
+    ids = [o["id"] for o in _cliente(tmp_path).get("/api/fontes").json()["origens"]]
+
+    assert ids == [
+        "copom",
+        "cvm_fatos_relevantes",
+        "cvm_demonstracoes",
+        "bcb_relatorios",
+        "bcb_resolucoes",
+        "b3_oficios",
+        "releases_b3",
+        "importados",
+    ]
 
 
 def test_gerar_de_ata_sem_numero_responde_422_antes_de_gastar_cota(tmp_path: Path, monkeypatch):
