@@ -92,6 +92,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fontes/atualizar/baixar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Baixar Periodo
+         * @description Baixa o que a consulta achou no período escolhido (precisa de uma consulta esperando).
+         */
+        post: operations["baixar_periodo_api_fontes_atualizar_baixar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fontes/atualizar/cancelar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancelar Atualizacao
+         * @description Descarta a consulta que espera o período.
+         */
+        post: operations["cancelar_atualizacao_api_fontes_atualizar_cancelar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/fontes/atualizacao": {
         parameters: {
             query?: never;
@@ -1087,7 +1127,7 @@ export interface components {
          * @description A composição visual escolhida pela direção de arte, separada do papel narrativo.
          * @enum {string}
          */
-        ComposicaoCarrossel: "editorial" | "minimalista" | "infografico" | "comparativo" | "estatistico" | "narrativo";
+        ComposicaoCarrossel: "editorial" | "minimalista" | "infografico" | "comparativo" | "estatistico" | "narrativo" | "explicativo_capa" | "explicativo_texto_imagem" | "explicativo_texto" | "explicativo_texto_ilustracao" | "noticia_capa" | "noticia_foto" | "jornal_capa" | "jornal_item_numerado" | "jornal_texto" | "dados_texto_foto_embaixo" | "dados_texto_duplo_foto" | "dados_foto_no_meio" | "dados_numero_gigante" | "dados_texto_grande" | "dados_cta" | "asset_capa" | "asset_aviso";
         /**
          * ConferenciaVisual
          * @description O resultado da avaliação visual do Pacote. Vai ao H5, nunca ao Laudo.
@@ -1259,6 +1299,8 @@ export interface components {
          * @description Plano efetivamente renderizado, com diversidade mensurável e auditável.
          */
         DirecaoDeArteCarrossel: {
+            /** @description A família visual do carrossel; ausente nos pacotes antigos. */
+            familia?: components["schemas"]["FamiliaVisual"] | null;
             /** Escolhas */
             escolhas?: components["schemas"]["EscolhaDeLayout"][];
             /** Distribuicao */
@@ -1282,6 +1324,20 @@ export interface components {
             provedor?: string | null;
             /** Motivo Fallback */
             motivo_fallback?: string | null;
+        };
+        /** Disponivel */
+        Disponivel: {
+            /** Origem */
+            origem: string;
+            /** Identificador */
+            identificador: string;
+            /** Titulo */
+            titulo: string;
+            /**
+             * Data
+             * Format: date
+             */
+            data: string;
         };
         /**
          * DuracaoDoVideo
@@ -1334,7 +1390,7 @@ export interface components {
              * @default ocioso
              * @enum {string}
              */
-            estado: "ocioso" | "rodando" | "ok" | "erro";
+            estado: "ocioso" | "consultando" | "aguardando_filtro" | "baixando" | "ok" | "erro";
             /**
              * Mensagem
              * @default
@@ -1349,6 +1405,27 @@ export interface components {
             iniciada_em?: string | null;
             /** Concluida Em */
             concluida_em?: string | null;
+            /**
+             * Janela Dias
+             * @default 30
+             */
+            janela_dias: number;
+            /** Desde */
+            desde?: string | null;
+            /** Ate */
+            ate?: string | null;
+            /** Disponiveis */
+            disponiveis?: components["schemas"]["Disponivel"][];
+            /**
+             * A Baixar
+             * @default 0
+             */
+            a_baixar: number;
+            /**
+             * Baixados
+             * @default 0
+             */
+            baixados: number;
         };
         /** EstadoDaMontagem */
         EstadoDaMontagem: {
@@ -1522,6 +1599,12 @@ export interface components {
             maximo?: number | null;
         };
         /**
+         * FamiliaVisual
+         * @description Conjunto coerente de layouts, como os de uma conta da Suno. Um carrossel usa uma só.
+         * @enum {string}
+         */
+        FamiliaVisual: "suno_escuro" | "noticia" | "explicativo" | "jornal" | "dados" | "asset";
+        /**
          * FaseDaExecucao
          * @description Onde a execução inteira está.
          * @enum {string}
@@ -1585,6 +1668,32 @@ export interface components {
          * @enum {string}
          */
         FormatoExportacao: "json" | "md" | "zip";
+        /**
+         * FotoDoPacote
+         * @description Uma foto real usada num slide, com a licença e o crédito que a acompanham.
+         */
+        FotoDoPacote: {
+            /**
+             * Indice
+             * @description Posição do slide, começando em zero.
+             */
+            indice: number;
+            /**
+             * Arquivo
+             * @description Nome do arquivo na biblioteca de imagens.
+             */
+            arquivo: string;
+            /** Assunto */
+            assunto: string;
+            /** Autor */
+            autor: string;
+            /** Licenca */
+            licenca: string;
+            /** Url Origem */
+            url_origem: string;
+            /** Credito */
+            credito: string;
+        };
         /**
          * GravidadeProblemaTransversal
          * @enum {string}
@@ -1882,6 +1991,11 @@ export interface components {
             hashtags?: string[];
             /** Imagens */
             imagens?: components["schemas"]["ImagemSlide"][];
+            /**
+             * Fotos
+             * @description As fotos reais dos slides e seus créditos.
+             */
+            fotos?: components["schemas"]["FotoDoPacote"][];
             /** Folha De Contato */
             folha_de_contato?: string | null;
             /** Video */
@@ -2006,6 +2120,22 @@ export interface components {
              * Format: date-time
              */
             ultimo_post_em: string;
+        };
+        /**
+         * PeriodoDoDownload
+         * @description O período, dentro da janela de 30 dias, que a pessoa escolheu baixar (datas incluídas).
+         */
+        PeriodoDoDownload: {
+            /**
+             * De
+             * Format: date
+             */
+            de: string;
+            /**
+             * Ate
+             * Format: date
+             */
+            ate: string;
         };
         /**
          * PlanoDeEdicao
@@ -2224,6 +2354,11 @@ export interface components {
              * @description Chave da Âncora numérica a plotar neste slide, se houver (ADR 0009).
              */
             dado?: string | null;
+            /**
+             * Imagem
+             * @description Assunto da foto do slide, em poucas palavras de busca (ex.: 'sede do Banco Central'). Não aparece no post: só orienta a busca de uma foto licenciada.
+             */
+            imagem?: string | null;
         };
         /**
          * SomDeCena
@@ -2432,6 +2567,59 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaAtualizacao"];
+                };
+            };
+        };
+    };
+    baixar_periodo_api_fontes_atualizar_baixar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PeriodoDoDownload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstadoDaAtualizacao"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancelar_atualizacao_api_fontes_atualizar_cancelar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
