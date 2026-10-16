@@ -1,7 +1,7 @@
 # Suno Content — interface
 
 React + Vite + Tailwind sobre FastAPI (ADR 0005), no padrão visual do editor do biosites
-([ADR 0028](../docs/adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)): barra lateral
+([ADR 0028](../docs/DECISOES.md)): barra lateral
 arredondada, coluna de ajustes à esquerda e área de prévia à direita.
 
 Seis guias, na ordem da barra:

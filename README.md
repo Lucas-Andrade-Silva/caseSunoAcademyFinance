@@ -88,7 +88,7 @@ variáveis e comandos estão em [docs/FUNCIONAMENTO.md](docs/FUNCIONAMENTO.md).
 O sistema nunca recomenda compra ou venda de investimento: no Brasil, isso é atividade regulada.
 Quem detecta é código com regra fixa (léxico e padrão sintático), nunca um modelo de linguagem,
 e o conteúdo que cruza essa linha é reprovado sem correção parcial
-([ADR 0012](docs/adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)).
+([ADR 0012](docs/DECISOES.md)).
 
 ## Os seis entregáveis do case
 
@@ -131,6 +131,5 @@ docs/            arquitetura, funcionamento, decisões (ADRs) e relatório exper
 
 - [docs/ARQUITETURA.md](docs/ARQUITETURA.md): como as peças se encaixam e onde um humano decide.
 - [docs/FUNCIONAMENTO.md](docs/FUNCIONAMENTO.md): comandos, configuração, arquivos gerados e API.
-- [docs/DECISOES.md](docs/DECISOES.md): todas as decisões de arquitetura, resumidas; o texto completo
-  de cada uma está em [docs/adr/](docs/adr/).
+- [docs/DECISOES.md](docs/DECISOES.md): todas as decisões de arquitetura (ADRs), resumidas.
 - [docs/relatorio-experimental.md](docs/relatorio-experimental.md): métricas, Limiares, custo e latência medidos.

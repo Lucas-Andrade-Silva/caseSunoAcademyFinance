@@ -2,7 +2,7 @@
 
 O Suno Content (Python) não chama o Jev direto: a Netlify só injeta a chave e o endereço do Jev
 (`TYPESAFE_API_KEY`, `TYPESAFE_BASE_URL`) dentro de uma Function publicada. Esta Function recebe o
-mesmo corpo que o `systemone` da TypeSafe aceita, repassa e devolve a resposta. [ADR 0035](../docs/adr/0035-qualidade-pelo-jev-depois-do-deterministico.md).
+mesmo corpo que o `systemone` da TypeSafe aceita, repassa e devolve a resposta. [ADR 0035](../docs/DECISOES.md).
 
 Cada chamada gasta **créditos da sua conta Netlify**. Por isso a Function recusa tudo que não traga
 `Authorization: Bearer <JEV_PROXY_SECRET>`, e recusa de vez se o segredo não estiver configurado.

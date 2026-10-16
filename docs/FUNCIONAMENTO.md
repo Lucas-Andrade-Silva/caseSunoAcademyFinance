@@ -2,7 +2,7 @@
 
 O que o sistema faz hoje, do ponto de vista de quem o opera: comandos, configuração, onde cada
 coisa grava e o que a API expõe. O desenho e o porquê estão em [ARQUITETURA.md](ARQUITETURA.md)
-e em [DECISOES.md](DECISOES.md) (texto completo em [adr/](adr/)). Todos os comandos rodam na raiz do repositório.
+e em [DECISOES.md](DECISOES.md). Todos os comandos rodam na raiz do repositório.
 
 ## Componentes
 

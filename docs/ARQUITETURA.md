@@ -145,11 +145,11 @@ flowchart TD
 
 | | Momento | Quem | O que decide |
 |---|---|---|---|
-| **H1** | Antes da execução | Qualquer um do time | Qual Ata entra. O fetch no BCB é comando separado; a demo roda sem rede ([ADR 0006](adr/0006-atas-do-copom-como-documento-fonte-principal.md)) |
+| **H1** | Antes da execução | Qualquer um do time | Qual Ata entra. O fetch no BCB é comando separado; a demo roda sem rede ([ADR 0006](DECISOES.md)) |
 | **H2** | Fora de runtime | Dona do Avaliador | Os Limiares, o Léxico e os padrões sintáticos. Deriva de ~30 Células rotuladas pelas duas pessoas, com Kappa reportado. Parametriza o Avaliador; não roda durante a execução |
-| **H3** | — | — | Removido junto com o Comitê, que era quem gerava o desempate ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)) |
-| **H4** | Depois do teto de correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)) |
-| **H5** | Antes de publicar | Qualquer um do time | Se o Pacote está apresentável. Aprovação do Laudo é sobre conteúdo; aqui se confere render, corte e legenda, com a lista da avaliação visual em mão ([ADR 0014](adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md)) |
+| **H3** | — | — | Removido junto com o Comitê, que era quem gerava o desempate ([ADR 0037](DECISOES.md)) |
+| **H4** | Depois do teto de correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](DECISOES.md)) |
+| **H5** | Antes de publicar | Qualquer um do time | Se o Pacote está apresentável. Aprovação do Laudo é sobre conteúdo; aqui se confere render, corte e legenda, com a lista da avaliação visual em mão ([ADR 0014](DECISOES.md)) |
 | **H6** | Publicação | Qualquer um do time | Publica. Não há integração de API com Instagram, TikTok ou Drive, por decisão |
 
 H4 e H5 aparecem na interface como filas. H1 e H2 são trabalho de linha de comando e de
@@ -167,10 +167,10 @@ a Ata, ligada por padrão). Abaixo do Limiar, ou diante de contradição provada
 dentro do mesmo teto de rodadas (padrão 4, de 0 a 10). Na correção o Gerador recebe a frase exata de cada problema, raciocina
 (`raciocinio`) e muda o mínimo. Depois das Células, uma conferência **determinística** da Matriz (quantidade,
 unicidade, aprovação e referências) vai para o JSON de auditoria. O Judge transversal foi removido
-([ADR 0015](adr/0015-papeis-especializados-em-fluxo-deterministico.md),
-[ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
-[ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md),
-[ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)).
+([ADR 0015](DECISOES.md),
+[ADR 0035](DECISOES.md),
+[ADR 0036](DECISOES.md),
+[ADR 0037](DECISOES.md)).
 
 "Agente" significa papel especializado com contrato fixo, não loop ReAct ou tool calling. O fluxo
 continua sem LangGraph ou MCP.
@@ -178,7 +178,7 @@ continua sem LangGraph ou MCP.
 **Avaliador individual** recebe `(Conteúdo, Âncora[], Audiência)` de uma Célula e devolve um
 Laudo. As cinco medidas rodam sem LLM e sem rede. O LLM (Jev e checador de fidelidade) aparece
 somente depois dessa aprovação. O contrato entre geração e regras individuais continua sendo essa assinatura
-([ADR 0001](adr/0001-gerador-e-avaliador-como-modulos-separados.md)).
+([ADR 0001](DECISOES.md)).
 
 ## O estágio de extração
 
@@ -190,7 +190,7 @@ Roda uma vez por Ata, antes da Matriz, e produz duas coisas:
 
 A tabela é o insumo **único** de número no sistema. O Gerador substitui em molde em vez de
 reescrever o número em prosa, e o Avaliador confere por igualdade exata — sem LLM, sem julgamento
-([ADR 0011](adr/0011-ancoras-numericas-sao-citadas-nunca-reescritas.md)). O texto da Célula, a
+([ADR 0011](DECISOES.md)). O texto da Célula, a
 legenda do Pacote e o gráfico do Carrossel leem todos da mesma tabela.
 
 Extração degradada é motivo de reprovação próprio, e vai direto para H4 sem passar pelo Ciclo de
@@ -225,17 +225,17 @@ Células faz o Instagram cortar o carrossel inteiro para igualar a primeira imag
 técnico, não estética. O visual vem de **famílias visuais** recriadas dos carrosséis reais da Suno
 (Notícia, Explicativo, Jornal, Dados e Asset, além do layout escuro antigo): um carrossel usa uma
 família, e os slides variam de layout dentro dela
-([ADR 0030](adr/0030-familias-visuais-do-carrossel.md)). O texto de tamanho variável encolhe até
+([ADR 0030](DECISOES.md)). O texto de tamanho variável encolhe até
 caber; o número do slide sai da Âncora, nunca do template.
 
 **Fotos.** O Gerador sugere só o assunto da foto (`Slide.imagem`). A foto é real, vem da biblioteca local
 `data/imagens/` (a demo roda sem rede) ou da busca de imagens na web (Bing) com relevância
 verificada por um juiz de visão, e o crédito vai na legenda; no MVP a licença não é verificada
-([ADR 0031](adr/0031-fotos-reais-e-licenciadas-nos-slides.md), [ADR 0032](adr/0032-fotos-da-web-pelo-bing-imagens-sem-verificar-licenca.md)). Sem foto, o layout degrada sozinho.
+([ADR 0031](DECISOES.md), [ADR 0032](DECISOES.md)). Sem foto, o layout degrada sozinho.
 Geração de imagem por modelo continua fora do caminho crítico.
 
-A reserva **Pillow + matplotlib** ([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md),
-[ADR 0020](adr/0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)) é o que o `pytest` exercita:
+A reserva **Pillow + matplotlib** ([ADR 0009](DECISOES.md),
+[ADR 0020](DECISOES.md)) é o que o `pytest` exercita:
 determinística, sem navegador, com o layout escuro e sem foto.
 
 ### Roteiro
@@ -243,7 +243,7 @@ determinística, sem navegador, com o layout escuro e sem foto.
 Fala cronometrada para vídeo vertical. O Gerador produz blocos de fala, cada um uma cena, com a
 indicação do que aparece na tela e a **direção de cena**: layout, ícone, transição de entrada,
 animação e momento do texto, efeito e sons, todos escolhidos de um catálogo fechado
-([ADR 0021](adr/0021-direcao-de-cena-do-roteiro-em-catalogo-fechado.md)). O primeiro bloco é o
+([ADR 0021](DECISOES.md)). O primeiro bloco é o
 gancho; os Limiares de Flesch-BR valem sobre o texto falado, não sobre a rubrica de cena.
 
 A pessoa escolhe a **duração** antes de gerar: 40 s, 1 min, 1 min 30, 2 min ou 3 min (padrão: 1
@@ -256,7 +256,7 @@ Fidelidade). Só o vídeo pronto não vai a juiz de visão
 entregue.
 
 O Gerador **termina aqui**. Narração, composição, legenda e lip-sync vivem depois, atrás de outra
-interface ([ADR 0004](adr/0004-renderizacao-de-video-fora-do-grafo.md)).
+interface ([ADR 0004](DECISOES.md)).
 
 ### Vídeo
 
@@ -272,7 +272,7 @@ assistindo no H5, que para sessenta segundos de vídeo é revisão completa, nã
 
 Do Roteiro aprovado sai também o **plano de edição**: um JSON versionado, autocontido, para colar
 num gerador de vídeo com avatar sintético, e a tabela legível da mesma edição
-([ADR 0021](adr/0021-direcao-de-cena-do-roteiro-em-catalogo-fechado.md)).
+([ADR 0021](DECISOES.md)).
 
 Um único mp4, 9:16, com dois destinos: a galeria da aplicação e o Pacote de publicação. Gerar um
 vídeo "para o app" e outro "para as redes" é o erro a evitar.
@@ -284,7 +284,7 @@ determinístico sai sempre igual, mas não sai necessariamente certo — texto e
 se sobrepõe no gráfico, contraste fica ilegível, legenda dessincroniza do áudio.
 
 Duas camadas cobrem esse vão, no mesmo padrão do resto do projeto
-([ADR 0014](adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md)).
+([ADR 0014](DECISOES.md)).
 
 **Medições, sempre ligadas e sem rede.** Estouro de caixa medido pelo Pillow, razão de contraste,
 dimensão exata, número no gráfico conferido contra a tabela de Âncoras numéricas, duração e áudio
@@ -318,22 +318,22 @@ Uma única interface por trás da qual vivem Gemini (gera) e Groq (julga e é a 
 resto do pipeline não sabe qual provedor está ativo. Distingue cota por minuto de cota diária
 antes de decidir entre esperar e trocar, e reaplica bindings de saída estruturada ao trocar de
 cliente, para não perder a capacidade de produzir o schema da Célula no meio de uma troca
-silenciosa ([ADR 0007](adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)).
+silenciosa ([ADR 0007](DECISOES.md)).
 
 ## O Avaliador e o Laudo
 
 Cinco medidas determinísticas: **Flesch-BR** (fórmula própria, não `textstat` —
-[ADR 0002](adr/0002-flesch-br-implementado-no-projeto.md)), **Densidade** contra o Léxico,
+[ADR 0002](DECISOES.md)), **Densidade** contra o Léxico,
 **Aderência** contra as Âncoras, **Recomendação** por Léxico mais padrão sintático em POS tagging
-([ADR 0012](adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)) e
+([ADR 0012](DECISOES.md)) e
 **integridade da extração**.
 
 Sobre elas, nos três Formatos, vêm duas camadas de LLM: a **Qualidade** (o Jev nota
 desenvolvimento, completude, clareza e tom) e a **Fidelidade** (um LLM confere a Célula contra a Ata
 e o código confere as citações). Compliance e Aderência nunca passam por LLM, nem como segunda
-opinião ([ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
-[ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md),
-[ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)).
+opinião ([ADR 0035](DECISOES.md),
+[ADR 0036](DECISOES.md),
+[ADR 0037](DECISOES.md)).
 
 O Laudo tem três destinos, não dois: aprovado, reprovado com correção possível, e reprovado para
 revisão humana. O motivo de reprovação é valor enumerado, não texto livre — é o que permite contar
@@ -342,14 +342,14 @@ reprovação por tipo no relatório final.
 ## A interface
 
 React + Vite + Tailwind sobre FastAPI, com cliente TypeScript gerado do OpenAPI
-([ADR 0005](adr/0005-interface-em-react-vite-sobre-fastapi.md)), lendo do disco — o mesmo arquivo
-que o pytest lê e que o relatório cita. Desde o [ADR 0028](adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)
+([ADR 0005](DECISOES.md)), lendo do disco — o mesmo arquivo
+que o pytest lê e que o relatório cita. Desde o [ADR 0028](DECISOES.md)
 ela é uma ferramenta de produção de conteúdo, no padrão visual do editor do biosites, em seis guias:
 
 - **Ingestão**: as notícias (Atas) de cada origem, só as dos últimos 30 dias; a pessoa marca até 3 e
   confirma com ATUALIZAR. Importar documento e buscar notícias novas ficam aqui. A busca consulta
   Copom, CVM, BCB (relatórios e resoluções) e B3 e, com mais de 2 documentos novos, pede o período a
-  baixar ([ADR 0029](adr/0029-origens-de-noticias-e-busca-em-duas-etapas.md)).
+  baixar ([ADR 0029](DECISOES.md)).
 - **Texto analítico**, **Carrossel** e **Vídeo**: cada uma confirma as notícias, pergunta as
   audiências e pede ao servidor uma Saída com o seu Formato. O texto ganha quatro formatos de
   apresentação (e-mail, newsletter, site, artigo) e um editor; o carrossel, a escolha de composição,
@@ -360,10 +360,10 @@ ela é uma ferramenta de produção de conteúdo, no padrão visual do editor do
   desliga: Jev, checador de fidelidade, limite de requisições, rodadas de correção, modelos).
 
 A geração roda em segundo plano na API, um job por vez
-([ADR 0017](adr/0017-api-dispara-a-geracao-em-segundo-plano.md)); fora do Copom a Saída é "não
-calibrada" ([ADR 0018](adr/0018-origens-e-categoria-da-ata.md)); a Visão unida junta de duas a
+([ADR 0017](DECISOES.md)); fora do Copom a Saída é "não
+calibrada" ([ADR 0018](DECISOES.md)); a Visão unida junta de duas a
 cinco Atas com as Âncoras prefixadas por parte
-([ADR 0019](adr/0019-visao-unida-com-chaves-de-ancora-prefixadas.md)) e, na tela, é o que acontece
+([ADR 0019](DECISOES.md)) e, na tela, é o que acontece
 quando a pessoa guarda mais de uma notícia.
 
 O que o servidor já faz e a tela deixou de mostrar nesta versão: a Decisão humana (aprovar ou
