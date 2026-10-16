@@ -60,8 +60,13 @@ export default function CartaoDeNoticia({
           {formatarDataDoDia(ata.data_referencia)}
           {selo && <span className="ml-2 text-coral-claro">{selo}</span>}
           {!ata.extracao_completa && (
-            <span className="ml-2 text-coral-claro" title="Sem data e número com unidade no texto: a geração recusa.">
-              sem número
+            <span className="ml-2 text-coral-claro" title="Texto curto demais e sem número: não há afirmação para conferir, a geração recusa.">
+              texto curto
+            </span>
+          )}
+          {ata.extracao_completa && ata.qualitativa && (
+            <span className="ml-2 text-etiqueta" title="Sem número no texto: o conteúdo sai qualitativo, só com afirmações da própria notícia.">
+              sem número · conteúdo qualitativo
             </span>
           )}
         </span>

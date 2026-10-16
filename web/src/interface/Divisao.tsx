@@ -3,6 +3,8 @@
 // pílula de contexto e o botão de ação, como o "URL: bio.site/..." e o UPDATE da referência.
 // Cada lado rola sozinho; abaixo de 1024 px os dois se empilham.
 import type { ReactNode } from "react";
+import { usarNovaGeracao } from "../nucleo/novaGeracao";
+import { IconeMais } from "./Icones";
 
 export function Divisao({
   esquerda,
@@ -63,6 +65,27 @@ export function CorpoDaPrevia({
 /** O título de página (32 px, leve) e o de seção (24 px). */
 export function Titulo({ children }: { children: ReactNode }) {
   return <h1 className="text-[32px] font-normal leading-tight tracking-[-0.005em]">{children}</h1>;
+}
+
+/** O título de uma guia que gera, com o "+" de nova geração ao lado (só com uma Saída pronta). */
+export function TituloDaGuia({ children }: { children: ReactNode }) {
+  const novaGeracao = usarNovaGeracao();
+  return (
+    <div className="flex items-center gap-3">
+      <Titulo>{children}</Titulo>
+      {novaGeracao && (
+        <button
+          type="button"
+          onClick={novaGeracao}
+          aria-label="Nova geração"
+          title="Nova geração"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-superficie text-texto transition-colors duration-150 hover:bg-superficie-alta"
+        >
+          <IconeMais size={18} />
+        </button>
+      )}
+    </div>
+  );
 }
 
 export function TituloDeSecao({ children }: { children: ReactNode }) {

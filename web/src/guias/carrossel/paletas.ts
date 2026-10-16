@@ -16,6 +16,15 @@ export const PALETAS: readonly Paleta[] = [
 
 export const PALETA_PADRAO: Paleta = PALETAS[0];
 
+/**
+ * A paleta na forma que o servidor lê (`fundo,texto,destaque,apoio`) para recolorir uma família.
+ * A Suno é a das cores originais: com ela a família sai como o post real, sem recolorir.
+ */
+export function paletaParaServidor(paleta: Paleta): string | undefined {
+  if (paleta.id === PALETA_PADRAO.id) return undefined;
+  return [paleta.fundo, paleta.texto, paleta.destaque, paleta.apoio].join(",");
+}
+
 export function paletaPorId(id: string | null | undefined): Paleta {
   return PALETAS.find((paleta) => paleta.id === id) ?? PALETA_PADRAO;
 }
