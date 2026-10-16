@@ -49,6 +49,7 @@ from suno.provedores._openai_compat import (
     texto_do_erro,
 )
 from suno.provedores.base import ProvedorBase
+from suno.provedores.limitador import esperar_vaga
 
 BASE_PADRAO = "https://generativelanguage.googleapis.com"
 
@@ -340,6 +341,7 @@ class ProvedorGemini(ProvedorBase):
     # -- contrato -----------------------------------------------------------
 
     def completar(self, pedido: PedidoLLM) -> RespostaLLM:
+        esperar_vaga()
         comeco = time.perf_counter()
         try:
             resposta_http = self._cliente.post(

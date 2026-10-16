@@ -52,15 +52,18 @@ from suno.gerador.moldes import (
     montar_conteudo,
     montar_pedido,
 )
+from suno.configuracoes import carregar as carregar_configuracoes
 from suno.provedores.base import Provedor
 
 if TYPE_CHECKING:
-    from suno.comite import Comite
+    from suno.avaliador.fidelidade import VerificadorDeFidelidade
+    from suno.avaliador.qualidade import AvaliadorDeQualidade
 
 _registro = logging.getLogger(__name__)
 
 TETO_DE_RODADAS = 2
-"""Duas correções depois da original: o ganho se concentra na primeira (ADR 0013)."""
+"""O teto antigo (ADR 0013). Hoje o valor vem de ``configuracoes.rodadas_de_correcao`` (padrão 4),
+editável na aba Configurações: o Ciclo regenera e roda o determinístico de novo até passar ou até o teto."""
 
 Andou = Callable[[Audiencia, Formato, EtapaDaCelula, int], None]
 """Aviso de andamento de uma Célula: (Audiência, Formato, etapa, rodada). Quem escuta é a API."""
@@ -95,7 +98,6 @@ def gerar_celula(
     provedor: Provedor,
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
-    orientacoes_transversais: list[str] | None = None,
     duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
     rascunho: str | None = None,
 ) -> Celula:
@@ -107,7 +109,6 @@ def gerar_celula(
         formato,
         rodada,
         correcoes,
-        orientacoes_transversais,
         comunicado=descricao_do_comunicado(ata.categoria),
         instrucoes_do_conjunto=(
             INSTRUCAO_DA_VISAO_UNIDA if ata.categoria is CategoriaDaAta.UNIDA else None
@@ -152,6 +153,14 @@ def _avisar(
         _registro.exception("aviso de andamento falhou em %s:%s", audiencia, formato)
 
 
+_ETAPA_DA_CAMADA = {
+    "deterministica": EtapaDaCelula.AVALIANDO_DETERMINISTICA,
+    "jev": EtapaDaCelula.AVALIANDO_JEV,
+    "llm": EtapaDaCelula.AVALIANDO_LLM,
+}
+"""As camadas do Avaliador (``laudo.avaliar``) e a etapa que cada uma mostra ao vivo."""
+
+
 def rodar_ciclo(
     ata: Ata,
     ancoras: Ancoras,
@@ -159,12 +168,12 @@ def rodar_ciclo(
     formato: Formato,
     provedor: Provedor,
     *,
-    comite: "Comite | None" = None,
-    orientacoes_transversais: list[str] | None = None,
+    qualidade: "AvaliadorDeQualidade | None" = None,
+    fidelidade: "VerificadorDeFidelidade | None" = None,
     ao_andar: Andou | None = None,
     duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
 ) -> HistoricoCelula:
-    """Gera, avalia e corrige uma posição da Matriz até o teto de duas rodadas (ADR 0013).
+    """Gera, avalia e corrige uma posição da Matriz até o teto de rodadas configurado (ADR 0013).
 
     ``ao_andar`` recebe ``gerando`` na rodada 0, ``corrigindo`` nas seguintes e, no fim,
     ``aprovada`` ou ``revisao_humana``.
@@ -181,8 +190,27 @@ def rodar_ciclo(
         if ata.categoria is CategoriaDaAta.COPOM
         else {"chaves_essenciais": chaves_essenciais_da_ata(ata)}
     )
+    # Qualidade (Jev, ADR 0035) e Fidelidade (ADR 0036) só viajam quando existem: quem não as liga
+    # chama `avaliar` como antes.
+    opcionais = {
+        nome: camada
+        for nome, camada in (("qualidade", qualidade), ("fidelidade", fidelidade))
+        if camada is not None
+    }
+
+    def avisos_de_camada(rodada: int) -> dict:
+        # Sem quem escute o andamento, `avaliar` é chamado como sempre foi.
+        if ao_andar is None:
+            return {}
+        return {
+            "ao_etapa": lambda camada: _avisar(
+                ao_andar, audiencia, formato, _ETAPA_DA_CAMADA[camada], rodada
+            )
+        }
+
     ultima_rodada = 0
-    for rodada in range(TETO_DE_RODADAS + 1):
+    teto_de_rodadas = carregar_configuracoes().rodadas_de_correcao
+    for rodada in range(teto_de_rodadas + 1):
         ultima_rodada = rodada
         _avisar(
             ao_andar,
@@ -200,12 +228,16 @@ def rodar_ciclo(
                 provedor,
                 rodada,
                 correcoes,
-                orientacoes_transversais,
                 duracao,
                 rascunho=tentativas[-1].celula.conteudo.texto_avaliavel() if tentativas else None,
             )
             laudo = avaliar(
-                celula.conteudo, ancoras.todas(), audiencia, comite=comite, **essenciais
+                celula.conteudo,
+                ancoras.todas(),
+                audiencia,
+                **opcionais,
+                **avisos_de_camada(rodada),
+                **essenciais,
             )
         except ErroProvedor as erro:
             falha = (

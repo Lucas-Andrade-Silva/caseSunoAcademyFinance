@@ -194,7 +194,13 @@ def _candidatos(
     if slide.dado:
         orientados_a_dados = [layout for layout in candidatos if layout.orientado_a_dados]
         if orientados_a_dados:
-            return orientados_a_dados
+            candidatos = orientados_a_dados
+    if not slide.imagem:
+        # Slide sem foto recebe um layout que não precisa dela, em vez de um layout de foto
+        # vazio. Só quando o papel não tem outra opção na família o layout de foto continua.
+        sem_foto = [layout for layout in candidatos if not layout.usa_imagem]
+        if sem_foto:
+            candidatos = sem_foto
     return candidatos
 
 

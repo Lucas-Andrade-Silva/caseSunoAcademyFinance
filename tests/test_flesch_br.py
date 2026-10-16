@@ -250,10 +250,11 @@ def test_contagem_de_palavras(texto: str, palavras: int) -> None:
 @pytest.mark.parametrize(
     "texto, silabas",
     [
-        ("7", 1),  # um dígito, uma sílaba
-        ("2026", 4),
-        ("14,00", 7),  # 4 dígitos + as 3 sílabas de vír-gu-la
-        ("1.234", 4),  # ponto de milhar não soma
+        ("7", 2),  # todo número é uma palavra curta de duas sílabas
+        ("2026", 2),
+        ("14,00", 2),
+        ("1.234", 2),
+        ("3.219.251.245,60", 2),  # o tamanho do número não pesa no índice
     ],
 )
 def test_convencao_de_silabas_para_numero(texto: str, silabas: int) -> None:

@@ -38,7 +38,6 @@ from suno.gerador.execucao import (
     listar_execucoes,
     motivo_da_pendencia,
 )
-from suno.avaliador.juiz_transversal import ROTULO_JUIZ_TRANSVERSAL
 from suno.gerador.extracao import ROTULO_DO_PEDIDO, extrair_ancoras
 from suno.gerador.moldes import MODELO_POR_FORMATO, montar_conteudo
 from suno.ingestao.pdf import carregar_ata
@@ -91,14 +90,12 @@ def test_a_matriz_sai_inteira_e_na_ordem(execucao: Execucao):
     assert [(h.audiencia, h.formato) for h in execucao.celulas] == list(MATRIZ)
     assert execucao.ata == IDENTIFICADOR_DA_ATA
     assert execucao.provedor_gerador == "falso"
-    assert execucao.comite_ligado is False
     assert execucao.selecao is not None
     assert execucao.selecao.itens == [IDENTIFICADOR_DA_ATA]
     assert execucao.avaliacao_transversal is not None
     assert execucao.avaliacao_transversal.total_recebido == len(MATRIZ)
-    assert execucao.ciclo_transversal is not None
-    assert execucao.ciclo_transversal.estado.value == "revisao_humana"
-    assert execucao.ciclo_transversal.julgamentos == []
+    # Uma Célula do cenário cai na H4: a conferência da Matriz manda a Matriz para a revisão humana.
+    assert execucao.avaliacao_transversal.estado.value == "revisao_humana"
 
 
 def test_as_sete_celulas_do_cenario_aprovam_na_primeira_rodada(execucao: Execucao):
@@ -197,8 +194,6 @@ def _rotulos_do_cenario() -> list[str]:
     rotulos += [f"celula:{a}:{f}:0" for a, f in MATRIZ]
     rotulos.append(f"celula:{REPROVACAO_CONSERTADA[0]}:{REPROVACAO_CONSERTADA[1]}:1")
     rotulos += [f"celula:{FILA_HUMANA[0]}:{FILA_HUMANA[1]}:{r}" for r in (1, 2)]
-    # Só um subconjunto sem a Célula que cai na H4 chega ao Judge (a Matriz de nove nunca o chama).
-    rotulos.append(f"{ROTULO_JUIZ_TRANSVERSAL}:0")
     return rotulos
 
 
@@ -282,31 +277,6 @@ def test_ata_sem_respostas_prontas_cai_inteira_na_fila_humana(
     assert "sem resposta pronta" in motivo
     # A regra fixa leu a Ata mesmo sem LLM: o problema foi de geração, não de extração.
     assert execucao.ancoras.chaves_faltantes() == frozenset()
-
-
-def test_comite_pedido_sem_chave_no_ambiente_nao_derruba_a_execucao(
-    caminho_ata: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture
-):
-    """``--comite`` sobrepõe ``SUNO_COMITE``, mas sem chave não há dois juízes (ADR 0008).
-
-    Comitê ausente é um Laudo sem comitê, nunca um Laudo pior — e o log diz o que falta.
-    """
-    with caplog.at_level("WARNING"):
-        execucao = executar(caminho_ata, "falso", tmp_path / "execucoes", comite=True)
-
-    assert execucao.comite_ligado is False
-    assert all(t.laudo.comite is None for h in execucao.celulas for t in h.tentativas)
-    explicacao = [linha for linha in caplog.messages if "comitê" in linha.lower()]
-    assert explicacao, "comitê pedido e não montado tem que explicar por quê no log"
-    assert any("env" in linha.lower() or "chave" in linha.lower() for linha in explicacao)
-    # A demo não muda por causa do comitê: as nove Células saem iguais.
-    assert len(execucao.celulas) == len(MATRIZ)
-    assert sum(1 for h in execucao.celulas if h.destino_final is Destino.APROVADO) == 8
-
-
-def test_comite_nao_pedido_nem_consulta_o_ambiente(caminho_ata: Path, tmp_path: Path):
-    execucao = executar(caminho_ata, "falso", tmp_path / "execucoes", comite=False)
-    assert execucao.comite_ligado is False
 
 
 def test_o_contador_enxerga_as_chamadas_que_o_roteador_faz():

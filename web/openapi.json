@@ -363,6 +363,29 @@
         }
       }
     },
+    "/api/familias-visuais": {
+      "get": {
+        "summary": "Listar Familias Visuais",
+        "description": "Cada família recriada dos posts da Suno e os papéis que ela cobre (a Asset: só capa e aviso).",
+        "operationId": "listar_familias_visuais_api_familias_visuais_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PapeisDaFamilia"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Familias Visuais Api Familias Visuais Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/referencias-visuais/coleta/perfis": {
       "get": {
         "summary": "Listar Perfis De Referencia",
@@ -711,6 +734,62 @@
         }
       }
     },
+    "/api/referencias-visuais/{identificador}/previa": {
+      "get": {
+        "summary": "Previa Da Referencia",
+        "description": "O Layout da referência com o texto de exemplo, recolorido: a prévia antes de montar.",
+        "operationId": "previa_da_referencia_api_referencias_visuais__identificador__previa_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "paleta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Paleta"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/execucoes": {
       "get": {
         "summary": "Listar Execucoes Rota",
@@ -1029,6 +1108,72 @@
         }
       }
     },
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/texto": {
+      "put": {
+        "summary": "Editar Texto Da Celula",
+        "description": "Grava o texto corrigido por uma pessoa e o julga de novo, sem LLM e sem rede.\n\nO Laudo novo vira a Tentativa final: o Pacote e o render do servidor passam a usar o texto\neditado. A decisão humana anterior sobre a Célula deixa de valer.",
+        "operationId": "editar_texto_da_celula_api_execucoes__identificador__celulas__audiencia___formato__texto_put",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "formato",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Formato"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EdicaoDeTexto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoricoCelula"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/execucoes/{identificador}/exportar": {
       "get": {
         "summary": "Exportar Execucao",
@@ -1279,7 +1424,7 @@
     "/api/execucoes/{identificador}/pacotes/montar": {
       "post": {
         "summary": "Montar Pacotes",
-        "description": "Monta os Pacotes das Células aprovadas, em segundo plano.\n\nCada Célula é considerada individualmente; uma pendência em outra posição da Matriz não\nbloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.",
+        "description": "Monta os Pacotes das Células aprovadas, em segundo plano.\n\nCada Célula é considerada individualmente; uma pendência em outra posição da Matriz não\nbloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.\n\n``referencia_visual`` troca o design da Saída antes de montar: a pessoa escolheu outro\nexemplo no editor depois de a geração ter acontecido, e o Pacote sai com o dele (a\nfamília visual inclusive), em vez do que ficou gravado no pedido. A ``paleta``\n(``fundo,texto,destaque,apoio``) vai junto e recolore a família; sem ela, as cores do post.",
         "operationId": "montar_pacotes_api_execucoes__identificador__pacotes_montar_post",
         "parameters": [
           {
@@ -1321,6 +1466,38 @@
                 }
               ],
               "title": "Formato"
+            }
+          },
+          {
+            "name": "referencia_visual",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Referencia Visual"
+            }
+          },
+          {
+            "name": "paleta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Paleta"
             }
           }
         ],
@@ -1413,6 +1590,79 @@
                     "$ref": "#/components/schemas/PacotePublicacao"
                   },
                   "title": "Response Listar Pacotes Api Execucoes  Identificador  Pacotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/execucoes/{identificador}/pacotes/{audiencia}/carrossel/{slide}/previa": {
+      "get": {
+        "summary": "Previa Do Slide",
+        "description": "O slide montado, recolorido com outra paleta sem montar o Pacote de novo.",
+        "operationId": "previa_do_slide_api_execucoes__identificador__pacotes__audiencia__carrossel__slide__previa_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identificador"
+            }
+          },
+          {
+            "name": "audiencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Audiencia"
+            }
+          },
+          {
+            "name": "slide",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Slide"
+            }
+          },
+          {
+            "name": "paleta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Paleta"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -1699,6 +1949,79 @@
         }
       }
     },
+    "/api/configuracoes": {
+      "get": {
+        "summary": "Obter Configuracoes",
+        "description": "O que liga e desliga, o teto de requisições por minuto e o provedor e o modelo de cada papel.",
+        "operationId": "obter_configuracoes_api_configuracoes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracoesComEstado"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Salvar Configuracoes",
+        "description": "Grava e passa a valer na próxima chamada, sem reiniciar o servidor.",
+        "operationId": "salvar_configuracoes_api_configuracoes_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfiguracoesDoSistema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracoesComEstado"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Restaurar Configuracoes",
+        "description": "Apaga o que foi salvo: voltam a valer o ``.env`` e os padrões.",
+        "operationId": "restaurar_configuracoes_api_configuracoes_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracoesComEstado"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/saude": {
       "get": {
         "summary": "Saude",
@@ -1947,11 +2270,6 @@
           "provedor": {
             "type": "string",
             "title": "Provedor"
-          },
-          "comite": {
-            "type": "boolean",
-            "title": "Comite",
-            "default": false
           },
           "categoria": {
             "$ref": "#/components/schemas/CategoriaDaAta",
@@ -2579,10 +2897,10 @@
           },
           "rodada": {
             "type": "integer",
-            "maximum": 2.0,
+            "maximum": 10.0,
             "minimum": 0.0,
             "title": "Rodada",
-            "description": "0 = original; 1 e 2 = correções.",
+            "description": "0 = original; 1 em diante = correções.",
             "default": 0
           },
           "gerada_em": {
@@ -2676,6 +2994,121 @@
         "type": "object",
         "title": "ConferenciaVisual",
         "description": "O resultado da avaliação visual do Pacote. Vai ao H5, nunca ao Laudo."
+      },
+      "ConfiguracoesComEstado": {
+        "properties": {
+          "configuracoes": {
+            "$ref": "#/components/schemas/ConfiguracoesDoSistema"
+          },
+          "salvas": {
+            "type": "boolean",
+            "title": "Salvas"
+          },
+          "chaves": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Chaves"
+          },
+          "modelos_sugeridos": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Modelos Sugeridos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "configuracoes",
+          "salvas",
+          "chaves",
+          "modelos_sugeridos"
+        ],
+        "title": "ConfiguracoesComEstado",
+        "description": "As configurações salvas e o que a tela precisa para editá-las."
+      },
+      "ConfiguracoesDoSistema": {
+        "properties": {
+          "jev_ligado": {
+            "type": "boolean",
+            "title": "Jev Ligado"
+          },
+          "jev_url": {
+            "type": "string",
+            "title": "Jev Url",
+            "default": ""
+          },
+          "jev_limiar": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jev Limiar"
+          },
+          "fidelidade_ligada": {
+            "type": "boolean",
+            "title": "Fidelidade Ligada"
+          },
+          "requisicoes_por_minuto": {
+            "type": "integer",
+            "maximum": 600.0,
+            "minimum": 0.0,
+            "title": "Requisicoes Por Minuto"
+          },
+          "rodadas_de_correcao": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Rodadas De Correcao"
+          },
+          "modelo_padrao": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "enum": [
+                "gemini",
+                "groq"
+              ]
+            },
+            "type": "object",
+            "title": "Modelo Padrao"
+          },
+          "papeis": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/EntradaDeProvedor"
+              },
+              "type": "array"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/PapelLLM"
+            },
+            "type": "object",
+            "title": "Papeis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jev_ligado",
+          "fidelidade_ligada",
+          "requisicoes_por_minuto",
+          "rodadas_de_correcao",
+          "modelo_padrao",
+          "papeis"
+        ],
+        "title": "ConfiguracoesDoSistema"
       },
       "Conteudo": {
         "properties": {
@@ -2803,57 +3236,6 @@
         ],
         "title": "Correcao",
         "description": "O que precisa mudar, com o valor medido e a distância — nunca 'melhore o texto'."
-      },
-      "CorrecaoTransversalAplicada": {
-        "properties": {
-          "rodada": {
-            "type": "integer",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Rodada"
-          },
-          "audiencia": {
-            "$ref": "#/components/schemas/Audiencia"
-          },
-          "formato": {
-            "$ref": "#/components/schemas/Formato"
-          },
-          "instrucoes": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "minItems": 1,
-            "title": "Instrucoes"
-          },
-          "historico_anterior": {
-            "$ref": "#/components/schemas/HistoricoCelula"
-          }
-        },
-        "type": "object",
-        "required": [
-          "rodada",
-          "audiencia",
-          "formato",
-          "instrucoes",
-          "historico_anterior"
-        ],
-        "title": "CorrecaoTransversalAplicada",
-        "description": "Versão substituída e instruções enviadas de volta à persona."
-      },
-      "CriterioTransversal": {
-        "type": "string",
-        "enum": [
-          "fidelidade_dossie",
-          "coerencia_matriz",
-          "progressao_personas",
-          "adequacao_persona",
-          "consistencia_formatos",
-          "clareza_narrativa",
-          "omissao_relevante",
-          "afirmacao_sem_evidencia"
-        ],
-        "title": "CriterioTransversal"
       },
       "Custo": {
         "properties": {
@@ -3012,16 +3394,6 @@
         "title": "Destino",
         "description": "Os três destinos de um Laudo (ADR 0013)."
       },
-      "DimensaoSubjetiva": {
-        "type": "string",
-        "enum": [
-          "tom",
-          "clareza",
-          "coerencia"
-        ],
-        "title": "DimensaoSubjetiva",
-        "description": "As dimensões que só o comitê julga (ADR 0008)."
-      },
       "DirecaoDeArteCarrossel": {
         "properties": {
           "familia": {
@@ -3140,6 +3512,88 @@
         "title": "DuracaoDoVideo",
         "description": "A duração que a pessoa escolhe para o vídeo, em segundos. O valor é o texto do número\nporque ``StrEnum`` serializa como string; ``segundos`` é o inteiro."
       },
+      "EdicaoDeBloco": {
+        "properties": {
+          "fala": {
+            "type": "string",
+            "title": "Fala"
+          },
+          "tela": {
+            "type": "string",
+            "title": "Tela",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "fala"
+        ],
+        "title": "EdicaoDeBloco"
+      },
+      "EdicaoDeSlide": {
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "corpo": {
+            "type": "string",
+            "title": "Corpo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titulo",
+          "corpo"
+        ],
+        "title": "EdicaoDeSlide"
+      },
+      "EdicaoDeTexto": {
+        "properties": {
+          "texto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Texto"
+          },
+          "slides": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EdicaoDeSlide"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slides"
+          },
+          "blocos": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EdicaoDeBloco"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocos"
+          }
+        },
+        "type": "object",
+        "title": "EdicaoDeTexto",
+        "description": "O texto que a pessoa corrigiu, na ordem da Célula. Só o campo do Formato da Célula vale.\n\nSó entram os campos que a pessoa pode mexer: o que é direção (tipo, dado, ícone, tempos)\nfica como o Gerador deixou."
+      },
       "EfeitoDeCena": {
         "type": "string",
         "enum": [
@@ -3151,6 +3605,30 @@
         ],
         "title": "EfeitoDeCena",
         "description": "O único efeito contínuo da cena; ``nenhum`` é a escolha sóbria, e a mais comum."
+      },
+      "EntradaDeProvedor": {
+        "properties": {
+          "provedor": {
+            "type": "string",
+            "enum": [
+              "gemini",
+              "groq"
+            ],
+            "title": "Provedor"
+          },
+          "modelo": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Modelo",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "provedor"
+        ],
+        "title": "EntradaDeProvedor",
+        "description": "Um provedor da fila de um papel. ``modelo`` vazio usa o modelo padrão do provedor."
       },
       "EscolhaDeLayout": {
         "properties": {
@@ -3216,7 +3694,7 @@
           "revisao_humana"
         ],
         "title": "EstadoAvaliacaoTransversal",
-        "description": "Veredito único sobre a Matriz completa, depois dos nove ciclos individuais."
+        "description": "Veredito da conferência determinística da Matriz, depois dos ciclos individuais."
       },
       "EstadoDaAtualizacao": {
         "properties": {
@@ -3384,26 +3862,14 @@
         "title": "EstadoDoAndamento",
         "description": "O estado do job. ``interrompida`` é o job que o servidor perdeu ao reiniciar."
       },
-      "EstadoJulgamentoTransversal": {
-        "type": "string",
-        "enum": [
-          "aprovado",
-          "corrigivel",
-          "grave",
-          "falha"
-        ],
-        "title": "EstadoJulgamentoTransversal",
-        "description": "Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas."
-      },
       "EstadoMedida": {
         "type": "string",
         "enum": [
           "medida",
-          "ausente",
-          "revisao_humana"
+          "ausente"
         ],
         "title": "EstadoMedida",
-        "description": "Medida calculada, sem base para calcular, ou aguardando desempate humano (H3)."
+        "description": "Medida calculada, ou sem base para calcular."
       },
       "EtapaDaCelula": {
         "type": "string",
@@ -3411,6 +3877,9 @@
           "aguardando",
           "gerando",
           "corrigindo",
+          "avaliando_deterministica",
+          "avaliando_jev",
+          "avaliando_llm",
           "aprovada",
           "revisao_humana"
         ],
@@ -3479,11 +3948,6 @@
           "custo": {
             "$ref": "#/components/schemas/Custo"
           },
-          "comite_ligado": {
-            "type": "boolean",
-            "title": "Comite Ligado",
-            "default": false
-          },
           "avaliacao_transversal": {
             "anyOf": [
               {
@@ -3494,17 +3958,6 @@
               }
             ],
             "description": "Veredito da Matriz completa; ausente apenas em execuções antigas."
-          },
-          "ciclo_transversal": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ResultadoCicloTransversal"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Ciclo do LLM Judge e correções; ausente apenas em execuções antigas."
           },
           "nome": {
             "type": "string",
@@ -3555,6 +4008,17 @@
             ],
             "title": "Referencia Visual",
             "description": "Referência aprovada escolhida na curadoria; ausente em Saídas antigas."
+          },
+          "paleta_visual": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaletaVisual"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Paleta que recolore o Carrossel de família visual; ausente mantém as cores do post."
           }
         },
         "type": "object",
@@ -3773,7 +4237,6 @@
       "FilaHumana": {
         "type": "string",
         "enum": [
-          "h3_desempate",
           "h4_revisao",
           "h5_aprovacao_pacote"
         ],
@@ -3782,14 +4245,6 @@
       },
       "Filas": {
         "properties": {
-          "h3_desempate": {
-            "items": {
-              "$ref": "#/components/schemas/Pendencia"
-            },
-            "type": "array",
-            "title": "H3 Desempate",
-            "default": []
-          },
           "h4_revisao": {
             "items": {
               "$ref": "#/components/schemas/Pendencia"
@@ -3809,7 +4264,7 @@
         },
         "type": "object",
         "title": "Filas",
-        "description": "As três filas humanas H3, H4 e H5, sempre listas de ``Pendencia``."
+        "description": "As duas filas humanas H4 e H5, sempre listas de ``Pendencia``."
       },
       "Formato": {
         "type": "string",
@@ -3876,16 +4331,6 @@
         ],
         "title": "FotoDoPacote",
         "description": "Uma foto real usada num slide, com a licença e o crédito que a acompanham."
-      },
-      "GravidadeProblemaTransversal": {
-        "type": "string",
-        "enum": [
-          "baixa",
-          "media",
-          "alta",
-          "grave"
-        ],
-        "title": "GravidadeProblemaTransversal"
       },
       "HTTPValidationError": {
         "properties": {
@@ -4020,91 +4465,6 @@
         ],
         "title": "IntensidadeVisual"
       },
-      "JulgamentoDimensao": {
-        "properties": {
-          "dimensao": {
-            "$ref": "#/components/schemas/DimensaoSubjetiva"
-          },
-          "estado": {
-            "$ref": "#/components/schemas/EstadoMedida"
-          },
-          "votos": {
-            "items": {
-              "$ref": "#/components/schemas/VotoJuiz"
-            },
-            "type": "array",
-            "title": "Votos"
-          },
-          "consenso": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 5.0,
-                "minimum": 1.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Consenso"
-          }
-        },
-        "type": "object",
-        "required": [
-          "dimensao",
-          "estado"
-        ],
-        "title": "JulgamentoDimensao",
-        "description": "Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada."
-      },
-      "JulgamentoTransversal": {
-        "properties": {
-          "rodada": {
-            "type": "integer",
-            "maximum": 2.0,
-            "minimum": 0.0,
-            "title": "Rodada"
-          },
-          "estado": {
-            "$ref": "#/components/schemas/EstadoJulgamentoTransversal"
-          },
-          "problemas": {
-            "items": {
-              "$ref": "#/components/schemas/ProblemaTransversal"
-            },
-            "type": "array",
-            "title": "Problemas"
-          },
-          "provedor": {
-            "type": "string",
-            "title": "Provedor",
-            "default": ""
-          },
-          "falha": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Falha"
-          },
-          "avaliado_em": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Avaliado Em"
-          }
-        },
-        "type": "object",
-        "required": [
-          "rodada",
-          "estado"
-        ],
-        "title": "JulgamentoTransversal",
-        "description": "Uma resposta auditável do LLM Judge, inclusive quando o provedor falha."
-      },
       "Laudo": {
         "properties": {
           "audiencia": {
@@ -4136,17 +4496,6 @@
             },
             "type": "array",
             "title": "Correcoes"
-          },
-          "comite": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ResultadoComite"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "None = comitê desligado. Nunca nota zero (ADR 0008)."
           },
           "avaliado_em": {
             "type": "string",
@@ -4293,10 +4642,12 @@
           "densidade",
           "aderencia",
           "recomendacao",
-          "integridade"
+          "integridade",
+          "qualidade",
+          "fidelidade"
         ],
         "title": "Metrica",
-        "description": "As cinco medidas determinísticas."
+        "description": "As cinco medidas determinísticas, mais a Qualidade (Jev) e a Fidelidade (LLM), que só existem ligadas."
       },
       "ModoDeGeracao": {
         "type": "string",
@@ -4323,7 +4674,9 @@
           "densidade",
           "aderencia",
           "recomendacao",
-          "falha_de_extracao"
+          "falha_de_extracao",
+          "qualidade",
+          "fidelidade"
         ],
         "title": "MotivoReprovacao",
         "description": "Enumerado, não texto livre: é o que permite contar reprovação por motivo (ADR 0013)."
@@ -4421,11 +4774,6 @@
             },
             "type": "array",
             "title": "Pedido"
-          },
-          "comite": {
-            "type": "boolean",
-            "title": "Comite",
-            "default": false
           },
           "duracao": {
             "$ref": "#/components/schemas/DuracaoDoVideo",
@@ -4677,6 +5025,73 @@
         ],
         "title": "PacotePublicacao",
         "description": "O conjunto pronto para um humano publicar, só de Célula aprovada."
+      },
+      "PaletaVisual": {
+        "properties": {
+          "fundo": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Fundo"
+          },
+          "texto": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Texto"
+          },
+          "destaque": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Destaque"
+          },
+          "apoio": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Apoio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fundo",
+          "texto",
+          "destaque",
+          "apoio"
+        ],
+        "title": "PaletaVisual",
+        "description": "As quatro cores que recolorem um Carrossel de família visual (a paleta escolhida no editor)."
+      },
+      "PapeisDaFamilia": {
+        "properties": {
+          "familia": {
+            "$ref": "#/components/schemas/FamiliaVisual"
+          },
+          "papeis": {
+            "items": {
+              "$ref": "#/components/schemas/TipoSlide"
+            },
+            "type": "array",
+            "title": "Papeis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "familia",
+          "papeis"
+        ],
+        "title": "PapeisDaFamilia",
+        "description": "Os papéis de slide que uma família visual sabe desenhar."
+      },
+      "PapelLLM": {
+        "type": "string",
+        "enum": [
+          "gerador",
+          "juiz_visao",
+          "checador",
+          "diretor_arte",
+          "analista_visual",
+          "video"
+        ],
+        "title": "PapelLLM",
+        "description": "Que papel a chamada cumpre. O roteador escolhe o provedor por papel."
       },
       "ParecerVisao": {
         "properties": {
@@ -5010,10 +5425,6 @@
             "type": "boolean",
             "title": "Sem Conteudo"
           },
-          "revisao_comite": {
-            "type": "boolean",
-            "title": "Revisao Comite"
-          },
           "etapa": {
             "anyOf": [
               {
@@ -5032,48 +5443,10 @@
           "destino",
           "decisao",
           "bloqueada",
-          "sem_conteudo",
-          "revisao_comite"
+          "sem_conteudo"
         ],
         "title": "PosicaoResumo",
         "description": "Uma posição da Matriz, no mínimo que a tela precisa para colorir e rotular."
-      },
-      "ProblemaTransversal": {
-        "properties": {
-          "audiencia": {
-            "$ref": "#/components/schemas/Audiencia"
-          },
-          "formato": {
-            "$ref": "#/components/schemas/Formato"
-          },
-          "gravidade": {
-            "$ref": "#/components/schemas/GravidadeProblemaTransversal"
-          },
-          "criterio": {
-            "$ref": "#/components/schemas/CriterioTransversal"
-          },
-          "evidencia": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Evidencia"
-          },
-          "correcao": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Correcao"
-          }
-        },
-        "type": "object",
-        "required": [
-          "audiencia",
-          "formato",
-          "gravidade",
-          "criterio",
-          "evidencia",
-          "correcao"
-        ],
-        "title": "ProblemaTransversal",
-        "description": "Problema subjetivo localizado pelo Judge em uma Célula concreta."
       },
       "ReferenciaVisual": {
         "properties": {
@@ -5172,68 +5545,6 @@
         "title": "Renomeacao",
         "description": "O corpo do ``PATCH /api/execucoes/{id}``."
       },
-      "ResultadoCicloTransversal": {
-        "properties": {
-          "estado": {
-            "$ref": "#/components/schemas/EstadoAvaliacaoTransversal"
-          },
-          "avaliacao_deterministica": {
-            "$ref": "#/components/schemas/AvaliacaoTransversal"
-          },
-          "julgamentos": {
-            "items": {
-              "$ref": "#/components/schemas/JulgamentoTransversal"
-            },
-            "type": "array",
-            "title": "Julgamentos"
-          },
-          "correcoes_aplicadas": {
-            "items": {
-              "$ref": "#/components/schemas/CorrecaoTransversalAplicada"
-            },
-            "type": "array",
-            "title": "Correcoes Aplicadas"
-          },
-          "motivo_final": {
-            "type": "string",
-            "title": "Motivo Final"
-          }
-        },
-        "type": "object",
-        "required": [
-          "estado",
-          "avaliacao_deterministica",
-          "motivo_final"
-        ],
-        "title": "ResultadoCicloTransversal",
-        "description": "Estado final depois das regras fixas e do LLM Judge."
-      },
-      "ResultadoComite": {
-        "properties": {
-          "dimensoes": {
-            "items": {
-              "$ref": "#/components/schemas/JulgamentoDimensao"
-            },
-            "type": "array",
-            "title": "Dimensoes"
-          },
-          "provedores": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Provedores",
-            "description": "Os dois provedores usados, em ordem."
-          }
-        },
-        "type": "object",
-        "required": [
-          "dimensoes",
-          "provedores"
-        ],
-        "title": "ResultadoComite",
-        "description": "Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação."
-      },
       "ResultadoDaColeta": {
         "properties": {
           "janela_dias": {
@@ -5305,6 +5616,11 @@
           "extracao_completa": {
             "type": "boolean",
             "title": "Extracao Completa"
+          },
+          "qualitativa": {
+            "type": "boolean",
+            "title": "Qualitativa",
+            "default": false
           }
         },
         "type": "object",
@@ -5508,7 +5824,7 @@
         "properties": {
           "rodada": {
             "type": "integer",
-            "maximum": 2.0,
+            "maximum": 10.0,
             "minimum": 0.0,
             "title": "Rodada"
           },
@@ -5619,36 +5935,6 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "VotoJuiz": {
-        "properties": {
-          "dimensao": {
-            "$ref": "#/components/schemas/DimensaoSubjetiva"
-          },
-          "nota": {
-            "type": "integer",
-            "maximum": 5.0,
-            "minimum": 1.0,
-            "title": "Nota"
-          },
-          "justificativa": {
-            "type": "string",
-            "title": "Justificativa"
-          },
-          "provedor": {
-            "type": "string",
-            "title": "Provedor",
-            "description": "Qual provedor julgou. Nunca o que gerou a Célula."
-          }
-        },
-        "type": "object",
-        "required": [
-          "dimensao",
-          "nota",
-          "justificativa",
-          "provedor"
-        ],
-        "title": "VotoJuiz"
       }
     }
   }

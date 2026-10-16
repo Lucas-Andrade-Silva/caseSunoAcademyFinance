@@ -41,7 +41,7 @@ export function motivoDeRecusa(entrada: Pick<Entrada, "atas" | "modo" | "audienc
     return "O modo Demo só tem respostas prontas para o Copom 280. Use o modo Real.";
   }
   if (atas.some((ata) => !ata.extracao_completa)) {
-    return "Uma das notícias não tem data e número com unidade no texto.";
+    return "Uma das notícias tem texto curto demais, sem número: não há o que conferir.";
   }
   return null;
 }
@@ -53,7 +53,6 @@ export function corpoDaSaida(entrada: Entrada): NovaSaida {
   const corpo: NovaSaida = {
     nome: `${base} · ${rotuloFormato(formato)}`.slice(0, 120),
     modo,
-    comite: false,
     duracao: formato === "roteiro" ? (extras?.duracao ?? "60") : "60",
     pedido: audiencias.map((audiencia) => ({ audiencia, formato })),
     ...(atas.length === 1

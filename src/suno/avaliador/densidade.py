@@ -297,6 +297,24 @@ def _exige_explicacao(exigencia: ExigenciaDeExplicacao, nucleo: bool) -> bool:
 _PALAVRA_RE = re.compile(r"\w+", re.UNICODE)
 
 
+_FIM_DA_FRASE = re.compile(r"(?<=[.!?])\s+(?=[A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])|\n+")
+
+
+def frase_em(texto: str, posicao: int, limite: int = 220) -> str:
+    """A frase de ``texto`` que contém ``posicao``: é o que a Correção mostra ao Gerador para ele
+    saber exatamente onde o termo está. Abreviação como ``a.a.`` não fecha frase (só ponto seguido de
+    espaço e maiúscula, ou quebra de linha). Título em Markdown perde o ``#``."""
+    inicio, fim = 0, len(texto)
+    for marca in _FIM_DA_FRASE.finditer(texto):
+        if marca.end() <= posicao:
+            inicio = marca.end()
+        elif marca.start() >= posicao:
+            fim = marca.start()
+            break
+    frase = re.sub(r"\s+", " ", texto[inicio:fim]).lstrip("# ").strip()
+    return frase if len(frase) <= limite else frase[: limite - 1].rstrip() + "…"
+
+
 def medir_densidade(texto: str, exigencia: ExigenciaDeExplicacao) -> ResultadoDensidade:
     """Proporção de termos do Léxico no texto e quais violam a Exigência de explicação.
 

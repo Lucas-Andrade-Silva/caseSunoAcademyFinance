@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { listarReferenciasVisuais, type Audiencia } from "../../dados/cliente";
 import Botao from "../../interface/Botao";
 import FluxoDaGuia from "../../interface/FluxoDaGuia";
-import { IconeAtualizar, IconeFechar } from "../../interface/Icones";
+import { IconeFechar } from "../../interface/Icones";
 import Vazio from "../../interface/Vazio";
 import { usarDados } from "../../nucleo/dados";
 import { usarHistorico } from "../../nucleo/historico";
@@ -130,11 +130,6 @@ export default function GuiaCarrossel() {
             idDaPaleta={idDaPaleta}
             aoSalvarDesign={salvarDesign}
             aoEscolherPaleta={escolherPaleta}
-            acaoDoTitulo={{
-              rotulo: "Nova geração",
-              icone: <IconeAtualizar size={22} />,
-              aoClicar: sessao.limpar,
-            }}
           />
         );
       }}

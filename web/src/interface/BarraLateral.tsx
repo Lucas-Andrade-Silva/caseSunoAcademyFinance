@@ -121,7 +121,7 @@ export default function BarraLateral() {
         {inicial || <IconePessoa size={20} />}
       </span>
 
-      <div className="flex w-full flex-1 flex-col items-center justify-start pt-[34px] max-lg:flex-row max-lg:justify-around max-lg:pt-0">
+      <div className="flex w-full flex-1 flex-col items-center justify-center pb-[12vh] max-lg:pb-0 max-lg:flex-row max-lg:justify-around max-lg:pt-0">
         {DA_BARRA.map((guia) => (
           <Botao
             key={guia.id}

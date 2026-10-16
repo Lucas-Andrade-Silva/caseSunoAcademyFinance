@@ -87,7 +87,7 @@ flowchart TD
         MATRIZ --> ROT
     end
 
-    ROUTER["Roteador de provedores<br/>Gemini → Groq → SambaNova<br/>ADR 0007"]
+    ROUTER["Roteador de provedores<br/>Gemini → Groq<br/>ADR 0007"]
     G -. usa .-> ROUTER
 
     TXT --> A
@@ -100,13 +100,11 @@ flowchart TD
     subgraph A["Avaliador · sem LLM e sem rede por padrão"]
         direction TB
         DET["Métricas determinísticas<br/>Flesch-BR · Densidade · Aderência<br/>Recomendação · Extração"]
-        JUIZ["Comitê · 2 juízes-LLM<br/>tom · clareza · coerência<br/>só Texto analítico e Carrossel<br/>opcional, desligado na demo · ADR 0008"]
+        JUIZ["Qualidade (Jev) → Fidelidade (LLM)<br/>depois do determinístico, por Célula<br/>ADR 0035 e 0036"]
         DET --> JUIZ
     end
 
-    ROUTER -.->|"usa opcionalmente, nunca<br/>o provedor do Gerador"| JUIZ
-    JUIZ -->|"juízes discordam"| H3
-    H3{{"H3 · Desempate<br/>dimensão marcada<br/>revisão humana no Laudo"}}
+    ROUTER -.->|"Groq, depois Gemini<br/>(só a Fidelidade)"| JUIZ
 
     A --> LAUDO{"Laudo<br/>três destinos"}
 
@@ -136,12 +134,11 @@ flowchart TD
     UI["Interface React + Vite sobre FastAPI<br/>cliente TS gerado do OpenAPI · ADR 0005"]
     ATAS -. lê .-> UI
     LAUDO -. lê .-> UI
-    H3 -. exibida em .-> UI
     H4 -. exibida em .-> UI
     H5 -. exibida em .-> UI
 
     classDef humano fill:#fff4d6,stroke:#b8860b,stroke-width:2px,color:#000
-    class H1,H2,H3,H4,H5,H6 humano
+    class H1,H2,H4,H5,H6 humano
 ```
 
 ## Os seis pontos de interferência humana
@@ -150,12 +147,12 @@ flowchart TD
 |---|---|---|---|
 | **H1** | Antes da execução | Qualquer um do time | Qual Ata entra. O fetch no BCB é comando separado; a demo roda sem rede ([ADR 0006](adr/0006-atas-do-copom-como-documento-fonte-principal.md)) |
 | **H2** | Fora de runtime | Dona do Avaliador | Os Limiares, o Léxico e os padrões sintáticos. Deriva de ~30 Células rotuladas pelas duas pessoas, com Kappa reportado. Parametriza o Avaliador; não roda durante a execução |
-| **H3** | Durante a avaliação | Dona do Avaliador | Desempate quando os dois juízes discordam numa dimensão subjetiva. O sistema não gasta uma terceira chamada para desempatar ([ADR 0008](adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md)) |
+| **H3** | — | — | Removido junto com o Comitê, que era quem gerava o desempate ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)) |
 | **H4** | Depois de 2 correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)) |
 | **H5** | Antes de publicar | Qualquer um do time | Se o Pacote está apresentável. Aprovação do Laudo é sobre conteúdo; aqui se confere render, corte e legenda, com a lista da avaliação visual em mão ([ADR 0014](adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md)) |
 | **H6** | Publicação | Qualquer um do time | Publica. Não há integração de API com Instagram, TikTok ou Drive, por decisão |
 
-H3, H4 e H5 aparecem na interface como filas. H1 e H2 são trabalho de linha de comando e de
+H4 e H5 aparecem na interface como filas. H1 e H2 são trabalho de linha de comando e de
 planilha, feitos antes.
 
 ## Os dois módulos
@@ -164,22 +161,23 @@ planilha, feitos antes.
 Iniciante, Intermediário e Avançado. Cada gerador produz Texto analítico, Carrossel e Roteiro;
 o código garante as nove posições e a ordem. Cada Célula passa pelas regras determinísticas e
 volta ao seu gerador quando falha em integridade, Flesch-BR, Léxico/Densidade, Aderência ou
-Recomendação. Só uma Matriz aprovada nessa etapa chega ao LLM Judge transversal.
-
-O Judge confere fidelidade, coerência entre Células, progressão das personas e consistência entre
-Formatos. Problema corrigível regenera apenas as Células apontadas, que passam novamente pelas
-regras fixas antes de outro julgamento. Há no máximo duas correções transversais. Problema grave,
-falha do provedor ou esgotamento vai para H4. Todas as versões substituídas ficam no JSON de
-auditoria; Pacote publicável só nasce quando o ciclo completo aprova
+Recomendação. Depois do determinístico vêm duas camadas de LLM, por Célula: a **Qualidade** (o Jev nota
+desenvolvimento, completude, clareza e tom, sempre ligado) e a **Fidelidade** (um LLM confere a Célula contra
+a Ata, opcional). Abaixo do Limiar, ou diante de contradição provada com a Ata, a Célula volta ao Gerador,
+dentro do mesmo teto de duas rodadas. Na correção o Gerador recebe a frase exata de cada problema, raciocina
+(`raciocinio`) e muda o mínimo. Depois das Células, uma conferência **determinística** da Matriz (quantidade,
+unicidade, aprovação e referências) vai para o JSON de auditoria. O Judge transversal foi removido
 ([ADR 0015](adr/0015-papeis-especializados-em-fluxo-deterministico.md),
-[ADR 0016](adr/0016-llm-judge-transversal-com-retorno-seletivo.md)).
+[ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
+[ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md),
+[ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)).
 
 "Agente" significa papel especializado com contrato fixo, não loop ReAct ou tool calling. O fluxo
 continua sem LangGraph ou MCP.
 
 **Avaliador individual** recebe `(Conteúdo, Âncora[], Audiência)` de uma Célula e devolve um
-Laudo. Ele roda sem LLM e sem rede. O LLM aparece somente depois dessa aprovação, no Judge
-transversal. O contrato entre geração e regras individuais continua sendo essa assinatura
+Laudo. As cinco medidas rodam sem LLM e sem rede. O LLM (Jev e checador de fidelidade) aparece
+somente depois dessa aprovação. O contrato entre geração e regras individuais continua sendo essa assinatura
 ([ADR 0001](adr/0001-gerador-e-avaliador-como-modulos-separados.md)).
 
 ## O estágio de extração
@@ -230,10 +228,10 @@ família, e os slides variam de layout dentro dela
 ([ADR 0030](adr/0030-familias-visuais-do-carrossel.md)). O texto de tamanho variável encolhe até
 caber; o número do slide sai da Âncora, nunca do template.
 
-**Fotos.** O Gerador sugere só o assunto da foto (`Slide.imagem`). A foto é real e de licença que
-permite reuso, vem da biblioteca local `data/imagens/` (a demo roda sem rede) ou do Wikimedia
-Commons com relevância verificada, e o crédito vai na legenda
-([ADR 0031](adr/0031-fotos-reais-e-licenciadas-nos-slides.md)). Sem foto, o layout degrada sozinho.
+**Fotos.** O Gerador sugere só o assunto da foto (`Slide.imagem`). A foto é real, vem da biblioteca local
+`data/imagens/` (a demo roda sem rede) ou da busca de imagens na web (Bing) com relevância
+verificada por um juiz de visão, e o crédito vai na legenda; no MVP a licença não é verificada
+([ADR 0031](adr/0031-fotos-reais-e-licenciadas-nos-slides.md), [ADR 0032](adr/0032-fotos-da-web-pelo-bing-imagens-sem-verificar-licenca.md)). Sem foto, o layout degrada sozinho.
 Geração de imagem por modelo continua fora do caminho crítico.
 
 A reserva **Pillow + matplotlib** ([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md),
@@ -252,8 +250,8 @@ A pessoa escolhe a **duração** antes de gerar: 40 s, 1 min, 1 min 30, 2 min ou
 min). O pedido informa o orçamento de palavras e de cenas dessa duração, e o tempo de cada cena é
 recalculado pelo código a partir da fala.
 
-O Roteiro é o único Formato que não passa pelo comitê de juízes-LLM: só as métricas
-determinísticas o avaliam. É a mesma razão pela qual o vídeo pronto também não vai a juiz de visão
+O Roteiro passa pelas mesmas camadas que os outros Formatos (as cinco medidas, a Qualidade e a
+Fidelidade). Só o vídeo pronto não vai a juiz de visão
 — o ramo do vídeo é o primeiro a cair sob atraso, e não se gasta cota avaliando o que pode não ser
 entregue.
 
@@ -311,20 +309,16 @@ texto já foi aprovado, e reescrevê-lo não conserta um rótulo sobreposto. O r
 ao Pacote para o H5, que deixa de ser inspeção humana cega e passa a ser inspeção humana com uma
 lista.
 
-A restrição de provedor do comitê não vale aqui: a imagem não foi gerada por LLM, então não há
+A restrição de autopreferência do checador de fidelidade não vale aqui: a imagem não foi gerada por LLM, então não há
 autopreferência a evitar, e o juiz visual pode rodar em qualquer provedor.
 
 ## O roteador de provedores
 
-Uma única interface por trás da qual vivem Gemini (gera), Groq (julga) e SambaNova (reserva) — o
+Uma única interface por trás da qual vivem Gemini (gera) e Groq (julga e é a reserva) — o
 resto do pipeline não sabe qual provedor está ativo. Distingue cota por minuto de cota diária
 antes de decidir entre esperar e trocar, e reaplica bindings de saída estruturada ao trocar de
 cliente, para não perder a capacidade de produzir o schema da Célula no meio de uma troca
 silenciosa ([ADR 0007](adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)).
-
-Com o comitê ligado, os três provedores ficam ocupados numa mesma execução — Gerador num, dois
-juízes nos outros — e não sobra reserva para 429. É mais uma razão para o comitê ficar desligado
-na demo.
 
 ## O Avaliador e o Laudo
 
@@ -334,10 +328,12 @@ Cinco medidas determinísticas: **Flesch-BR** (fórmula própria, não `textstat
 ([ADR 0012](adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)) e
 **integridade da extração**.
 
-Sobre elas, opcionalmente, o comitê de dois juízes-LLM em dimensões subjetivas — tom, clareza,
-coerência — e só em dois dos três Formatos, Texto analítico e Carrossel. Compliance e Aderência
-nunca passam por LLM, nem como segunda opinião
-([ADR 0008](adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md)).
+Sobre elas, nos três Formatos, vêm duas camadas de LLM: a **Qualidade** (o Jev nota
+desenvolvimento, completude, clareza e tom) e a **Fidelidade** (um LLM confere a Célula contra a Ata
+e o código confere as citações). Compliance e Aderência nunca passam por LLM, nem como segunda
+opinião ([ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
+[ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md),
+[ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)).
 
 O Laudo tem três destinos, não dois: aprovado, reprovado com correção possível, e reprovado para
 revisão humana. O motivo de reprovação é valor enumerado, não texto livre — é o que permite contar

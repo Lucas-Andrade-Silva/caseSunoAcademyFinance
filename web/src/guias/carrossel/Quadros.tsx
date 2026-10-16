@@ -1,6 +1,9 @@
 // Os quadros do carrossel, um por linha: o texto escrito (papel, título, corpo, destaque, dado) e como
 // deve ser a imagem daquele quadro. A linha fecha e abre; a primeira já vem aberta.
 import { useState, type ReactNode } from "react";
+import type { Slide } from "../../dados/cliente";
+import Botao from "../../interface/Botao";
+import CampoDeTexto from "../../interface/CampoDeTexto";
 import { IconeBaixo } from "../../interface/Icones";
 import { Quadrado, type CorDoQuadrado } from "../../interface/Linha";
 import { papelDoQuadro, rotuloDaComposicao, rotuloDoPapel, type PapelDoQuadro } from "./composicoes";
@@ -29,17 +32,22 @@ function textoDoDado(chave: string, ancoras: readonly AncoraDeQuadro[]): string 
   return ancora ? `${ancora.rotulo} · ${ancora.citacao}` : `${chave} · sem valor`;
 }
 
+export type CamposEditaveis = Pick<Slide, "titulo" | "corpo">;
+
 function LinhaDoQuadro({
   quadro,
   ancoras,
   aberta,
   aoAlternar,
+  aoEditar,
 }: {
   quadro: QuadroMontado;
   ancoras: readonly AncoraDeQuadro[];
   aberta: boolean;
   aoAlternar: () => void;
+  aoEditar: (campos: Partial<CamposEditaveis>) => void;
 }) {
+  const [editando, definirEditando] = useState(false);
   const { slide, composicao, indice, total, grafico, icones } = quadro;
   const papel = papelDoQuadro(slide);
   const idDoCorpo = `quadro-${indice}`;
@@ -70,7 +78,24 @@ function LinhaDoQuadro({
       </button>
       {aberta && (
         <div id={idDoCorpo} className="px-[21px] pb-6 pt-1">
-          <p className="text-[15px] leading-relaxed text-claro">{slide.corpo}</p>
+          {editando ? (
+            <div className="grid gap-4">
+              <CampoDeTexto rotulo="Título" rows={2} valor={slide.titulo} aoMudar={(titulo) => aoEditar({ titulo })} />
+              <CampoDeTexto rotulo="Corpo" rows={5} valor={slide.corpo} aoMudar={(corpo) => aoEditar({ corpo })} />
+            </div>
+          ) : (
+            <p className="text-[15px] leading-relaxed text-claro">{slide.corpo}</p>
+          )}
+          <div className="mt-4">
+            <Botao
+              variante="contorno"
+              tamanho="pequeno"
+              aria-pressed={editando}
+              onClick={() => definirEditando(!editando)}
+            >
+              {editando ? "Concluir edição" : "Editar texto"}
+            </Botao>
+          </div>
           <dl className="mt-5 grid gap-4">
             {slide.destaque && <Dado nome="Destaque">{slide.destaque}</Dado>}
             {slide.dado && <Dado nome="Dado">{textoDoDado(slide.dado, ancoras)}</Dado>}
@@ -86,9 +111,11 @@ function LinhaDoQuadro({
 export default function Quadros({
   quadros,
   ancoras,
+  aoEditar,
 }: {
   quadros: readonly QuadroMontado[];
   ancoras: readonly AncoraDeQuadro[];
+  aoEditar: (indice: number, campos: Partial<CamposEditaveis>) => void;
 }) {
   const [abertas, definirAbertas] = useState<ReadonlySet<number>>(() => new Set([0]));
 
@@ -111,6 +138,7 @@ export default function Quadros({
           ancoras={ancoras}
           aberta={abertas.has(quadro.indice)}
           aoAlternar={() => alternar(quadro.indice)}
+          aoEditar={(campos) => aoEditar(quadro.indice, campos)}
         />
       ))}
     </ul>

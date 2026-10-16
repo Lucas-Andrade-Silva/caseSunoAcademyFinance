@@ -30,7 +30,7 @@ import { MAXIMO_DE_NOTICIAS, usarSelecao } from "../../nucleo/selecao";
 import { formatarDataCurta, formatarDataDoDia } from "../../texto/rotulos";
 import FiltrarPeriodo from "./FiltrarPeriodo";
 import ImportarComunicado from "./ImportarComunicado";
-import { caraDaOrigem } from "./origens";
+import { caraDaOrigem, frequenciaDaOrigem } from "./origens";
 
 const INTERVALO_DA_ATUALIZACAO_MS = 1500;
 
@@ -373,6 +373,11 @@ export default function GuiaIngestao() {
         }
       />
       <CorpoDaPrevia>{corpo}</CorpoDaPrevia>
+      {origem && frequenciaDaOrigem(origem.id) && (
+        <p className="shrink-0 px-5 pb-5 text-right text-[13px] leading-snug text-etiqueta lg:px-[50px]">
+          {frequenciaDaOrigem(origem.id)}
+        </p>
+      )}
     </>
   );
 

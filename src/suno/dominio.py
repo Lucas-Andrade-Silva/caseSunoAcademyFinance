@@ -23,6 +23,10 @@ from typing import Annotated, Any, Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, model_validator
 
+RODADAS_MAXIMAS = 10
+"""O maior teto de correções que a aba de configurações aceita; a rodada de uma Célula vai até aqui."""
+
+
 CaminhoPortavel = Annotated[
     Path,
     PlainSerializer(lambda p: p.as_posix(), return_type=str, when_used="json"),
@@ -194,10 +198,13 @@ CHAVE_NUMERO_PRINCIPAL = "numero_principal"
 CHAVES_ESSENCIAIS_GENERICAS: frozenset[str] = frozenset(
     {CHAVE_DATA_DO_COMUNICADO, CHAVE_NUMERO_PRINCIPAL}
 )
-"""O que toda Ata fora do Copom precisa ter: uma data e um número com unidade, ambos por regra fixa.
+"""O que toda Ata fora do Copom precisa ter: uma data e um fato central.
 
-Limiares e Léxico foram medidos só com Atas do Copom: quem usa este conjunto leva o selo
-"não calibrado". Quais chaves valem de fato é decisão da pessoa dona do Avaliador.
+A data sai por regra fixa (a do texto, ou a dos metadados quando o texto não traz nenhuma). O
+fato central é o ``numero_principal`` **ou, na falta de número, uma Âncora textual** conferida
+contra o texto: um comunicado qualitativo é conteúdo possível, só que sem número a conferir
+(ADR 0034). Limiares e Léxico foram medidos só com Atas do Copom: quem usa este conjunto leva o
+selo "não calibrado". Quais chaves valem de fato é decisão da pessoa dona do Avaliador.
 """
 
 
@@ -355,6 +362,26 @@ class FamiliaVisual(StrEnum):
     JORNAL = "jornal"
     DADOS = "dados"
     ASSET = "asset"
+
+
+_COR_HEXADECIMAL = r"^#[0-9a-fA-F]{6}$"
+
+
+class PaletaVisual(BaseModel):
+    """As quatro cores que recolorem um Carrossel de família visual (a paleta escolhida no editor)."""
+
+    fundo: str = Field(pattern=_COR_HEXADECIMAL)
+    texto: str = Field(pattern=_COR_HEXADECIMAL)
+    destaque: str = Field(pattern=_COR_HEXADECIMAL)
+    apoio: str = Field(pattern=_COR_HEXADECIMAL)
+
+    @classmethod
+    def da_rota(cls, valor: str) -> PaletaVisual:
+        """Lê a forma curta da rota: ``fundo,texto,destaque,apoio`` em hexadecimal."""
+        cores = [cor.strip() for cor in valor.split(",")]
+        if len(cores) != 4:
+            raise ValueError("a paleta tem quatro cores: fundo,texto,destaque,apoio")
+        return cls(fundo=cores[0], texto=cores[1], destaque=cores[2], apoio=cores[3])
 
 
 class IntensidadeVisual(StrEnum):
@@ -615,7 +642,10 @@ class Conteudo(BaseModel):
         if self.formato is Formato.TEXTO_ANALITICO:
             return self.texto or ""
         if self.formato is Formato.CARROSSEL:
-            return "\n\n".join(f"{s.titulo}\n{s.corpo}" for s in self.slides or [])
+            # O título é uma linha à parte no slide e se lê como frase própria: a linha em branco é o
+            # fim de frase do Flesch-BR e da Densidade. Com "\n" só, ele grudava na primeira frase do
+            # corpo e cada slide ganhava uma frase de 20 a 40 palavras que ninguém lê assim.
+            return "\n\n".join(f"{s.titulo}\n\n{s.corpo}" for s in self.slides or [])
         return "\n".join(b.fala for b in self.blocos or [])
 
     def texto_de_conferencia(self) -> str:
@@ -641,7 +671,7 @@ class Celula(BaseModel):
     audiencia: Audiencia
     formato: Formato
     conteudo: Conteudo
-    rodada: int = Field(default=0, ge=0, le=2, description="0 = original; 1 e 2 = correções.")
+    rodada: int = Field(default=0, ge=0, le=RODADAS_MAXIMAS, description="0 = original; 1 em diante = correções.")
     gerada_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     provedor: str | None = Field(default=None, description="Qual provedor gerou; nunca vai ao juiz.")
 
@@ -723,6 +753,11 @@ LIMIARES_PROVISORIOS: dict[Audiencia, Limiares] = {
 }
 """Faixas publicadas pelo NILC (ADR 0002). Marcadas como provisórias até a Calibração (H2)."""
 
+LIMIAR_DE_QUALIDADE = 0.6
+"""A nota mínima, de 0 a 1, que a Qualidade (Jev, ADR 0035) exige de cada dimensão. Provisório,
+como os de Flesch-BR: ninguém o calibrou com Células rotuladas à mão (H2). ``SUNO_JEV_LIMIAR``
+o troca sem mexer no código."""
+
 
 # ---------------------------------------------------------------------------
 # O Laudo (ADR 0001, 0008, 0013)
@@ -730,21 +765,22 @@ LIMIARES_PROVISORIOS: dict[Audiencia, Limiares] = {
 
 
 class Metrica(StrEnum):
-    """As cinco medidas determinísticas."""
+    """As cinco medidas determinísticas, mais a Qualidade (Jev) e a Fidelidade (LLM), que só existem ligadas."""
 
     FLESCH_BR = "flesch_br"
     DENSIDADE = "densidade"
     ADERENCIA = "aderencia"
     RECOMENDACAO = "recomendacao"
     INTEGRIDADE = "integridade"
+    QUALIDADE = "qualidade"
+    FIDELIDADE = "fidelidade"
 
 
 class EstadoMedida(StrEnum):
-    """Medida calculada, sem base para calcular, ou aguardando desempate humano (H3)."""
+    """Medida calculada, ou sem base para calcular."""
 
     MEDIDA = "medida"
     AUSENTE = "ausente"
-    REVISAO_HUMANA = "revisao_humana"
 
 
 class Medida(BaseModel):
@@ -775,6 +811,8 @@ class MotivoReprovacao(StrEnum):
     ADERENCIA = "aderencia"
     RECOMENDACAO = "recomendacao"
     FALHA_DE_EXTRACAO = "falha_de_extracao"
+    QUALIDADE = "qualidade"
+    FIDELIDADE = "fidelidade"
 
 
 class Destino(StrEnum):
@@ -797,37 +835,6 @@ class Correcao(BaseModel):
     )
 
 
-class DimensaoSubjetiva(StrEnum):
-    """As dimensões que só o comitê julga (ADR 0008)."""
-
-    TOM = "tom"
-    CLAREZA = "clareza"
-    COERENCIA = "coerencia"
-
-
-class VotoJuiz(BaseModel):
-    dimensao: DimensaoSubjetiva
-    nota: int = Field(ge=1, le=5)
-    justificativa: str
-    provedor: str = Field(description="Qual provedor julgou. Nunca o que gerou a Célula.")
-
-
-class JulgamentoDimensao(BaseModel):
-    """Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada."""
-
-    dimensao: DimensaoSubjetiva
-    estado: EstadoMedida
-    votos: list[VotoJuiz] = Field(default_factory=list)
-    consenso: int | None = Field(default=None, ge=1, le=5)
-
-
-class ResultadoComite(BaseModel):
-    """Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação."""
-
-    dimensoes: list[JulgamentoDimensao]
-    provedores: list[str] = Field(description="Os dois provedores usados, em ordem.")
-
-
 class Laudo(BaseModel):
     """O resultado da avaliação de uma Célula: medidas, veredito e o que precisa mudar."""
 
@@ -837,9 +844,6 @@ class Laudo(BaseModel):
     destino: Destino
     motivos: list[MotivoReprovacao] = Field(default_factory=list)
     correcoes: list[Correcao] = Field(default_factory=list)
-    comite: ResultadoComite | None = Field(
-        default=None, description="None = comitê desligado. Nunca nota zero (ADR 0008)."
-    )
     avaliado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def medida(self, metrica: Metrica) -> Medida | None:
@@ -869,7 +873,7 @@ class Laudo(BaseModel):
 class Tentativa(BaseModel):
     """Uma rodada do Ciclo de correção: a Célula e o Laudo que a julgou."""
 
-    rodada: int = Field(ge=0, le=2)
+    rodada: int = Field(ge=0, le=RODADAS_MAXIMAS)
     celula: Celula
     laudo: Laudo
 
@@ -899,7 +903,6 @@ class HistoricoCelula(BaseModel):
 class FilaHumana(StrEnum):
     """Os pontos de interferência humana que a interface expõe como fila."""
 
-    H3_DESEMPATE = "h3_desempate"
     H4_REVISAO = "h4_revisao"
     H5_APROVACAO_PACOTE = "h5_aprovacao_pacote"
 
@@ -951,7 +954,7 @@ class Custo(BaseModel):
 
 
 class EstadoAvaliacaoTransversal(StrEnum):
-    """Veredito único sobre a Matriz completa, depois dos nove ciclos individuais."""
+    """Veredito da conferência determinística da Matriz, depois dos ciclos individuais."""
 
     APROVADA = "aprovada"
     REVISAO_HUMANA = "revisao_humana"
@@ -975,100 +978,6 @@ class AvaliacaoTransversal(BaseModel):
     avaliada_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class EstadoJulgamentoTransversal(StrEnum):
-    """Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas."""
-
-    APROVADO = "aprovado"
-    CORRIGIVEL = "corrigivel"
-    GRAVE = "grave"
-    FALHA = "falha"
-
-
-class GravidadeProblemaTransversal(StrEnum):
-    BAIXA = "baixa"
-    MEDIA = "media"
-    ALTA = "alta"
-    GRAVE = "grave"
-
-
-class CriterioTransversal(StrEnum):
-    FIDELIDADE_DOSSIE = "fidelidade_dossie"
-    COERENCIA_MATRIZ = "coerencia_matriz"
-    PROGRESSAO_PERSONAS = "progressao_personas"
-    ADEQUACAO_PERSONA = "adequacao_persona"
-    CONSISTENCIA_FORMATOS = "consistencia_formatos"
-    CLAREZA_NARRATIVA = "clareza_narrativa"
-    OMISSAO_RELEVANTE = "omissao_relevante"
-    AFIRMACAO_SEM_EVIDENCIA = "afirmacao_sem_evidencia"
-
-
-class ProblemaTransversal(BaseModel):
-    """Problema subjetivo localizado pelo Judge em uma Célula concreta."""
-
-    audiencia: Audiencia
-    formato: Formato
-    gravidade: GravidadeProblemaTransversal
-    criterio: CriterioTransversal
-    evidencia: str = Field(min_length=1)
-    correcao: str = Field(min_length=1)
-
-
-class JulgamentoTransversal(BaseModel):
-    """Uma resposta auditável do LLM Judge, inclusive quando o provedor falha."""
-
-    rodada: int = Field(ge=0, le=2)
-    estado: EstadoJulgamentoTransversal
-    problemas: list[ProblemaTransversal] = Field(default_factory=list)
-    provedor: str = ""
-    falha: str | None = None
-    avaliado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    @model_validator(mode="after")
-    def _estado_coerente(self) -> JulgamentoTransversal:
-        if self.estado is EstadoJulgamentoTransversal.FALHA:
-            if not self.falha or self.problemas:
-                raise ValueError("falha do Judge exige mensagem e não carrega problemas")
-            return self
-        if self.falha:
-            raise ValueError("julgamento respondido não carrega falha de provedor")
-        if self.estado is EstadoJulgamentoTransversal.APROVADO and self.problemas:
-            raise ValueError("Judge aprovado não carrega problemas")
-        if self.estado is not EstadoJulgamentoTransversal.APROVADO and not self.problemas:
-            raise ValueError("Judge corrigível ou grave precisa localizar problema")
-        return self
-
-
-class CorrecaoTransversalAplicada(BaseModel):
-    """Versão substituída e instruções enviadas de volta à persona."""
-
-    rodada: int = Field(ge=0, le=1)
-    audiencia: Audiencia
-    formato: Formato
-    instrucoes: list[str] = Field(min_length=1)
-    historico_anterior: HistoricoCelula
-
-
-class ResultadoCicloTransversal(BaseModel):
-    """Estado final depois das regras fixas e do LLM Judge."""
-
-    estado: EstadoAvaliacaoTransversal
-    avaliacao_deterministica: AvaliacaoTransversal
-    julgamentos: list[JulgamentoTransversal] = Field(default_factory=list)
-    correcoes_aplicadas: list[CorrecaoTransversalAplicada] = Field(default_factory=list)
-    motivo_final: str
-
-    @model_validator(mode="after")
-    def _aprovacao_exige_as_duas_camadas(self) -> ResultadoCicloTransversal:
-        if self.estado is EstadoAvaliacaoTransversal.APROVADA:
-            if self.avaliacao_deterministica.estado is not EstadoAvaliacaoTransversal.APROVADA:
-                raise ValueError("ciclo não aprova Matriz reprovada deterministicamente")
-            if not self.julgamentos or (
-                self.julgamentos[-1].estado is not EstadoJulgamentoTransversal.APROVADO
-            ):
-                raise ValueError("ciclo aprovado exige aprovação final do LLM Judge")
-        return self
-
-
 class Execucao(BaseModel):
     """O único arquivo de estado de uma execução: ``data/execucoes/<id>/execucao.json``."""
 
@@ -1085,14 +994,9 @@ class Execucao(BaseModel):
     celulas: list[HistoricoCelula] = Field(default_factory=list)
     pendencias: list[Pendencia] = Field(default_factory=list)
     custo: Custo = Field(default_factory=Custo)
-    comite_ligado: bool = False
     avaliacao_transversal: AvaliacaoTransversal | None = Field(
         default=None,
         description="Veredito da Matriz completa; ausente apenas em execuções antigas.",
-    )
-    ciclo_transversal: ResultadoCicloTransversal | None = Field(
-        default=None,
-        description="Ciclo do LLM Judge e correções; ausente apenas em execuções antigas.",
     )
     nome: str = Field(
         default="",
@@ -1117,6 +1021,10 @@ class Execucao(BaseModel):
     referencia_visual: str | None = Field(
         default=None,
         description="Referência aprovada escolhida na curadoria; ausente em Saídas antigas.",
+    )
+    paleta_visual: PaletaVisual | None = Field(
+        default=None,
+        description="Paleta que recolore o Carrossel de família visual; ausente mantém as cores do post.",
     )
 
     @model_validator(mode="after")
@@ -1166,23 +1074,22 @@ class Execucao(BaseModel):
         )
 
     def matriz_liberada(self) -> bool:
-        """O ciclo transversal aprovou a Matriz, ou só a reprovação deterministica de Células a
-        segurava e um revisor humano aprovou cada uma delas.
+        """A conferência da Matriz passou, ou só a reprovação de Células a segurava e um revisor
+        humano aprovou cada uma delas.
 
-        Falta, sobra ou repetição de posição, referência inválida e reprovação do LLM Judge não
-        se resolvem aprovando Célula: nesses casos a Matriz continua bloqueada.
+        Falta, sobra ou repetição de posição e referência inválida não se resolvem aprovando
+        Célula: nesses casos a Matriz continua bloqueada.
         """
-        ciclo = self.ciclo_transversal
-        if ciclo is None or ciclo.estado is EstadoAvaliacaoTransversal.APROVADA:
+        det = self.avaliacao_transversal
+        if det is None or det.estado is EstadoAvaliacaoTransversal.APROVADA:
             return True
-        det = ciclo.avaliacao_deterministica
         estrutura_ok = not (
             det.posicoes_faltantes
             or det.posicoes_inesperadas
             or det.posicoes_duplicadas
             or det.referencias_invalidas
         )
-        if not estrutura_ok or not det.posicoes_reprovadas or ciclo.julgamentos:
+        if not estrutura_ok or not det.posicoes_reprovadas:
             return False
         return all(
             self.celula_liberada(Audiencia(posicao.split(":")[0]), Formato(posicao.split(":")[1]))
@@ -1209,6 +1116,9 @@ class EtapaDaCelula(StrEnum):
     AGUARDANDO = "aguardando"
     GERANDO = "gerando"
     CORRIGINDO = "corrigindo"
+    AVALIANDO_DETERMINISTICA = "avaliando_deterministica"
+    AVALIANDO_JEV = "avaliando_jev"
+    AVALIANDO_LLM = "avaliando_llm"
     APROVADA = "aprovada"
     REVISAO_HUMANA = "revisao_humana"
 
@@ -1246,7 +1156,6 @@ class Andamento(BaseModel):
     nome: str
     ata: str
     provedor: str
-    comite: bool = False
     categoria: CategoriaDaAta = CategoriaDaAta.COPOM
     atas: list[str] = Field(
         default_factory=list,
@@ -1381,10 +1290,11 @@ class PapelLLM(StrEnum):
     """Que papel a chamada cumpre. O roteador escolhe o provedor por papel."""
 
     GERADOR = "gerador"
-    JUIZ = "juiz"
     JUIZ_VISAO = "juiz_visao"
+    CHECADOR = "checador"
     DIRETOR_ARTE = "diretor_arte"
     ANALISTA_VISUAL = "analista_visual"
+    VIDEO = "video"
 
 
 class Mensagem(BaseModel):

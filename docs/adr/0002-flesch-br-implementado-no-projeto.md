@@ -79,3 +79,21 @@ Convenções fixadas, cobertas por teste em `tests/test_silabas.py`:
 O texto de referência de 45 palavras e 4 frases citado na pesquisa (Flesch-BR 34,4 com o
 silabador correto) não foi preservado; o teste usa um texto próprio de 45 palavras, 4 frases
 e 108 sílabas contadas à mão, que resulta no mesmo 34,4 pela fórmula.
+
+## Atualização (16/10/2026): título do slide é frase própria, e número é uma palavra curta
+
+Duas convenções de contagem mudaram, depois de as Células reprovarem em série por Flesch-BR
+independentemente da Audiência e do comunicado (execuções de 16/10/2026):
+
+- **Título do slide é frase própria.** `Conteudo.texto_avaliavel()` separa título e corpo por
+  linha em branco, que é fim de frase. Antes, só `\n`: o título grudava na primeira frase do
+  corpo e cada slide ganhava uma frase de 20 a 40 palavras. Isso custava de 4 a 14 pontos.
+- **Todo número conta como uma palavra de duas sílabas**, qualquer que seja o tamanho. Antes, um
+  dígito por sílaba (mais três pela vírgula): `R$ 3.219.251.245,60` pesava 15 sílabas. Isso
+  custava de 9 a 35 pontos num carrossel e ensinava o Gerador a apagar a Âncora para passar,
+  o que derrubava a Aderência.
+
+Os Limiares não mudaram. Recalculado com as duas convenções, o carrossel Iniciante da
+execução `…-191029` foi de 44,5 para 57,4 na rodada 1 (passa o ≥ 50), e o Intermediário da
+`…-192159` foi de 26,0 para 40,2. O efeito colateral a vigiar: o Intermediário tem teto 50, e o
+carrossel da `…-190218` foi de 24,3 para 66,1 — agora reprovaria por fácil demais.

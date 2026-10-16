@@ -29,18 +29,17 @@ ROTEIRO_INTERMEDIARIO = (Audiencia.INTERMEDIARIO, Formato.ROTEIRO)
 TEXTO_INICIANTE = (Audiencia.INICIANTE, Formato.TEXTO_ANALITICO)
 
 
-def test_uma_celula_so_nao_roda_o_ciclo_transversal(caminho_ata: Path, tmp_path: Path):
+def test_uma_celula_so_nao_roda_a_conferencia_da_matriz(caminho_ata: Path, tmp_path: Path):
     execucao = executar(caminho_ata, "falso", tmp_path, pedido=[CARROSSEL_INICIANTE])
 
     assert [(h.audiencia, h.formato) for h in execucao.celulas] == [CARROSSEL_INICIANTE]
     assert execucao.posicoes_pedidas() == (CARROSSEL_INICIANTE,)
     assert execucao.avaliacao_transversal is None
-    assert execucao.ciclo_transversal is None
     assert execucao.pendencias == []
     assert execucao.celulas[0].destino_final is Destino.APROVADO
 
 
-def test_duas_celulas_aprovadas_passam_pelo_judge(caminho_ata: Path, tmp_path: Path):
+def test_duas_celulas_aprovadas_passam_pela_conferencia_da_matriz(caminho_ata: Path, tmp_path: Path):
     execucao = executar(
         caminho_ata, "falso", tmp_path, pedido=[CARROSSEL_INICIANTE, ROTEIRO_INICIANTE]
     )
@@ -48,8 +47,7 @@ def test_duas_celulas_aprovadas_passam_pelo_judge(caminho_ata: Path, tmp_path: P
     assert len(execucao.celulas) == 2
     assert execucao.avaliacao_transversal is not None
     assert execucao.avaliacao_transversal.total_esperado == 2
-    assert execucao.ciclo_transversal is not None
-    assert execucao.ciclo_transversal.estado is EstadoAvaliacaoTransversal.APROVADA
+    assert execucao.avaliacao_transversal.estado is EstadoAvaliacaoTransversal.APROVADA
     assert execucao.pendencias == []
 
 
@@ -60,8 +58,7 @@ def test_a_celula_teimosa_continua_indo_para_a_fila_humana(caminho_ata: Path, tm
 
     h4 = [p for p in execucao.pendencias if p.fila is FilaHumana.H4_REVISAO]
     assert [(p.audiencia, p.formato) for p in h4] == [ROTEIRO_INTERMEDIARIO]
-    assert execucao.ciclo_transversal is not None
-    assert execucao.ciclo_transversal.estado is EstadoAvaliacaoTransversal.REVISAO_HUMANA
+    assert execucao.avaliacao_transversal.estado is EstadoAvaliacaoTransversal.REVISAO_HUMANA
 
 
 def test_a_correcao_da_rodada_um_acontece_na_posicao_pedida(caminho_ata: Path, tmp_path: Path):
@@ -135,7 +132,11 @@ def test_o_andamento_so_avisa_das_celulas_pedidas(caminho_ata: Path, tmp_path: P
     )
 
     assert {(a, f) for a, f, _, _ in avisos} == {CARROSSEL_INICIANTE, ROTEIRO_INICIANTE}
-    assert {e for _, _, e, _ in avisos} == {EtapaDaCelula.GERANDO, EtapaDaCelula.APROVADA}
+    assert {e for _, _, e, _ in avisos} == {
+        EtapaDaCelula.GERANDO,
+        EtapaDaCelula.AVALIANDO_DETERMINISTICA,
+        EtapaDaCelula.APROVADA,
+    }
 
 
 @pytest.mark.parametrize("pedido", [[], [CARROSSEL_INICIANTE, CARROSSEL_INICIANTE]])

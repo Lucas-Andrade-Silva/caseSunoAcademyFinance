@@ -26,11 +26,13 @@ from suno.dominio import (
     Audiencia,
     ChaveAncora,
     EscolhaDeLayout,
+    PaletaVisual,
     ReferenciaVisual,
     Slide,
 )
 from suno.pacote import familias
 from suno.pacote.carrossel import SELO_DA_AUDIENCIA
+from suno.pacote.recolorir import recolorir
 from suno.pacote.direcao_de_arte import (
     CATALOGO_DE_LAYOUTS,
     ComposicaoCarrossel,
@@ -217,11 +219,14 @@ def renderizar(
     referencias_aprovadas: tuple[ReferenciaVisual, ...] = (),
     plano_direcao: tuple[EscolhaDeLayout, ...] | None = None,
     imagens: dict[int, Path] | None = None,
+    paleta: PaletaVisual | None = None,
 ) -> list[Path]:
-    """Grava ``slide-<nn>.png`` e ``slide-<nn>.json`` em ``pasta`` e devolve os PNGs.
+    """Grava ``slide-<nn>.png``, ``.json`` e ``.html`` em ``pasta`` e devolve os PNGs.
 
     ``imagens`` leva a foto já resolvida de cada slide (índice → arquivo). Sem foto, o layout da
-    família degrada sozinho (classe ``sem-imagem``).
+    família degrada sozinho (classe ``sem-imagem``). ``paleta`` recolore os Layouts das famílias.
+    O ``.html`` guarda o slide com as cores originais: é dele que a prévia do editor recolore com
+    outra paleta sem montar o Pacote de novo.
     """
     css = (PASTA_DOS_TEMPLATES / "base.css").read_text(encoding="utf-8")
     css = css.replace("{{FONTE_TITULO}}", (PASTA_DAS_FONTES / FONTE_DO_TITULO).as_uri())
@@ -253,8 +258,9 @@ def renderizar(
             )
             numeros_por_slide.append(numeros)
             nome = f"slide-{indice + 1:02d}"
+            (pasta / f"{nome}.html").write_text(conteudo, encoding="utf-8")
             arquivo_html = Path(temporaria) / f"{nome}.html"
-            arquivo_html.write_text(conteudo, encoding="utf-8")
+            arquivo_html.write_text(recolorir(conteudo, paleta), encoding="utf-8")
             png = pasta / f"{nome}.png"
             caminhos.append(png)
             trabalho.append(

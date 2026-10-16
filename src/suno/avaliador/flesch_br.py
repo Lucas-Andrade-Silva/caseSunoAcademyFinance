@@ -79,8 +79,8 @@ _TOKEN = re.compile(
     rf"[{_LETRAS}]+(?:[-\x00][{_LETRAS}]+)*\x00?|\d+(?:[.,\x00]\d+)*"
 )
 
-SILABAS_DA_VIRGULA = contar_silabas("vírgula")
-"""Três, pelo separador do projeto. É o que a vírgula decimal soma num número."""
+SILABAS_DO_NUMERO = 2
+"""Um número vale uma palavra curta, qualquer que seja o tamanho (ver ``_silabas_do_numero``)."""
 
 
 @dataclass(frozen=True)
@@ -163,5 +163,10 @@ def _silabas_do_token(token: str) -> int:
 
 
 def _silabas_do_numero(token: str) -> int:
-    digitos = sum(1 for letra in token if letra.isdigit())
-    return digitos + SILABAS_DA_VIRGULA * token.count(",")
+    """Um número conta como uma palavra curta, de duas sílabas, seja ``7`` ou ``3.219.251.245,60``.
+
+    O olho lê o número como um bloco, não sílaba por sílaba. Contar um dígito por sílaba (a convenção
+    anterior) fazia ``R$ 3.219.251.245,60`` pesar 15 sílabas e derrubava o índice de um carrossel em
+    até 35 pontos só por citar a Âncora: o Gerador aprendia a apagar o número para passar.
+    """
+    return SILABAS_DO_NUMERO

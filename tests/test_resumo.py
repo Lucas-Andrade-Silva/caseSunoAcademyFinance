@@ -6,14 +6,10 @@ from suno.api.resumo import montar_posicoes, status_da_saida
 from suno.dominio import (
     Audiencia,
     Destino,
-    DimensaoSubjetiva,
     EstadoDecisao,
-    EstadoMedida,
     Formato,
     HistoricoCelula,
-    JulgamentoDimensao,
     MotivoReprovacao,
-    ResultadoComite,
 )
 from suno.revisao import decidir
 from tests.construtores_de_execucao import execucao_de_teste, historico_de_texto
@@ -32,7 +28,6 @@ def test_posicao_sem_decisao_vem_pendente() -> None:
     assert posicao.decisao is None
     assert posicao.bloqueada is False
     assert posicao.sem_conteudo is False
-    assert posicao.revisao_comite is False
 
 
 def test_decisao_humana_aparece_na_posicao() -> None:
@@ -67,23 +62,6 @@ def test_posicao_sem_tentativa_e_sem_conteudo() -> None:
 
     assert posicao.sem_conteudo is True
     assert posicao.destino is Destino.REPROVADO_REVISAO_HUMANA
-
-
-def test_dimensao_do_comite_em_revisao_humana_marca_a_posicao() -> None:
-    historico = historico_de_texto(Audiencia.INICIANTE, Destino.APROVADO)
-    historico.tentativas[0].laudo.comite = ResultadoComite(
-        dimensoes=[
-            JulgamentoDimensao(
-                dimensao=DimensaoSubjetiva.TOM, estado=EstadoMedida.REVISAO_HUMANA
-            )
-        ],
-        provedores=["groq", "sambanova"],
-    )
-
-    (posicao,) = montar_posicoes(execucao_de_teste(historico))
-
-    assert posicao.revisao_comite is True
-    assert posicao.destino is Destino.APROVADO
 
 
 def test_status_aguarda_revisao_enquanto_alguma_celula_espera_decisao() -> None:

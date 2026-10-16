@@ -2,11 +2,13 @@
 //   vazia     → o popup de confirmação (notícias + audiências);
 //   enviando/gerando → o carregamento "Gerando…";
 //   falhou    → a frase do problema e a saída;
-//   pronta    → a guia mostra o conteúdo (`children`).
+//   pronta    → a guia mostra o conteúdo (`children`) ; o "+" ao lado do título da guia (`TituloDaGuia`)
+//               reabre o mesmo popup de confirmação e gera de novo no lugar da Saída atual.
 // Cada guia só escreve o que é dela, o conteúdo pronto.
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { Audiencia, Formato } from "../dados/cliente";
+import { ContextoDaNovaGeracao } from "../nucleo/novaGeracao";
 import { guiaDoFormato } from "../nucleo/guias";
 import type { ExtrasDaGeracao } from "../nucleo/pedido";
 import { usarSessao, type Sessao } from "../nucleo/sessao";
@@ -30,8 +32,29 @@ export default function FluxoDaGuia({ formato, rotuloGerando, extras, children }
   const { pathname } = useLocation();
   // O popup sai por um portal e não é escondido com a vista: só abre na guia que está na tela.
   const naTela = pathname === guiaDoFormato(formato).caminho;
+  const [novaGeracao, definirNovaGeracao] = useState(false);
 
-  if (sessao.fase === "pronta") return <>{children(sessao)}</>;
+  if (sessao.fase === "pronta") {
+    return (
+      <>
+        <ContextoDaNovaGeracao.Provider value={() => definirNovaGeracao(true)}>
+          {children(sessao)}
+        </ContextoDaNovaGeracao.Provider>
+        {naTela && novaGeracao && (
+          <ConfirmarNoticias
+            onVoltar={() => {
+              definirNovaGeracao(false);
+              navegar("/ingestao");
+            }}
+            onConfirmar={(audiencias: Audiencia[]) => {
+              definirNovaGeracao(false);
+              void sessao.iniciar(audiencias, extras);
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   // Retomando uma Saída depois de recarregar: não há o que mostrar até o servidor responder.
   if (sessao.fase === "enviando" && sessao.execucaoId) return null;

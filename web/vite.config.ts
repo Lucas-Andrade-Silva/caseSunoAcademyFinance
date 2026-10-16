@@ -14,6 +14,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icone.svg"],
+      // As prévias do carrossel abrem a API num iframe: navegação para /api nunca cai no index.html.
+      workbox: { navigateFallbackDenylist: [/^\/api\//] },
       manifest: {
         name: "Suno Content",
         short_name: "Suno Content",

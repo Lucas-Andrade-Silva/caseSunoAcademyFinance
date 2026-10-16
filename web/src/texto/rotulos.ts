@@ -59,6 +59,10 @@ export function rotuloMetrica(metrica: Metrica): string {
       return "Recomendação";
     case "integridade":
       return "Integridade da extração";
+    case "qualidade":
+      return "Qualidade";
+    case "fidelidade":
+      return "Fidelidade à Ata";
   }
 }
 
@@ -75,6 +79,10 @@ export function descricaoDaMetrica(metrica: Metrica): string {
       return "Todo número do texto precisa vir de uma Âncora, um valor tirado literalmente da Ata. Número que não está na Ata, ou com valor trocado, reprova.";
     case "recomendacao":
       return "Conta trechos que mandam ou sugerem comprar, vender ou manter um investimento. O conteúdo informa e educa, nunca recomenda: o limite é zero.";
+    case "qualidade":
+      return "Nota de 0 a 100% dada pelo Jev, depois das medidas acima: quanto a ideia está desenvolvida, se o texto está completo (sem corte), se se lê de primeira e se o tom serve à Audiência. Vale a menor das quatro notas; abaixo do Limiar, a Célula é escrita de novo.";
+    case "fidelidade":
+      return "Um modelo lê a Ata inteira e o conteúdo e aponta o que o conteúdo diz que a Ata não diz (ou diz de outro jeito). Cada apontamento traz o trecho copiado e é conferido por código. Explicação de termo e analogia não contam. Só o que a Ata contradiz ou diz de outro jeito (com o trecho da Ata conferido) faz a Célula ser escrita de novo; «a Ata não diz isso» aparece como aviso.";
   }
 }
 
@@ -82,9 +90,6 @@ export function descricaoDaMetrica(metrica: Metrica): string {
 export function descreverMedida(medida: Medida): string {
   if (medida.estado === "ausente") {
     return "sem base para medir";
-  }
-  if (medida.estado === "revisao_humana") {
-    return "aguardando desempate (H3)";
   }
   const positivo = medida.atingiu === true;
   switch (medida.metrica) {
@@ -100,6 +105,10 @@ export function descreverMedida(medida: Medida): string {
       return positivo ? "Sem Recomendação ✓" : "Recomendação detectada";
     case "integridade":
       return positivo ? "Extração íntegra" : "Falha de extração";
+    case "qualidade":
+      return positivo ? "Qualidade adequada" : "Qualidade abaixo do Limiar";
+    case "fidelidade":
+      return positivo ? "Fiel à Ata ✓" : "Afirmação que a Ata contradiz";
   }
 }
 
@@ -150,6 +159,10 @@ export function rotuloMotivo(motivo: MotivoReprovacao): string {
       return "Recomendação detectada";
     case "falha_de_extracao":
       return "Falha de extração";
+    case "qualidade":
+      return "Qualidade abaixo do Limiar";
+    case "fidelidade":
+      return "Afirmação que a Ata contradiz";
   }
 }
 
@@ -221,6 +234,13 @@ export function rotuloFase(fase: string | null | undefined): string {
   }
 }
 
+/** As camadas do Avaliador, na ordem em que rodam, com a etapa do andamento de cada uma. */
+export const CAMADAS_DA_AVALIACAO: readonly { etapa: string; rotulo: string }[] = [
+  { etapa: "avaliando_deterministica", rotulo: "Avaliação determinística" },
+  { etapa: "avaliando_jev", rotulo: "Avaliação JEV" },
+  { etapa: "avaliando_llm", rotulo: "Avaliação LLM" },
+];
+
 /** A Célula ao vivo: o título e o detalhe pequeno embaixo. `parou` = a Saída foi interrompida. */
 export function rotuloEtapa(
   etapa: string,
@@ -237,6 +257,14 @@ export function rotuloEtapa(
       return parou
         ? { titulo: "Parou", detalhe: `na rodada ${rodada + 1}` }
         : { titulo: "Gerando…", detalhe: `rodada ${rodada + 1}` };
+    case "avaliando_deterministica":
+    case "avaliando_jev":
+    case "avaliando_llm": {
+      const camada = CAMADAS_DA_AVALIACAO.find((c) => c.etapa === etapa);
+      return parou
+        ? { titulo: "Parou", detalhe: `na rodada ${rodada + 1}` }
+        : { titulo: "Avaliando…", detalhe: `${camada?.rotulo ?? ""} · rodada ${rodada + 1}` };
+    }
     case "corrigindo":
       return parou
         ? { titulo: "Parou", detalhe: `na rodada ${rodada + 1}` }
