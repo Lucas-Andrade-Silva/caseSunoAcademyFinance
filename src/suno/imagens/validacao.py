@@ -1,7 +1,7 @@
 """Verificação de relevância da foto por um juiz de visão (mesmo contrato de ``pacote.visual``).
 
-A licença é checada em código (``commons.py``); aqui se checa o que código não vê: se a
-foto de fato trata do assunto do slide e se não é imagem sensível ou de pessoa privada.
+Código não vê o que a imagem mostra; aqui se checa se ela de fato trata do assunto do slide
+(a B3, e não a vitamina B3) e se não é imagem sensível ou de pessoa privada.
 """
 
 from __future__ import annotations
@@ -21,10 +21,12 @@ LADO_MAXIMO_PX = 1024
 ROTULO = "juiz-visao:imagem"
 
 PAPEL_DO_JUIZ_DE_IMAGEM = (
-    "Você confere se uma fotografia real, tirada da internet, serve para ilustrar um slide de"
-    " Instagram sobre finanças. Ela serve quando mostra, ou evoca sem ambiguidade, o assunto"
-    " pedido. Não serve quando é de outro assunto, de outro país quando o assunto é brasileiro,"
-    " quando traz texto ou marca que contradiz o slide, ou quando é só decoração sem relação."
+    "Você confere se uma imagem tirada da internet (foto, fachada, logo da instituição) serve"
+    " para ilustrar um slide de Instagram sobre finanças. Ela serve quando mostra, ou evoca sem"
+    " ambiguidade, o assunto pedido: se o assunto é uma instituição, vale a fachada, o pregão ou o"
+    " logo dela. Não serve quando é de outro assunto (palavra igual, coisa diferente), de outro país"
+    " quando o assunto é brasileiro, quando tem marca d'água, banner de venda, captura de tela"
+    " com interface, texto grande que contradiz o slide, ou quando é só decoração sem relação."
     " Marque 'inadequada' se a imagem for sensível, violenta, sexual ou mostrar uma pessoa"
     " privada reconhecível (figura pública em evento oficial é aceitável)."
     " Você NUNCA julga se o slide recomenda comprar ou vender: isso é checado em outro lugar."

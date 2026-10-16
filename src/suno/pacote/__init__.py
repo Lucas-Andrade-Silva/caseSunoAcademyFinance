@@ -44,7 +44,7 @@ from suno.pacote.direcao_de_arte import (
     escolher_familia,
     resumir_direcao_renderizada,
 )
-from suno.pacote.fotos import FotoDoSlide, resolver_fotos
+from suno.pacote.fotos import FotoDoSlide, acomodar_fotos, resolver_fotos
 from suno.pacote.diretor_de_arte_ia import planejar_com_diretor_de_arte
 from suno.pacote.historico_layouts import (
     NOME_DO_BANCO,
@@ -57,6 +57,7 @@ from suno.pacote.referencias_visuais import RepositorioReferenciasVisuais
 from suno.provedores.base import Provedor
 from suno.pacote.legenda import montar_legenda
 from suno.pacote.visual import conferir_imagens, julgar_folha_de_contato
+from suno.video.atuacao import direcao_em_disco
 from suno.video.plano import NOME_DO_PLANO, NOME_DO_PLANO_LEGIVEL, montar_plano, plano_em_markdown
 
 NOME_DA_PASTA = "pacote"
@@ -128,6 +129,7 @@ def _montar_uma(
     familia_visual: FamiliaVisual | None = None,
     biblioteca_de_fotos: BibliotecaDeImagens | None = None,
     buscar_fotos: bool = False,
+    provedor_fotos: Provedor | None = None,
 ) -> PacotePublicacao:
     pasta_do_pacote.mkdir(parents=True, exist_ok=True)
 
@@ -149,7 +151,8 @@ def _montar_uma(
                 slides,
                 biblioteca_de_fotos,
                 permitir_rede=buscar_fotos,
-                provedor_visao=provedor_visao,
+                # O juiz das fotos é um só para a dúvida; o Eval visual da folha continua opcional.
+                provedor_visao=provedor_fotos or provedor_visao,
             )
         # O plano só enxerga a foto que de fato existe: sem ela, evita layout de foto.
         slides_do_plano = [
@@ -167,15 +170,28 @@ def _montar_uma(
             raise ValueError(
                 f"a família {familia.value} não tem layout para os papéis: {', '.join(sem_layout)}"
             )
-        resultado_direcao = planejar_com_diretor_de_arte(
-            slides_do_plano,
-            referencias_aprovadas,
-            historico_layouts,
-            provedor=provedor_direcao,
-            sinais_humanos=sinais_humanos,
-            referencia_preferida=referencia_preferida,
-            familia=familia,
+        # Foto achada vai para um slide cujo layout comporte foto; sem lugar, é descartada (e o
+        # crédito some da legenda). Slide sem foto recebe um layout que não precisa dela.
+        acomodadas = acomodar_fotos(
+            slides,
+            fotos,
+            familia,
+            lambda lista: planejar_com_diretor_de_arte(
+                lista,
+                referencias_aprovadas,
+                historico_layouts,
+                provedor=provedor_direcao,
+                sinais_humanos=sinais_humanos,
+                referencia_preferida=referencia_preferida,
+                familia=familia,
+            ),
         )
+        for origem, destino in acomodadas.movidas:
+            _REGISTRO.info("foto do slide %d realocada para o slide %d", origem + 1, destino + 1)
+        for origem in acomodadas.descartadas:
+            _REGISTRO.info("foto do slide %d não coube em nenhum layout: slide sem foto", origem + 1)
+        fotos = acomodadas.fotos
+        resultado_direcao = acomodadas.plano
         imagens = renderizar_carrossel(
             celula,
             execucao.ancoras,
@@ -184,6 +200,7 @@ def _montar_uma(
             referencias_aprovadas=referencias_aprovadas,
             plano_direcao=tuple(resultado_direcao.escolhas),
             fotos={indice: foto.caminho for indice, foto in fotos.items()},
+            paleta=execucao.paleta_visual if com_familias else None,
         )
         folha = folha_de_contato(imagens, pasta_do_pacote / NOME_DA_FOLHA)
         conferencia = conferir_imagens(imagens, execucao.ancoras)
@@ -218,7 +235,8 @@ def _montar_uma(
         if celula.conteudo.blocos:
             # O plano de edição (JSON para avatar + tabela legível) acompanha o Pacote: é o que
             # um humano cola num gerador de vídeo se não usar o mp4 local.
-            plano = montar_plano(celula.conteudo, celula.audiencia)
+            direcao = direcao_em_disco(pasta_do_pacote, celula.conteudo, celula.audiencia, None)
+            plano = montar_plano(celula.conteudo, celula.audiencia, direcao)
             (pasta_do_pacote / NOME_DO_PLANO).write_text(
                 json.dumps(plano, ensure_ascii=False, indent=2), encoding="utf-8"
             )
@@ -247,7 +265,7 @@ def _montar_uma(
             FotoDoPacote(
                 indice=indice,
                 arquivo=foto.caminho.name,
-                assunto=(celula.conteudo.slides or [])[indice].imagem or "",
+                assunto=foto.imagem.consulta,
                 autor=foto.imagem.autor,
                 licenca=foto.imagem.licenca,
                 url_origem=foto.imagem.url_origem,
@@ -276,6 +294,7 @@ def montar_pacote(
     familia_visual: FamiliaVisual | None = None,
     biblioteca_de_fotos: BibliotecaDeImagens | None = None,
     buscar_fotos: bool = False,
+    provedor_fotos: Provedor | None = None,
 ) -> list[PacotePublicacao]:
     """Um Pacote por Célula aprovada, em ``<pasta_execucoes>/<id>/pacote/<audiencia>-<formato>/``.
 
@@ -370,6 +389,7 @@ def montar_pacote(
             familia_visual=familia_visual,
             biblioteca_de_fotos=biblioteca_de_fotos,
             buscar_fotos=buscar_fotos,
+            provedor_fotos=provedor_fotos,
         )
         pacotes.append(pacote)
         if pacote.direcao_de_arte is not None:
