@@ -52,12 +52,10 @@ def _comunicado(pasta: Path, identificador: str, texto: str, data: str = "2026-1
 def test_o_catalogo_padrao_tem_as_quatro_origens(tmp_path: Path):
     origens = {o.id: o for o in carregar_catalogo(tmp_path)}
 
-    assert list(origens) == ["copom", "cvm_fatos_relevantes", "releases_b3", "importados"]
+    assert list(origens) == ["copom", "cvm_fatos_relevantes", "cvm_demonstracoes", "bcb_relatorios", "bcb_resolucoes", "b3_oficios", "importados"]
     assert origens["copom"].ativa and origens["copom"].categoria is CategoriaDaAta.COPOM
     assert not origens["cvm_fatos_relevantes"].ativa
     assert origens["cvm_fatos_relevantes"].categoria is CategoriaDaAta.COMUNICADO_RELEVANTE
-    assert not origens["releases_b3"].disponivel
-    assert origens["releases_b3"].aviso == "em breve"
     assert origens["importados"].ativa
     assert origens["importados"].categoria is CategoriaDaAta.IMPORTADA
 
@@ -76,11 +74,6 @@ def test_ligar_e_desligar_persiste_em_arquivo_de_preferencias(tmp_path: Path):
 
     desligada = alternar(tmp_path, "cvm_fatos_relevantes", False)
     assert not desligada.ativa
-
-
-def test_origem_indisponivel_nao_liga(tmp_path: Path):
-    with pytest.raises(OrigemIndisponivel, match="em breve"):
-        alternar(tmp_path, "releases_b3", True)
 
 
 def test_origem_desconhecida_e_recusada(tmp_path: Path):
@@ -148,7 +141,7 @@ def test_comunicado_sem_numero_avisa_que_a_extracao_vai_falhar(tmp_path: Path):
     assert resumo is not None and not resumo.extracao_completa
 
 
-def test_comunicado_sem_data_tambem_avisa(tmp_path: Path):
+def test_comunicado_sem_data_no_texto_usa_a_data_dos_metadados(tmp_path: Path):
     _comunicado(
         tmp_path / "cvm_fatos_relevantes",
         "sem-data",
@@ -157,7 +150,20 @@ def test_comunicado_sem_data_tambem_avisa(tmp_path: Path):
 
     resumo = RepositorioDeAtas(ATAS, tmp_path).resumir("sem-data")
 
-    assert resumo is not None and not resumo.extracao_completa
+    assert resumo is not None and resumo.extracao_completa and not resumo.qualitativa
+
+
+def test_comunicado_longo_sem_numero_gera_e_e_marcado_como_qualitativo(tmp_path: Path):
+    corpo = (
+        "A companhia comunicou ao mercado a saída de seu diretor-presidente e a escolha de um "
+        "sucessor interno, que assume o cargo após a aprovação do conselho de administração. "
+        "A mudança segue o plano de sucessão aprovado pelos acionistas e não altera a estratégia."
+    )
+    _comunicado(tmp_path / "cvm_fatos_relevantes", "so-texto", corpo)
+
+    resumo = RepositorioDeAtas(ATAS, tmp_path).resumir("so-texto")
+
+    assert resumo is not None and resumo.extracao_completa and resumo.qualitativa
 
 
 def test_os_itens_de_uma_origem_vem_da_pasta_dela(tmp_path: Path):
