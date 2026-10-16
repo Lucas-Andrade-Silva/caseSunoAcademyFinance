@@ -2,7 +2,7 @@
 
 Até aqui a API só lia do disco. O docstring de `src/suno/api/app.py` diz que `executar` e
 `montar_pacote` são comando de terminal e nunca uma rota. O painel novo (spec em
-`docs/superpowers/specs/2026-10-09-front-suno-design.md`) muda isso: a pessoa marca quais
+`legacy/docs/superpowers/specs/2026-10-09-front-suno-design.md`) muda isso: a pessoa marca quais
 Células quer e a interface precisa iniciar a geração, acompanhar e registrar o resultado.
 
 Decidimos que a API **inicia o pipeline em segundo plano** por `POST /api/execucoes`, grava o

@@ -1,5 +1,12 @@
 # Relatório experimental — Suno Content (Entregável 6)
 
+> **Medições de 19/09/2026, não refeitas.** Depois delas o sistema mudou: o comitê de juízes-LLM e
+> o SambaNova saíram ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)),
+> entraram a Qualidade pelo Jev e a Fidelidade à Ata ([ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
+> [ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md)) e o teto do Ciclo de
+> correção virou configurável (padrão 4). O funcionamento atual está em [FUNCIONAMENTO.md](FUNCIONAMENTO.md);
+> os números abaixo valem para o sistema da data da medição.
+
 Todo número citado aqui vem de uma execução real, de um arquivo em disco, ou de um comando
 colado com a saída completa. Onde uma medição não foi feita, este relatório diz que não foi
 feita — nunca inventa o número. `scripts/relatorio.py --execucao <id>` gera
@@ -124,6 +131,8 @@ documento mal lido ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correca
 Vai direto para a fila de revisão humana (H4).
 
 ### O comitê de juízes-LLM — desligado na demo
+
+> Removido depois desta medição ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)): `src/suno/comite/`, `tests/test_comite.py` e `--comite` não existem mais.
 
 O comitê (`src/suno/comite/`, [ADR 0008](adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md))
 julga tom, clareza e coerência com dois juízes-LLM em provedores diferentes, só em Texto

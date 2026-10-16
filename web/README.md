@@ -3,7 +3,7 @@
 React + Vite + Tailwind sobre FastAPI (ADR 0005), no padrão visual do editor do biosites
 ([ADR 0028](../docs/adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)): barra lateral
 arredondada, coluna de ajustes à esquerda e área de prévia à direita. Desenho completo em
-`docs/superpowers/specs/2026-10-12-front-biosites-design.md`.
+`legacy/docs/superpowers/specs/2026-10-12-front-biosites-design.md`.
 
 Seis guias, na ordem da barra:
 
@@ -95,11 +95,13 @@ que cada guia tiver de lógica). Os componentes são conferidos por `tsc` e olha
 ## Cliente da API
 
 `npm run dev`/`npm run build` não regeram o cliente: `web/openapi.json` e
-`web/src/api/schema.d.ts` são gerados a partir de `src/suno/api/app.py`. Para regerar sem rede:
+`web/src/api/schema.d.ts` são gerados a partir de `src/suno/api/app.py`. Para regerar, na raiz do
+repositório:
 
 ```bash
-uv run python -c "import json, pathlib; from suno.api.openapi import gerar_schema; pathlib.Path('web/openapi.json').write_text(json.dumps(gerar_schema(), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')"
-cd web && npx openapi-typescript openapi.json -o src/api/schema.d.ts
+bash scripts/gerar-cliente.sh
 ```
+
+No Windows, `scripts\gerar-cliente.ps1`.
 
 `tests/test_contrato_openapi.py` falha quando `web/openapi.json` diverge da API.

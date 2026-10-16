@@ -1,173 +1,139 @@
 # Suno Content
 
-Adapta uma Ata do Copom em nove Células — três Audiências (Iniciante, Intermediário,
-Avançado) vezes três Formatos (Texto analítico, Carrossel, Roteiro) — e reprova, sem LLM
-e sem rede, a Célula que não atinge o Limiar da sua Audiência ou que cruza a linha de
-Recomendação. Dois módulos: o **Gerador** produz, o **Avaliador** julga, e entre eles
-passa só `(Conteúdo, Âncora[], Audiência) → Laudo`. O diagrama completo, com os seis
-pontos onde um humano decide (H1–H6), está em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+Transforma uma Ata do Copom (o documento em que o Banco Central explica a decisão de juros) em
+nove conteúdos: três públicos (Iniciante, Intermediário, Avançado) vezes três formatos (Texto
+analítico, Carrossel e Roteiro de vídeo). Antes de liberar cada conteúdo, um avaliador sem
+inteligência artificial confere a legibilidade, os termos técnicos, os números e se o texto
+sugere investimento. O conteúdo que não passa é reescrito ou vai para revisão humana.
 
-Caso acadêmico de duas semanas, duas pessoas. Orçamento R$ 0: todo LLM do pipeline roda
-em tier gratuito, atrás de um roteador único que troca de provedor no 429
-([ADR 0007](docs/adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)).
+Case acadêmico feito por duas pessoas em duas semanas (enunciado em `docs/`), com orçamento
+R$ 0: todo modelo de linguagem usado roda em tier gratuito.
 
-## Os seis entregáveis
+## O que você precisa
 
-| Entregável | Onde está | Comando | Teste que prova |
-|---|---|---|---|
-| 1 — Pipeline de adaptação | `src/suno/gerador/` | `uv run --offline python -m suno.cli executar --ata data/atas/copom-280-2026-08-05.pdf --provedor falso` | `tests/test_gerador.py`, `tests/test_execucao.py` |
-| 2 — Suíte de avaliação híbrida | `src/suno/avaliador/`, `evals/` | `uv run --offline pytest -q tests/test_laudo.py tests/test_evals.py` | `tests/test_laudo.py`, `tests/test_evals.py` (pydantic-evals, [ADR 0003](docs/adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md)) |
-| 3 — Ciclo de correção | `src/suno/gerador/ciclo.py` | mesmo comando do Entregável 1 — a demo tem uma Célula corrigida e uma na fila humana | `tests/test_ciclo.py` |
-| 4 — Interface web | `src/suno/api/`, `web/` | `uv run --offline python -m suno.cli servir` + `cd web && npm run build` | `tests/test_api.py` (21 testes) + `npx tsc --noEmit` sem erro |
-| 5 — Vídeo demonstrativo | `src/suno/video/`, gravado fora do repositório a partir da aplicação rodando | `uv run --offline python -m suno.cli video --execucao demo-copom-280 --audiencia iniciante` | `tests/test_video.py` (6 testes) |
-| 6 — Relatório experimental | [docs/relatorio-experimental.md](docs/relatorio-experimental.md) | `uv run --offline python scripts/relatorio.py --execucao demo-copom-280` | `docs/relatorio/*.json` |
+| Ferramenta | Para quê | Obrigatória? |
+|---|---|---|
+| [Python 3.12+](https://www.python.org/downloads/) | o sistema | sim |
+| [uv](https://docs.astral.sh/uv/) | instala as dependências Python | sim |
+| [Node.js](https://nodejs.org/) (testado com a versão 24) | a interface web e o render do Carrossel | só para a interface e o Carrossel em HTML |
 
-## Rodar numa máquina limpa
+Nenhuma chave de API é necessária para a demo e os testes.
 
-Precisa só de Python 3.12+ e [`uv`](https://docs.astral.sh/uv/). Nenhum comando abaixo
-toca a rede, exceto onde está escrito.
+## Instalar
 
-| Passo | Unix (`sh`) | Windows (PowerShell) | Saída esperada |
-|---|---|---|---|
-| 1. Instalar `uv` | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | `winget install astral-sh.uv` | binário `uv` no PATH |
-| 2. Preparar o ambiente | `scripts/setup.sh` | `scripts\setup.ps1` | `uv sync --extra video` termina (inclui o ramo de vídeo — Entregável 5); `.env` copiado de `.env.example` |
-| 3. Rodar a suíte | `scripts/test.sh` | `scripts\test.ps1` | `N passed`, 0 falhas (número exato da última medição — 803 — em `docs/relatorio/suite.json`) |
-| 4. Rodar a demo | `scripts/demo.sh` | `scripts\demo.ps1` | `celulas=9 aprovadas=8 pendencias=1`, seguido do Pacote das Células aprovadas — grava uma execução nova em `data/execucoes/demo-ao-vivo/`, sem tocar em `data/execucoes/demo-copom-280/` |
-| 5. Construir a interface | `cd web && npm install && npm run build` | idem | `tsc --noEmit` sem erro, depois `vite build` grava `web/dist/index.html` |
-| 6. Servir a API + interface | `uv run --offline python -m suno.cli servir` | idem | `Uvicorn running on http://127.0.0.1:8000`; `/` serve a SPA construída, `/api/saude` devolve `{"ok": true, "execucoes": 2}` — a demo versionada mais a que o passo 4 acabou de gravar |
+```bash
+# 1. Instale o uv (uma vez)
+curl -LsSf https://astral.sh/uv/install.sh | sh     # Linux/macOS
+winget install astral-sh.uv                         # Windows
 
-Os seis passos acima foram executados nesta máquina em 19/09/2026, na ordem acima, com a
-saída batendo com a coluna "esperada" — inclusive um teste manual de ponta a ponta
-(`curl http://127.0.0.1:8000/api/execucoes/demo-copom-280` com o servidor de pé, depois do
-build) devolvendo o JSON da execução versionada.
+# 2. Na pasta do projeto, prepare o ambiente
+scripts/setup.sh                                    # Linux/macOS
+scripts\setup.ps1                                   # Windows (PowerShell)
+```
 
-Os scripts usam `uv run --offline`: sem `--offline`, o `uv` tenta revalidar contra a rede
-o wheel do modelo `pt_core_news_sm` do spaCy antes de rodar, e isso falha ou trava numa
-máquina sem internet (achado do Agente 1, registrado na seção 8 abaixo).
+O `setup` instala as dependências (inclusive as do vídeo) e cria o `.env` a partir do
+`.env.example`.
 
-A demo não baixa nada: as Atas ficam versionadas em `data/atas/`, e a execução gravada
-de referência está em `data/execucoes/demo-copom-280/` — o mesmo arquivo que o pytest lê,
-que a API expõe e que este relatório cita
-([ADR 0006](docs/adr/0006-atas-do-copom-como-documento-fonte-principal.md)).
+Opcional, para o Carrossel sair nos templates visuais da Suno em vez da versão simplificada:
 
-## Rodar com LLM real
+```bash
+cd render && npm install
+```
 
-`--provedor falso` (usado acima) não faz nenhuma chamada de rede — é um LLM roteirizado,
-com respostas fixas por rótulo. Para gerar com um provedor de verdade:
+## Rodar a demo (sem internet)
 
-```sh
-cp .env.example .env        # preencha GEMINI_API_KEY / GROQ_API_KEY (e JEV_API_KEY, para a Qualidade)
+```bash
+scripts/demo.sh        # Windows: scripts\demo.ps1
+```
+
+Gera as nove Células da Ata 280 com um modelo de linguagem simulado, avalia cada uma e monta o
+Pacote de publicação das aprovadas. O resultado fica em `data/execucoes/demo-ao-vivo/`. No
+terminal aparece `celulas=9 aprovadas=8 pendencias=1` e uma linha por Célula: a demo manda uma
+Célula, de propósito, para a fila de revisão humana.
+
+## Abrir a interface
+
+```bash
+cd web && npm install && npm run build && cd ..
+uv run --offline python -m suno.cli servir
+```
+
+Abra <http://127.0.0.1:8000>. A interface tem seis guias: Ingestão, Texto analítico, Carrossel,
+Vídeo, Histórico e Configurações. Para desenvolver a interface com recarga automática, veja
+[web/README.md](web/README.md).
+
+## Rodar os testes
+
+```bash
+scripts/test.sh        # Windows: scripts\test.ps1
+```
+
+A suíte roda sem internet e sem `.env`: um teste quebra se outro tentar acessar a rede. Os testes
+da interface rodam com `cd web && npm test`.
+
+## Usar modelos de linguagem reais
+
+Preencha no `.env` as chaves que tiver: `GEMINI_API_KEY` (gera o conteúdo), `GROQ_API_KEY`
+(confere a fidelidade à Ata e é a reserva) e `JEV_API_KEY` (nota de qualidade). Depois:
+
+```bash
 uv run --offline python -m suno.cli executar --ata data/atas/copom-280-2026-08-05.pdf --provedor roteador
 ```
 
-Nenhuma chave é obrigatória — sem elas, `--provedor roteador` falha com um erro que diz
-qual variável falta. Orçamento é **R$ 0**: os provedores usados (Gemini gera, Groq
-julga e é a reserva) rodam em tier gratuito; o Jev roda em créditos do plano Free da Netlify. Nenhuma chamada paga entra no
-pipeline, inclusive a API da Anthropic. Cotas medidas na pesquisa (podem mudar sem
-aviso — os provedores não fixam número na documentação oficial):
+Sem a chave necessária, o comando para com um erro que diz qual variável falta. Todas as
+variáveis e comandos estão em [docs/FUNCIONAMENTO.md](docs/FUNCIONAMENTO.md).
 
-| Provedor | Papel | Cota (tier gratuito, medida em set/2026) |
+## A regra que não se quebra
+
+O sistema nunca recomenda compra ou venda de investimento: no Brasil, isso é atividade regulada.
+Quem detecta é código com regra fixa (léxico e padrão sintático), nunca um modelo de linguagem,
+e o conteúdo que cruza essa linha é reprovado sem correção parcial
+([ADR 0012](docs/adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)).
+
+## Os seis entregáveis do case
+
+| Entregável | Onde está | Como conferir |
 |---|---|---|
-| Gemini Flash | Gerador | instável; painel em `aistudio.google.com/rate-limit`, sem número fixo publicado |
-| Groq (`gpt-oss-120b`) | Checador de fidelidade e reserva do Gemini | 30 RPM, 1.000 RPD, 200k TPD (por organização, não por chave) |
-| Jev (TypeSafe, pela Netlify) | Qualidade | créditos do plano Free da Netlify (300); gasto por chamada não medido |
-
-Detalhe completo, incluindo a Cerebras descartada como reserva (exige cartão desde
-17/08/2026) em [docs/research/viabilidade-tecnica.md §4](docs/research/viabilidade-tecnica.md#4-llm-a-custo-zero)
-e [ADR 0007](docs/adr/0007-roteador-de-provedores-distingue-tipo-de-429.md).
-
-## H1 e H2: os dois pontos que rodam antes da demo
-
-**H1 — curadoria da Ata.** Buscar uma Ata nova é um comando separado, com rede, rodado
-antes da apresentação — nunca durante:
-
-```sh
-uv run --offline python -m suno.cli buscar-ata --reuniao 280
-```
-
-Grava `data/atas/<identificador>.{pdf,txt,json}`. A API não documentada do BCB pode mudar
-sem aviso ([ADR 0006](docs/adr/0006-atas-do-copom-como-documento-fonte-principal.md)); se
-quebrar, a demo continua com as Atas já versionadas no repositório.
-
-**H2 — Calibração e Léxico.** Os Limiares publicados hoje (Flesch-BR ≥ 50 Iniciante,
-25–50 Intermediário, < 25 Avançado) vêm das faixas do NILC, marcadas
-`"NILC, aguardando Calibração"` em todo relatório — ainda não há rótulo humano. Para
-preencher a Calibração: as duas pessoas do time rotulam ~30 Células à mão, às cegas uma
-da outra, no formato descrito em `data/calibracao/FORMATO.md`, e gravam em
-`data/calibracao/rotulos.csv` (o arquivo versionado, `rotulos.exemplo.csv`, tem só linhas
-de exemplo — um teste próprio recusa rótulo de verdade nele). O Kappa de Cohen entre as
-duas pessoas sai de `src/suno/avaliador/calibracao.kappa_do_arquivo`; o alvo é 0,6–0,8
-([ADR 0002](docs/adr/0002-flesch-br-implementado-no-projeto.md)).
-
-## A linha que não se cruza
-
-O conteúdo nunca produz **Recomendação** — sugestão de compra, venda ou promessa de
-retorno é atividade regulada no Brasil; este sistema informa e educa. A detecção é
-100% determinística, em duas camadas (Léxico + padrão sintático sobre POS tagging,
-[ADR 0012](docs/adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)),
-nunca um LLM, e reprova a Célula sem chance de correção parcial. O canary set adversarial
-(`data/canary/canary.yaml`, 63 armadilhas e 37 frases neutras) mede 0% de fuga hoje — ver
-seção 1 do [relatório experimental](docs/relatorio-experimental.md) para o número medido e
-o aviso sobre o que ele não prova.
-
-## Decisões e onde estão
-
-O enunciado sugere um caminho para cinco pontos que a pesquisa mostrou errado ou
-inviável; o `CLAUDE.md` resume os cinco, e cada um tem um ADR:
-
-| Decisão | O enunciado sugere | Adotamos | ADR |
-|---|---|---|---|
-| Legibilidade | `textstat` / "Flesch-Kincaid adaptado" | Flesch-BR reimplementado (Martins et al., 1996); o enunciado erra o nome da fórmula | [0002](docs/adr/0002-flesch-br-implementado-no-projeto.md) |
-| Avaliação | DeepEval ou Ragas | `pydantic-evals` | [0003](docs/adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md) |
-| Vídeo | avatar sintético (fora do escopo) | composição determinística em CPU, fora do grafo | [0004](docs/adr/0004-renderizacao-de-video-fora-do-grafo.md) |
-| Interface | Streamlit, FastAPI+React ou Gradio | React + Vite + Tailwind sobre FastAPI, cliente TS gerado do OpenAPI | [0005](docs/adr/0005-interface-em-react-vite-sobre-fastapi.md) |
-| Orquestração | LangGraph ou Pydantic AI, multiagente | 1 curador + 3 geradores + regras fixas + Jev + checador de fidelidade (o Judge transversal foi removido); fluxo limitado, sem MCP | [0015](docs/adr/0015-papeis-especializados-em-fluxo-deterministico.md), [0037](docs/adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md) |
-
-As dezesseis decisões estruturais completas estão em [docs/adr/](docs/adr/); o porquê de
-cada uma nunca é repetido fora de lá. O que foi verificado contra fonte primária antes de
-qualquer decisão — cotas, licenças, URLs testadas, ferramentas mortas — está em
-[docs/research/viabilidade-tecnica.md](docs/research/viabilidade-tecnica.md).
-
-## Licenças que importam
-
-Resumo de [viabilidade-tecnica.md §9](docs/research/viabilidade-tecnica.md#9-licenças-que-exigem-decisão-supply-chain):
-o silabador do Flesch-BR foi **reimplementado** a partir do artigo de Silva (2011), não
-copiado do NILC (GPL-3.0 — contaminaria o projeto); o Dicionário CVM, usado como uma das
-fontes de pesquisa do Léxico, é CC BY-ND 3.0 (*no derivatives*) e nenhuma definição dele
-foi copiada (`data/lexico/ORIGENS.md`); e várias peças do ramo de vídeo (Piper, XTTS-v2,
-Remotion para empresa) deixam de ser gratuitas se o projeto virar produto — não é o caso
-deste case, mas fica registrado.
-
-O wrapper Python `imageio-ffmpeg` (usado pelo ramo de vídeo) é BSD-2-Clause, mas o
-**binário de ffmpeg que ele embute é GPLv3** (build "essentials" do gyan.dev, confirmado
-rodando `ffmpeg -version` nesta máquina: `--enable-gpl --enable-version3 --enable-libx264`).
-O projeto só chama esse binário por `subprocess`, nunca linka a biblioteca, o que não cria
-obra derivada sob a GPL — mas é uma licença GPLv3 de verdade, não permissiva, e vale
-revalidar esse raciocínio se o projeto crescer além do case (achado do Agente 13, não
-estava em `viabilidade-tecnica.md`).
-
-## O que ficou de fora
-
-Ordem de corte sob atraso, do `CLAUDE.md`: (1) teste de retenção nas redes, (2) publicação
-automática — um humano publica sempre, por decisão, não só por prazo — (3) avatar falante
-no vídeo. O juiz de visão do Pacote ([ADR 0014](docs/adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md))
-está implementado e desligado por padrão, abaixo da linha dos seis entregáveis. O comitê de
-juízes-LLM e o Judge transversal foram removidos ([ADR 0037](docs/adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)); a Qualidade
-(Jev) e a Fidelidade os substituem. Nenhum dos seis entregáveis do enunciado caiu.
+| 1. Pipeline de adaptação | `src/suno/gerador/` | `scripts/demo.sh`; `tests/test_gerador.py`, `tests/test_execucao.py` |
+| 2. Suíte de avaliação híbrida | `src/suno/avaliador/`, `evals/` | `uv run --offline pytest -q tests/test_laudo.py tests/test_evals.py` |
+| 3. Ciclo de correção | `src/suno/gerador/ciclo.py` | `tests/test_ciclo.py` |
+| 4. Interface web | `src/suno/api/`, `web/` | `suno.cli servir` depois do build; `tests/test_api.py`, `npm test` |
+| 5. Vídeo demonstrativo | `src/suno/video/` | `uv run --offline python -m suno.cli video --execucao demo-copom-280 --audiencia iniciante`; `tests/test_video.py` |
+| 6. Relatório experimental | [docs/relatorio-experimental.md](docs/relatorio-experimental.md) | `uv run --offline python scripts/relatorio.py --execucao demo-copom-280` |
 
 ## Estrutura do repositório
 
 ```
-src/suno/avaliador/   as cinco medidas determinísticas + Laudo — sem LLM, sem rede
-src/suno/gerador/     extração de Âncoras, Matriz 3×3, Ciclo de correção
-src/suno/pacote/      Carrossel (matplotlib+Pillow), legenda, conferência visual (ADR 0009, 0014)
-src/suno/video/       vídeo fora do grafo, composição determinística em CPU (ADR 0004)
-src/suno/provedores/  interface única de LLM + roteador (ADR 0007)
-src/suno/ingestao/    BCB, PDF, extração de números
-src/suno/api/         FastAPI, lê execucao.json do disco (ADR 0005)
-web/                  React + Vite + Tailwind, PWA instalável (ADR 0005)
-evals/                casos pydantic-evals (ADR 0003)
-data/                 Atas, Léxico, canary, Calibração, execuções gravadas
-docs/adr/             as catorze decisões estruturais
-docs/relatorio-experimental.md   Entregável 6
+src/suno/
+  gerador/       extração de Âncoras, Matriz 3×3 e Ciclo de correção
+  avaliador/     as cinco medidas sem LLM, a Qualidade (Jev), a Fidelidade e o Laudo
+  pacote/        Carrossel (famílias visuais, render), legenda, fotos e conferência visual
+  video/         vídeo 9:16 e plano de edição, fora do fluxo principal
+  imagens/       biblioteca local e busca de fotos dos slides
+  ingestao/      leitura de PDF, busca no BCB e extração de números
+  origens/       catálogo e coleta de notícias (Copom, CVM, BCB, B3)
+  provedores/    interface única de LLM e o roteador entre provedores
+  api/           FastAPI: lê e grava as execuções em disco
+  dominio.py     os modelos do domínio: Ata, Âncora, Célula, Laudo, Pacote
+  cli.py         a linha de comando (python -m suno.cli)
+web/             interface React + Vite + Tailwind
+render/          Puppeteer: transforma os slides HTML em PNG
+netlify-jev/     ponte na Netlify que leva o pedido de Qualidade ao Jev
+evals/           casos da suíte pydantic-evals
+tests/           suíte pytest
+scripts/         setup, testes, demo, cliente da API, relatório
+data/            Atas, Léxico, canary, Calibração, fotos e a execução de demonstração
+templates/       carrosséis reais da Suno e a bancada que recriou as famílias visuais
+docs/            arquitetura, funcionamento, decisões (ADRs), pesquisa e relatório
+legacy/          planos e prompts já executados, guardados como histórico
 ```
+
+## Documentação
+
+- [docs/ARQUITETURA.md](docs/ARQUITETURA.md): como as peças se encaixam e onde um humano decide.
+- [docs/FUNCIONAMENTO.md](docs/FUNCIONAMENTO.md): comandos, configuração, arquivos gerados e API.
+- [docs/adr/](docs/adr/README.md): o porquê de cada decisão estrutural.
+- [docs/research/viabilidade-tecnica.md](docs/research/viabilidade-tecnica.md): cotas, licenças e
+  ferramentas verificadas antes de decidir.
+- [CONTEXT.md](CONTEXT.md): o glossário do projeto.
+- [AGENTS.md](AGENTS.md): instruções para agentes de IA que trabalham no repositório.
