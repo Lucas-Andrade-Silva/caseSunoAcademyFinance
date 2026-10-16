@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
+
+from suno.dominio import RODADAS_MAXIMAS
 from pydantic import ValidationError
 
 from suno.dominio import (
@@ -127,9 +129,9 @@ def test_texto_avaliavel_do_roteiro_ignora_rubrica_de_cena():
     assert "GRÁFICO" not in avaliavel
 
 
-def test_texto_avaliavel_do_carrossel_junta_titulo_e_corpo():
+def test_texto_avaliavel_do_carrossel_separa_titulo_e_corpo_como_frases():
     conteudo = Conteudo(formato=Formato.CARROSSEL, slides=[Slide(titulo="Gancho", corpo="Corpo do slide", dado="selic_decidida")])
-    assert conteudo.texto_avaliavel() == "Gancho\nCorpo do slide"
+    assert conteudo.texto_avaliavel() == "Gancho\n\nCorpo do slide"
 
 
 def test_bloco_de_fala_exige_fim_depois_do_inicio():
@@ -142,11 +144,11 @@ def test_celula_nao_aceita_formato_divergente_do_conteudo():
         Celula(audiencia=Audiencia.INICIANTE, formato=Formato.ROTEIRO, conteudo=Conteudo(formato=Formato.TEXTO_ANALITICO, texto="x"))
 
 
-def test_celula_tem_no_maximo_duas_rodadas_de_correcao():
+def test_celula_tem_no_maximo_o_teto_de_rodadas_da_configuracao():
     conteudo = Conteudo(formato=Formato.TEXTO_ANALITICO, texto="x")
-    Celula(audiencia=Audiencia.INICIANTE, formato=Formato.TEXTO_ANALITICO, conteudo=conteudo, rodada=2)
+    Celula(audiencia=Audiencia.INICIANTE, formato=Formato.TEXTO_ANALITICO, conteudo=conteudo, rodada=RODADAS_MAXIMAS)
     with pytest.raises(ValidationError):
-        Celula(audiencia=Audiencia.INICIANTE, formato=Formato.TEXTO_ANALITICO, conteudo=conteudo, rodada=3)
+        Celula(audiencia=Audiencia.INICIANTE, formato=Formato.TEXTO_ANALITICO, conteudo=conteudo, rodada=RODADAS_MAXIMAS + 1)
 
 
 # -- Limiares (ADR 0002) -------------------------------------------------------------
@@ -187,8 +189,11 @@ def test_laudo_tem_tres_destinos():
     assert {d.value for d in Destino} == {"aprovado", "reprovado_corrigivel", "reprovado_revisao_humana"}
 
 
-def test_motivo_de_reprovacao_e_enumerado_com_os_cinco_valores():
-    assert {m.value for m in MotivoReprovacao} == {"flesch_br", "densidade", "aderencia", "recomendacao", "falha_de_extracao"}
+def test_motivo_de_reprovacao_e_enumerado_com_os_sete_valores():
+    # Os cinco determinísticos, a Qualidade do Jev (ADR 0035) e a Fidelidade à Ata (ADR 0036).
+    assert {m.value for m in MotivoReprovacao} == {
+        "flesch_br", "densidade", "aderencia", "recomendacao", "falha_de_extracao", "qualidade", "fidelidade"
+    }
 
 
 def test_laudo_aprovado_nao_carrega_motivo():
@@ -207,9 +212,8 @@ def test_falha_de_extracao_vai_direto_a_revisao_humana():
         _laudo(Destino.REPROVADO_CORRIGIVEL, [MotivoReprovacao.FALHA_DE_EXTRACAO])
 
 
-def test_laudo_nasce_sem_comite():
+def test_laudo_traz_so_as_medidas_que_rodaram():
     laudo = _laudo(Destino.APROVADO, [])
-    assert laudo.comite is None
     assert laudo.medida(Metrica.FLESCH_BR) is not None
     assert laudo.medida(Metrica.DENSIDADE) is None
 

@@ -5,7 +5,6 @@ import {
   IconeArquivoMais,
   IconeBalanca,
   IconeBanco,
-  IconeGrafico,
   IconeIngestao,
   com,
 } from "../../interface/Icones";
@@ -29,9 +28,25 @@ const CARAS: Record<string, CaraDaOrigem> = {
   bcb_relatorios: { cor: "verde", icone: (t) => <IconeRelatorios size={t} /> },
   bcb_resolucoes: { cor: "cinza", icone: (t) => <IconeResolucoes size={t} /> },
   b3_oficios: { cor: "amarelo", icone: (t) => <IconeOficios size={t} /> },
-  releases_b3: { cor: "amarelo", icone: (t) => <IconeGrafico size={t} /> },
   importados: { cor: "coral", icone: (t) => <IconeArquivoMais size={t} /> },
 };
+
+// De quanto em quanto tempo cada origem publica. A busca olha só os últimos 30 dias, então
+// origens lentas costumam voltar vazias: o texto explica por quê.
+const FREQUENCIAS: Record<string, string> = {
+  copom: "O Copom publica a ata a cada 45 dias, cerca de 8 vezes por ano.",
+  cvm_fatos_relevantes: "Fatos relevantes saem sempre que uma empresa tem novidade: vários por dia.",
+  cvm_demonstracoes: "DFP uma vez por ano e ITR a cada trimestre; formulários variam por empresa.",
+  bcb_relatorios:
+    "O Relatório de Inflação sai a cada trimestre e o de Estabilidade Financeira a cada semestre. Por isso a busca de 30 dias costuma vir vazia.",
+  bcb_resolucoes: "O CMN e o BCB publicam resoluções várias vezes por mês.",
+  b3_oficios: "A B3 divulga ofícios e comunicados quase todo dia útil.",
+  importados: "Só aparece o que você importa.",
+};
+
+export function frequenciaDaOrigem(identificador: string): string | null {
+  return FREQUENCIAS[identificador] ?? null;
+}
 
 export function caraDaOrigem(identificador: string): CaraDaOrigem {
   return CARAS[identificador] ?? { cor: "cinza", icone: (t) => <IconeIngestao size={t} /> };

@@ -1,0 +1,10 @@
+{
+  "name": "suno-jev-ponte",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Netlify Function que leva o pedido do Suno Content ao Jev pelo AI Gateway (ADR 0035).",
+  "scripts": {
+    "test": "node --test testes/jev.test.mjs"
+  }
+}

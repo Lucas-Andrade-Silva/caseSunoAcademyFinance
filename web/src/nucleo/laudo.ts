@@ -24,10 +24,12 @@ const ROTULOS: Record<string, string> = {
   densidade: "Densidade",
   aderencia: "Aderência",
   recomendacao: "Compliance",
+  qualidade: "Qualidade",
+  fidelidade: "Fidelidade",
 };
 
 /** A ordem em que as barras aparecem. */
-const ORDEM = ["flesch_br", "densidade", "aderencia", "integridade", "recomendacao"];
+const ORDEM = ["flesch_br", "densidade", "aderencia", "integridade", "qualidade", "fidelidade", "recomendacao"];
 
 function limitar(valor: number): number {
   return Math.min(100, Math.max(0, valor));
@@ -80,11 +82,24 @@ function barraDe(medida: Medida): BarraDoLaudo {
   };
 }
 
+/** A barra cinza da Qualidade quando o Jev não rodou: ele só é consultado depois que as cinco
+ * medidas aprovam (ADR 0035), então um Laudo reprovado nunca a traz. A Fidelidade não ganha
+ * barra assim: é opcional (ADR 0036) e o Laudo não diz se estava ligada. */
+const QUALIDADE_NAO_AVALIADA: BarraDoLaudo = {
+  metrica: "qualidade",
+  rotulo: ROTULOS.qualidade,
+  largura: 0,
+  marcas: [],
+  valor: "não avaliada",
+  faixa: "",
+  atingiu: null,
+};
+
 export function barrasDoLaudo(laudo: Laudo | null | undefined): BarraDoLaudo[] {
-  if (!laudo) return [];
-  return [...laudo.medidas]
-    .sort((a, b) => ORDEM.indexOf(a.metrica) - ORDEM.indexOf(b.metrica))
-    .map(barraDe);
+  if (!laudo || laudo.medidas.length === 0) return [];
+  const barras = laudo.medidas.map(barraDe);
+  if (!barras.some((barra) => barra.metrica === "qualidade")) barras.push(QUALIDADE_NAO_AVALIADA);
+  return barras.sort((a, b) => ORDEM.indexOf(a.metrica) - ORDEM.indexOf(b.metrica));
 }
 
 /** Só espelha a regra do servidor: Laudo com Recomendação não vira Pacote nem é aprovado. */

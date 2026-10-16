@@ -1,11 +1,11 @@
-"""Curador, três geradores, regras fixas e LLM Judge transversal.
+"""Curador, três geradores e regras fixas.
 
 ADR 0010, 0015, 0016.
 
 O caminho é sempre o mesmo, sem decisão dinâmica em nenhum ponto::
 
     carregar_ata → AgenteCurador → 3 Geradores de persona → Matriz 3×3
-                 → regras individuais → LLM Judge transversal → gravar_execucao
+                 → regras individuais → conferência da Matriz → gravar_execucao
 
 O Avaliador de Célula entra em ``rodar_ciclo``. O Judge confere o conjunto e devolve
 correções seletivas. Entre geração e regras individuais passa
@@ -25,7 +25,6 @@ from suno.gerador.execucao import (
 from suno.gerador.extracao import extrair_ancoras
 from suno.gerador.matriz import gerar_matriz, gerar_matriz_do_dossie
 from suno.gerador.moldes import montar_conteudo, montar_pedido, preencher
-from suno.gerador.orquestracao import rodar_ciclo_transversal
 from suno.gerador.personas import AGENTES_GERADORES, AgenteGeradorPersona
 
 __all__ = [
@@ -44,5 +43,4 @@ __all__ = [
     "montar_pedido",
     "preencher",
     "rodar_ciclo",
-    "rodar_ciclo_transversal",
 ]

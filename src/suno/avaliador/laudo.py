@@ -14,18 +14,16 @@ As regras que este arquivo fixa, e que alguém vai querer "corrigir" sem saber:
   Aderência. Nesses casos ``valor`` é ``None``, ``atingiu`` é ``None`` e não há motivo de
   reprovação — ausência de base não é reprovação.
 - **A Correção carrega o valor medido e a distância**, nunca "melhore o texto" (ADR 0013).
-- **O comitê nunca move o veredito.** Ele entra em ``laudo.comite`` como informação; o
-  destino e os motivos saem só das medidas determinísticas (ADR 0008). Comitê que falhou
-  sai ausente, nunca nota zero.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Sequence
+import re
+from typing import TYPE_CHECKING, Callable, Sequence
 
 from suno.avaliador.aderencia import medir_aderencia
-from suno.avaliador.densidade import medir_densidade
+from suno.avaliador.densidade import ResultadoDensidade, frase_em, medir_densidade
 from suno.avaliador.flesch_br import flesch_br
 from suno.avaliador.integridade import medir_integridade
 from suno.avaliador.recomendacao import detectar_recomendacao
@@ -47,11 +45,11 @@ from suno.dominio import (
     Medida,
     Metrica,
     MotivoReprovacao,
-    ResultadoComite,
 )
 
 if TYPE_CHECKING:
-    from suno.comite import Comite
+    from suno.avaliador.fidelidade import VerificadorDeFidelidade
+    from suno.avaliador.qualidade import AvaliadorDeQualidade
 
 _REGISTRO = logging.getLogger(__name__)
 
@@ -61,12 +59,6 @@ NOME_DA_AUDIENCIA: dict[Audiencia, str] = {
     Audiencia.AVANCADO: "Avançado",
 }
 """Como a Audiência aparece dentro da instrução de Correção, que um humano também lê."""
-
-FORMATOS_JULGADOS_PELO_COMITE: tuple[Formato, ...] = (
-    Formato.TEXTO_ANALITICO,
-    Formato.CARROSSEL,
-)
-"""O Roteiro passa só pelas medidas determinísticas (ADR 0008)."""
 
 RECOMENDACOES_ACEITAS = Faixa(maximo=1)
 """Zero é o único valor aceito: qualquer ocorrência reprova (CLAUDE.md, a linha que não se cruza)."""
@@ -80,16 +72,31 @@ def avaliar(
     audiencia: Audiencia,
     *,
     limiares: Limiares | None = None,
-    comite: "Comite | None" = None,
+    qualidade: "AvaliadorDeQualidade | None" = None,
+    fidelidade: "VerificadorDeFidelidade | None" = None,
     chaves_essenciais: frozenset[str] = CHAVES_ESSENCIAIS,
+    ao_etapa: Callable[[str], None] | None = None,
 ) -> Laudo:
     """``(Conteúdo, Âncora[], Audiência) → Laudo``: a costura inteira (ADR 0001).
 
-    Sem LLM e sem rede enquanto ``comite`` for ``None``, que é o padrão.
+    ``ao_etapa`` é só um aviso de andamento: recebe ``deterministica``, ``jev`` e ``llm`` quando
+    cada camada começa a rodar (``jev`` e ``llm`` só avisam se a camada vai rodar de fato).
+
+    Sem LLM e sem rede enquanto ``qualidade`` e ``fidelidade`` forem ``None``.
+
+    ``qualidade`` (o Jev, ADR 0035) só é consultada depois que as cinco medidas aprovaram: é a
+    única medida que pode reprovar sem ser determinística, e por isso nunca roda à toa.
+    ``fidelidade`` (um LLM que confere a Célula contra a Ata, ADR 0036) vem por último: só depois de
+    tudo o mais ter aprovado, porque é a chamada mais cara.
 
     ``chaves_essenciais`` é opcional e tem o padrão do Copom: só uma Ata de outra categoria
     passa o conjunto genérico (``dominio.chaves_essenciais_da``). Quem não o usa não muda.
     """
+    def avisar(etapa: str) -> None:
+        if ao_etapa is not None:
+            ao_etapa(etapa)
+
+    avisar("deterministica")
     limiares_aplicados = limiares or LIMIARES_PROVISORIOS[audiencia]
     texto = conteudo.texto_avaliavel()
     # Aderência e Recomendação cobrem também a rubrica de cena do Roteiro (dominio.py,
@@ -100,10 +107,20 @@ def avaliar(
     achados: list[_Achado] = [
         _medir_integridade(ancoras, chaves_essenciais),
         _medir_flesch_br(texto, limiares_aplicados, audiencia),
-        _medir_densidade(texto, limiares_aplicados, audiencia),
+        _medir_densidade(texto, limiares_aplicados, audiencia, conteudo),
         _medir_aderencia(texto_conferido, ancoras, limiares_aplicados),
         _medir_recomendacao(texto_conferido),
     ]
+    if qualidade is not None and all(motivo is None for _, motivo, _ in achados):
+        avisar("jev")
+        da_qualidade = _medir_qualidade(conteudo, audiencia, qualidade)
+        if da_qualidade is not None:
+            achados.append(da_qualidade)
+    if fidelidade is not None and all(motivo is None for _, motivo, _ in achados):
+        avisar("llm")
+        da_fidelidade = _medir_fidelidade(conteudo, audiencia, fidelidade, ancoras)
+        if da_fidelidade is not None:
+            achados.append(da_fidelidade)
 
     medidas = [medida for medida, _, _ in achados]
     motivos: list[MotivoReprovacao] = []
@@ -119,7 +136,6 @@ def avaliar(
         destino=_destino(motivos),
         motivos=motivos,
         correcoes=correcoes,
-        comite=_julgamento_do_comite(conteudo, audiencia, comite),
     )
 
 
@@ -132,28 +148,122 @@ def _destino(motivos: Sequence[MotivoReprovacao]) -> Destino:
     return Destino.APROVADO
 
 
-def _julgamento_do_comite(
-    conteudo: Conteudo,
-    audiencia: Audiencia,
-    comite: "Comite | None",
-) -> ResultadoComite | None:
-    """Roda depois das medidas, nunca antes, e nunca para o Roteiro (ADR 0008).
+def _percentual(nota: float) -> str:
+    return f"{round(nota * 100)}%"
 
-    Falha de provedor — inclusive cota esgotada — devolve ``None``: o Laudo sai sem comitê,
-    o erro fica no log, e o veredito determinístico não muda.
+
+def _medir_qualidade(
+    conteudo: Conteudo, audiencia: Audiencia, avaliador: "AvaliadorDeQualidade"
+) -> _Achado | None:
+    """A Qualidade do Jev (ADR 0035). ``None`` quando o Jev não respondeu: o Laudo sai sem ela.
+
+    A Medida carrega a menor das notas; a Correção nomeia cada dimensão abaixo do Limiar e o
+    nível que o Jev viu nela, para o Gerador saber o que refazer.
     """
-    if comite is None or conteudo.formato not in FORMATOS_JULGADOS_PELO_COMITE:
-        return None
     try:
-        return comite.julgar(conteudo, audiencia)
-    except ErroProvedor as erro:  # CotaEsgotada herda daqui
+        resultado = avaliador.medir(conteudo, audiencia)
+    except ErroProvedor as erro:
         _REGISTRO.warning(
-            "comitê não julgou %s/%s: %s — o Laudo sai sem comitê (ADR 0008)",
+            "Jev não mediu %s/%s: %s — o Laudo sai sem Qualidade (ADR 0035)",
             audiencia,
             conteudo.formato,
             erro,
         )
         return None
+    except Exception:  # noqa: BLE001 - camada opcional nunca derruba a Célula (ADR 0035)
+        _REGISTRO.exception(
+            "Jev falhou de um jeito inesperado em %s/%s — o Laudo sai sem Qualidade", audiencia, conteudo.formato
+        )
+        return None
+    faixa = Faixa(minimo=avaliador.limiar)
+    abaixo = [d for d in resultado.dimensoes if d.nota < avaliador.limiar]
+    menor = resultado.menor
+    medida = Medida(
+        metrica=Metrica.QUALIDADE,
+        estado=EstadoMedida.MEDIDA,
+        valor=menor.nota,
+        faixa=faixa,
+        atingiu=not abaixo,
+        observacoes=[
+            f"{d.rotulo.capitalize()}: {_percentual(d.nota)}"
+            + (f" — {d.nivel}" if d in abaixo else "")
+            for d in resultado.dimensoes
+        ],
+    )
+    if not abaixo:
+        return medida, None, None
+    detalhes = "; ".join(f"{d.rotulo} {_percentual(d.nota)} (visto: {d.nivel})" for d in abaixo)
+    correcao = Correcao(
+        metrica=Metrica.QUALIDADE,
+        valor_medido=menor.nota,
+        faixa=faixa,
+        distancia=faixa.distancia(menor.nota),
+        instrucao=(
+            f"Qualidade medida {_percentual(menor.nota)}; o Limiar é ≥ "
+            f"{_percentual(avaliador.limiar)}. Abaixo do Limiar: {detalhes}"
+        ),
+    )
+    return medida, MotivoReprovacao.QUALIDADE, correcao
+
+
+def _medir_fidelidade(
+    conteudo: Conteudo,
+    audiencia: Audiencia,
+    verificador: "VerificadorDeFidelidade",
+    ancoras: Sequence[Ancora],
+) -> _Achado | None:
+    """A Fidelidade à Ata (ADR 0036). ``None`` quando o checador não respondeu: sai sem ela.
+
+    Vale 1 sem achado que bloqueie e 0 com algum. Só bloqueia o que tem prova: ``distorce`` e
+    ``contradiz`` trazem o trecho da Ata, que o código já conferiu. ``sem_suporte`` é a opinião do
+    modelo e só entra nas observações, como aviso (ADR 0036).
+    """
+    try:
+        resultado = verificador.verificar(conteudo, audiencia, ancoras)
+    except ErroProvedor as erro:
+        _REGISTRO.warning(
+            "o checador não conferiu %s/%s: %s — o Laudo sai sem Fidelidade (ADR 0036)",
+            audiencia,
+            conteudo.formato,
+            erro,
+        )
+        return None
+    except Exception:  # noqa: BLE001 - camada opcional nunca derruba a Célula (ADR 0036)
+        _REGISTRO.exception(
+            "o checador falhou de um jeito inesperado em %s/%s — o Laudo sai sem Fidelidade",
+            audiencia,
+            conteudo.formato,
+        )
+        return None
+    faixa = Faixa(minimo=1.0)
+    bloqueiam = [achado for achado in resultado.achados if achado.bloqueia]
+    avisos = [achado for achado in resultado.achados if not achado.bloqueia]
+    limpa = not bloqueiam
+    observacoes = [achado.descricao for achado in bloqueiam]
+    observacoes += [f"Aviso (não reprova): {achado.descricao}" for achado in avisos]
+    if resultado.descartados:
+        observacoes.append(f"{resultado.descartados} apontamento(s) descartado(s): citação que não existe")
+    medida = Medida(
+        metrica=Metrica.FIDELIDADE,
+        estado=EstadoMedida.MEDIDA,
+        valor=1.0 if limpa else 0.0,
+        faixa=faixa,
+        atingiu=limpa,
+        observacoes=observacoes,
+    )
+    if limpa:
+        return medida, None, None
+    correcao = Correcao(
+        metrica=Metrica.FIDELIDADE,
+        valor_medido=0.0,
+        faixa=faixa,
+        distancia=1.0,
+        instrucao=(
+            f"Fidelidade à Ata: {len(bloqueiam)} afirmação(ões) que a Ata contradiz ou diz de outro jeito. "
+            + " | ".join(f"{i}) {achado.descricao}" for i, achado in enumerate(bloqueiam, 1))
+        ),
+    )
+    return medida, MotivoReprovacao.FIDELIDADE, correcao
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +278,14 @@ def _medir_integridade(
     medido = medir_integridade(ancoras, chaves_essenciais)
     total = len(chaves_essenciais)
     presentes = total - len(medido.faltantes)
-    observacoes = [f"Âncora essencial ausente: {chave}" for chave in medido.faltantes]
+    observacoes = [
+        (
+            f"Âncora essencial ausente: {chave} (sem número e sem afirmação central extraída)"
+            if chave.endswith("numero_principal")
+            else f"Âncora essencial ausente: {chave}"
+        )
+        for chave in medido.faltantes
+    ]
     observacoes += [
         f"Âncora sem trecho da Ata para conferir: {chave}"
         for chave in medido.ancoras_com_trecho_vazio
@@ -274,7 +391,41 @@ def _frase_do_flesch(indice: float, faixa: Faixa, audiencia: Audiencia) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _medir_densidade(texto: str, limiares: Limiares, audiencia: Audiencia) -> _Achado:
+def _onde(conteudo: Conteudo | None, frase: str) -> str:
+    """Em que slide ou bloco de fala está a frase. Texto analítico não tem divisão: devolve vazio."""
+    if conteudo is None or not frase:
+        return ""
+    chave = re.sub(r"\s+", " ", frase.rstrip("…"))[:40]
+    for i, slide in enumerate(conteudo.slides or [], start=1):
+        if chave in re.sub(r"\s+", " ", f"{slide.titulo} {slide.corpo}"):
+            return f"slide {i}"
+    for i, bloco in enumerate(conteudo.blocos or [], start=1):
+        if chave in re.sub(r"\s+", " ", bloco.fala):
+            return f"bloco {i}"
+    return ""
+
+
+def _onde_esta_cada_termo(
+    texto: str, conteudo: Conteudo | None, medido: ResultadoDensidade
+) -> dict[str, str]:
+    """Para cada termo sem explicação, a frase da primeira ocorrência (e o slide ou bloco dela)."""
+    primeiras = {}
+    for ocorrencia in medido.termos:
+        primeiras.setdefault(ocorrencia.termo, ocorrencia)
+    onde: dict[str, str] = {}
+    for termo in medido.sem_explicacao:
+        ocorrencia = primeiras.get(termo)
+        if ocorrencia is None:
+            continue
+        frase = frase_em(texto, ocorrencia.posicao)
+        local = _onde(conteudo, frase)
+        onde[termo] = f"{local}: «{frase}»" if local else f"«{frase}»"
+    return onde
+
+
+def _medir_densidade(
+    texto: str, limiares: Limiares, audiencia: Audiencia, conteudo: Conteudo | None = None
+) -> _Achado:
     medido = medir_densidade(texto, limiares.explicacao)
     minima = limiares.densidade_minima
     faixa = Faixa(minimo=minima) if minima is not None else None
@@ -319,7 +470,14 @@ def _medir_densidade(texto: str, limiares: Limiares, audiencia: Audiencia) -> _A
         valor_medido=medido.proporcao,
         faixa=faixa,
         distancia=faixa.distancia(medido.proporcao) if faixa is not None else None,
-        instrucao=_frase_da_densidade(medido.sem_explicacao, escassa, medido.proporcao, limiares, audiencia),
+        instrucao=_frase_da_densidade(
+            medido.sem_explicacao,
+            escassa,
+            medido.proporcao,
+            limiares,
+            audiencia,
+            _onde_esta_cada_termo(texto, conteudo, medido),
+        ),
     )
     return medida, MotivoReprovacao.DENSIDADE, correcao
 
@@ -330,6 +488,7 @@ def _frase_da_densidade(
     proporcao: float,
     limiares: Limiares,
     audiencia: Audiencia,
+    onde: dict[str, str] | None = None,
 ) -> str:
     nome = NOME_DA_AUDIENCIA[audiencia]
     partes: list[str] = []
@@ -339,6 +498,12 @@ def _frase_da_densidade(
             f"{', '.join(sem_explicacao)}. A Audiência {nome} exige explicação ou analogia "
             "em todos."
         )
+        if onde:
+            # A frase exata de cada termo: o Gerador edita ali e não reescreve a Célula inteira.
+            partes.append(
+                "Onde cada um está:\n"
+                + "\n".join(f"- {termo} — {onde[termo]}" for termo in sem_explicacao if termo in onde)
+            )
     if escassa:
         partes.append(
             f"Densidade medida {_duas_casas(proporcao)}; o Limiar da Audiência {nome} é ≥ "

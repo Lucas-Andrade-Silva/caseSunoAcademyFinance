@@ -147,9 +147,15 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
         const celulas = celulasDoFormato(execucao, formato);
         const audiencias = AUDIENCIAS.filter((a) => celulas[a] !== undefined);
         if (audiencias.length === 0) {
+          // Nenhuma Célula saiu: quase sempre o provedor caiu. A frase diz isso, não "não tem".
+          const caiu = (execucao.celulas ?? []).some(
+            (h) => h.formato === formato && /provedor|HTTP 5\d\d|cota/i.test(h.falha ?? ""),
+          );
           mudar(formato, {
             fase: "falhou",
-            erro: `Esta Saída não tem ${rotuloFormato(formato).toLowerCase()} gerado.`,
+            erro: caiu
+              ? "Os modelos de IA não responderam agora (sobrecarga ou cota). Tente de novo em instantes."
+              : `A geração terminou sem ${rotuloFormato(formato).toLowerCase()}. Tente de novo.`,
           });
           return;
         }

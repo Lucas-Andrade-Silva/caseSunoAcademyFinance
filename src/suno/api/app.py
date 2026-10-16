@@ -25,7 +25,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi import status as http
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ValidationError
 from starlette.exceptions import HTTPException as ErroHttpDoStarlette
@@ -51,6 +51,7 @@ from suno.api.resumo import (
     status_do_andamento,
 )
 from suno.dominio import (
+    PapelLLM,
     Ancoras,
     AncoraNumerica,
     Andamento,
@@ -60,6 +61,7 @@ from suno.dominio import (
     CategoriaDaAta,
     ComposicaoCarrossel,
     DecisaoHumana,
+    FamiliaVisual,
     Destino,
     ErroProvedor,
     EstadoDecisao,
@@ -73,7 +75,9 @@ from suno.dominio import (
     PacotePublicacao,
     Pendencia,
     PosicaoDaMatriz,
+    PaletaVisual,
     ReferenciaVisual,
+    TipoSlide,
 )
 from suno.exportacao import FormatoExportacao, exportar
 from suno.gerador.execucao import (
@@ -106,6 +110,15 @@ from suno.origens.repositorio import RepositorioDeAtas
 from suno.origens.resumo import ResumoDaAta
 from suno.pacote.historico_layouts import NOME_DO_BANCO
 from suno.pacote import montar_pacote
+from suno.pacote.familias import (
+    PASTA_DAS_FAMILIAS,
+    PASTA_DAS_FONTES,
+    carregar_layouts,
+    documento_de_exemplo,
+    papeis_cobertos,
+)
+from suno.pacote.fotos import PASTA_PADRAO_DAS_FOTOS
+from suno.pacote.recolorir import embutir_arquivos, recolorir
 from suno.pacote.coleta_referencias import (
     CandidatoDeReferencia,
     ColetorDeReferencias,
@@ -128,9 +141,20 @@ from suno.pacote.referencias_visuais import (
     RepositorioReferenciasVisuais,
 )
 from suno.pacote.feedback_visual import RepositorioFeedbackVisual
-from suno.provedores.roteador import provedor_por_nome
+from suno import configuracoes as configuracoes_do_sistema
+from suno.configuracoes import ConfiguracoesDoSistema
+from suno.provedores.roteador import provedor_por_nome, roteador_para
 from suno.provedores.base import Provedor
-from suno.revisao import CelulaNaoEncontrada, DecisaoBloqueada, DecisaoInvalida, decidir
+from suno.revisao import (
+    CelulaNaoEncontrada,
+    DecisaoBloqueada,
+    DecisaoInvalida,
+    EdicaoDeTexto,
+    EdicaoInvalida,
+    decidir,
+    revisar_texto,
+)
+from suno.video.atuacao import direcao_em_disco
 from suno.video.plano import montar_plano, plano_em_markdown
 
 PASTA_ATAS = Path("data/atas")
@@ -183,6 +207,17 @@ class ExecucaoResumo(BaseModel):
     """As Atas usadas: uma, ou de 2 a 5 na Visão unida."""
 
 
+class ConfiguracoesComEstado(BaseModel):
+    """As configurações salvas e o que a tela precisa para editá-las."""
+
+    configuracoes: ConfiguracoesDoSistema
+    salvas: bool
+    """``False`` quando nada foi salvo e valem o ``.env`` e os padrões."""
+    chaves: dict[str, bool]
+    """Quais chaves existem no ``.env`` (gemini, groq, jev). Nunca o valor."""
+    modelos_sugeridos: dict[str, list[str]]
+
+
 class Saude(BaseModel):
     ok: bool
     execucoes: int
@@ -191,9 +226,8 @@ class Saude(BaseModel):
 
 
 class Filas(BaseModel):
-    """As três filas humanas H3, H4 e H5, sempre listas de ``Pendencia``."""
+    """As duas filas humanas H4 e H5, sempre listas de ``Pendencia``."""
 
-    h3_desempate: list[Pendencia] = []
     h4_revisao: list[Pendencia] = []
     h5_aprovacao_pacote: list[Pendencia] = []
 
@@ -211,6 +245,13 @@ class NovaReferenciaVisual(BaseModel):
     descricao: str = Field(min_length=10, max_length=400)
     instrucao_de_design: str = Field(min_length=10, max_length=500)
     origem: str = Field(default="Importação manual", max_length=500)
+
+
+class PapeisDaFamilia(BaseModel):
+    """Os papéis de slide que uma família visual sabe desenhar."""
+
+    familia: FamiliaVisual
+    papeis: list[TipoSlide]
 
 
 class AlteracaoDaReferenciaVisual(BaseModel):
@@ -281,7 +322,6 @@ class NovaSaida(BaseModel):
     """A Visão unida: de 2 a 5 Atas."""
     modo: ModoDeGeracao
     pedido: list[PosicaoDaMatriz]
-    comite: bool = False
     duracao: DuracaoDoVideo = DuracaoDoVideo.S60
     """A duração do Roteiro: 40, 60, 90, 120 ou 180 segundos."""
     composicao_visual: ComposicaoCarrossel | None = None
@@ -316,6 +356,16 @@ def _pasta_do_pacote(pasta_execucoes: Path, identificador: str, audiencia: Audie
     return Path(pasta_execucoes) / identificador / NOME_DA_PASTA_DO_PACOTE / nome
 
 
+def _paleta_da_rota(valor: str | None) -> PaletaVisual | None:
+    """``fundo,texto,destaque,apoio`` em hexadecimal; ausente quer dizer as cores do post."""
+    if valor is None:
+        return None
+    try:
+        return PaletaVisual.da_rota(valor)
+    except ValueError as erro:
+        raise HTTPException(422, f"paleta inválida: {erro}") from None
+
+
 def _pacotes_da_execucao(pasta_execucoes: Path, identificador: str) -> list[PacotePublicacao]:
     """Lê ``pacote/*/pacote.json``, na mesma ordem estável do sistema de arquivos."""
     raiz = Path(pasta_execucoes) / identificador / NOME_DA_PASTA_DO_PACOTE
@@ -327,30 +377,6 @@ def _pacotes_da_execucao(pasta_execucoes: Path, identificador: str) -> list[Paco
         if arquivo.exists():
             pacotes.append(PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8")))
     return pacotes
-
-
-def _fila_h3(execucao: Execucao) -> list[Pendencia]:
-    """Uma Pendência por dimensão subjetiva em ``REVISAO_HUMANA`` no Laudo final de cada Célula.
-
-    O desempate (H3) é decidido durante a avaliação, então olhar só o Laudo final —
-    não cada rodada do Ciclo de correção — basta: é o que decide o destino que já saiu.
-    """
-    pendencias: list[Pendencia] = []
-    for historico in execucao.celulas:
-        laudo = historico.laudo_final
-        if laudo is None or laudo.comite is None:
-            continue
-        for dimensao in laudo.comite.dimensoes:
-            if dimensao.estado is EstadoMedida.REVISAO_HUMANA:
-                pendencias.append(
-                    Pendencia(
-                        fila=FilaHumana.H3_DESEMPATE,
-                        audiencia=historico.audiencia,
-                        formato=historico.formato,
-                        motivo=f"juízes discordam em {dimensao.dimensao.value}",
-                    )
-                )
-    return pendencias
 
 
 def _fila_h5(pacotes: list[PacotePublicacao]) -> list[Pendencia]:
@@ -455,6 +481,9 @@ def criar_app(
     provedor_visao: Provedor | None = None,
     coletor_referencias: ColetorDeReferencias | None = None,
     recuperar_ao_iniciar: bool = True,
+    buscar_fotos: bool = False,
+    provedor_fotos: Provedor | None = None,
+    provedor_atuacao: Provedor | None = None,
 ) -> FastAPI:
     """Monta a API com a pasta de execuções injetada — nada global (ADR 0005).
 
@@ -466,6 +495,11 @@ def criar_app(
     pasta de Atas e a segunda troca o pipeline por um executor falso. No boot, o job que
     ficou ``na_fila`` ou ``gerando`` de uma vida anterior do servidor vira ``interrompida``;
     ``recuperar_ao_iniciar=False`` pula isso (gerar o schema não mexe em disco).
+
+    ``buscar_fotos`` liga a busca de fotos na web ao montar o Pacote do Carrossel (ADR 0033);
+    nasce desligado, então testes e demo offline nunca tocam a rede. ``provedor_fotos`` é o juiz
+    de visão das fotos em dúvida. ``provedor_atuacao`` preenche a atuação do avatar no plano de
+    vídeo (uma vez por Roteiro, gravada em ``atuacao.json``); sem ele, vale o padrão da Audiência.
     """
     pasta_execucoes = Path(pasta_execucoes)
     pasta_atas = Path(pasta_atas)
@@ -493,13 +527,19 @@ def criar_app(
         montador = Montador(
             pasta_execucoes,
             montar_fn=lambda identificador, pasta: montar_pacote(
-                identificador, pasta, provedor_visao=provedor_visao
+                identificador,
+                pasta,
+                provedor_visao=provedor_visao,
+                buscar_fotos=buscar_fotos,
+                provedor_fotos=provedor_fotos,
             ),
             montar_celula_fn=lambda identificador, pasta, audiencia, formato: montar_pacote(
                 identificador,
                 pasta,
                 alvo=(audiencia, formato),
                 provedor_visao=provedor_visao,
+                buscar_fotos=buscar_fotos,
+                provedor_fotos=provedor_fotos,
             ),
         )
     app.state.montador = montador
@@ -656,6 +696,15 @@ def criar_app(
         """A biblioteca local de padrões aprovados que orienta a direção de arte."""
         return referencias_visuais.listar()
 
+    @app.get("/api/familias-visuais")
+    def listar_familias_visuais() -> list[PapeisDaFamilia]:
+        """Cada família recriada dos posts da Suno e os papéis que ela cobre (a Asset: só capa e aviso)."""
+        return [
+            PapeisDaFamilia(familia=familia, papeis=sorted(papeis_cobertos(familia)))
+            for familia in FamiliaVisual
+            if familia is not FamiliaVisual.SUNO_ESCURO
+        ]
+
     @app.post("/api/referencias-visuais", status_code=http.HTTP_201_CREATED)
     def importar_referencia_visual(corpo: NovaReferenciaVisual) -> ReferenciaVisual:
         """Cadastra metadados autorizados; a nova referência nasce não aprovada."""
@@ -778,7 +827,7 @@ def criar_app(
         analisador = provedor_visao
         if analisador is None:
             try:
-                analisador = provedor_por_nome("gemini")
+                analisador = roteador_para(PapelLLM.ANALISTA_VISUAL)
             except ErroProvedor:
                 return referencias_visuais.registrar_erro(
                     identificador,
@@ -805,11 +854,25 @@ def criar_app(
             raise HTTPException(404, f"referência {identificador!r} não encontrada") from None
         except FileNotFoundError:
             raise HTTPException(404, "esta referência ainda não tem imagem") from None
-        raiz = (pasta_execucoes / "referencias-visuais").resolve()
+        # Imagem enviada fica nas execuções; a miniatura de uma família visual, nos templates.
+        raizes = [(pasta_execucoes / "referencias-visuais").resolve(), PASTA_DAS_FAMILIAS.resolve()]
         alvo = caminho.resolve()
-        if not alvo.is_relative_to(raiz) or not alvo.is_file():
+        if not any(alvo.is_relative_to(raiz) for raiz in raizes) or not alvo.is_file():
             raise HTTPException(404, "imagem da referência não encontrada")
         return FileResponse(alvo, media_type="image/png")
+
+    @app.get("/api/referencias-visuais/{identificador}/previa", response_class=HTMLResponse)
+    def previa_da_referencia(identificador: str, paleta: str | None = None) -> HTMLResponse:
+        """O Layout da referência com o texto de exemplo, recolorido: a prévia antes de montar."""
+        try:
+            referencia = referencias_visuais.obter(identificador)
+        except ReferenciaVisualNaoEncontrada:
+            raise HTTPException(404, f"referência {identificador!r} não encontrada") from None
+        layout = carregar_layouts().get(referencia.composicao)
+        if layout is None:
+            raise HTTPException(404, "esta referência não é de uma família visual")
+        html = recolorir(documento_de_exemplo(layout), _paleta_da_rota(paleta))
+        return HTMLResponse(embutir_arquivos(html, permitidas=[PASTA_DAS_FONTES]))
 
     @app.get("/api/execucoes")
     def listar_execucoes_rota() -> list[ExecucaoResumo]:
@@ -857,7 +920,6 @@ def criar_app(
                 modo=corpo.modo,
                 pedido=corpo.pedido,
                 nome=corpo.nome,
-                comite=corpo.comite,
                 duracao=corpo.duracao,
                 composicao_visual=corpo.composicao_visual,
                 referencia_visual=corpo.referencia_visual,
@@ -929,6 +991,26 @@ def criar_app(
             gravar_execucao(execucao, pasta_execucoes)
             return decisao
 
+    @app.put("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/texto")
+    def editar_texto_da_celula(
+        identificador: str, audiencia: Audiencia, formato: Formato, corpo: EdicaoDeTexto
+    ) -> HistoricoCelula:
+        """Grava o texto corrigido por uma pessoa e o julga de novo, sem LLM e sem rede.
+
+        O Laudo novo vira a Tentativa final: o Pacote e o render do servidor passam a usar o texto
+        editado. A decisão humana anterior sobre a Célula deixa de valer.
+        """
+        with trava_de_escrita:
+            execucao = _execucao_ou_404(identificador)
+            try:
+                historico = revisar_texto(execucao, audiencia, formato, corpo)
+            except CelulaNaoEncontrada as erro:
+                raise HTTPException(404, str(erro)) from None
+            except (DecisaoInvalida, EdicaoInvalida) as erro:
+                raise HTTPException(422, str(erro)) from None
+            gravar_execucao(execucao, pasta_execucoes)
+            return historico
+
     @app.get("/api/execucoes/{identificador}/exportar")
     def exportar_execucao(identificador: str, formato: FormatoExportacao) -> Response:
         execucao = _execucao_ou_404(identificador)
@@ -983,7 +1065,13 @@ def criar_app(
         celula = historico.celula_final
         if historico.destino_final is not Destino.APROVADO or celula is None:
             raise HTTPException(409, "só Roteiro aprovado tem plano de edição")
-        plano = montar_plano(celula.conteudo, audiencia)
+        direcao = direcao_em_disco(
+            _pasta_do_pacote(pasta_execucoes, identificador, audiencia, Formato.ROTEIRO),
+            celula.conteudo,
+            audiencia,
+            provedor_atuacao,
+        )
+        plano = montar_plano(celula.conteudo, audiencia, direcao)
         return PlanoDeEdicao(plano=plano, markdown=plano_em_markdown(plano))
 
     @app.post("/api/execucoes/{identificador}/pacotes/montar", status_code=http.HTTP_202_ACCEPTED)
@@ -991,11 +1079,18 @@ def criar_app(
         identificador: str,
         audiencia: Audiencia | None = None,
         formato: Formato | None = None,
+        referencia_visual: str | None = None,
+        paleta: str | None = None,
     ) -> EstadoDaMontagem:
         """Monta os Pacotes das Células aprovadas, em segundo plano.
 
         Cada Célula é considerada individualmente; uma pendência em outra posição da Matriz não
         bloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.
+
+        ``referencia_visual`` troca o design da Saída antes de montar: a pessoa escolheu outro
+        exemplo no editor depois de a geração ter acontecido, e o Pacote sai com o dele (a
+        família visual inclusive), em vez do que ficou gravado no pedido. A ``paleta``
+        (``fundo,texto,destaque,apoio``) vai junto e recolore a família; sem ela, as cores do post.
         """
         if (audiencia is None) != (formato is None):
             raise HTTPException(422, "audiencia e formato devem ser informados juntos")
@@ -1006,6 +1101,20 @@ def criar_app(
         motivo = motivo_de_recusa(execucao, audiencia, formato)
         if motivo is not None:
             raise HTTPException(409, motivo)
+        paleta_escolhida = _paleta_da_rota(paleta)
+        if referencia_visual is not None:
+            try:
+                referencia = referencias_visuais.obter(referencia_visual)
+            except ReferenciaVisualNaoEncontrada:
+                raise HTTPException(422, "a referência visual escolhida não existe") from None
+            if not referencia.aprovada:
+                raise HTTPException(422, "a referência visual escolhida ainda não foi aprovada")
+            with trava_de_escrita:
+                atual = _execucao_ou_404(identificador)
+                atual.composicao_visual = referencia.composicao
+                atual.referencia_visual = referencia.identificador
+                atual.paleta_visual = paleta_escolhida
+                gravar_execucao(atual, pasta_execucoes)
         return montador.iniciar(identificador, audiencia, formato)
 
     @app.get("/api/execucoes/{identificador}/pacotes/montagem")
@@ -1017,6 +1126,23 @@ def criar_app(
     def listar_pacotes(identificador: str) -> list[PacotePublicacao]:
         _execucao_ou_404(identificador)  # 404 cedo se a execução nem existe
         return _pacotes_da_execucao(pasta_execucoes, identificador)
+
+    @app.get(
+        "/api/execucoes/{identificador}/pacotes/{audiencia}/carrossel/{slide}/previa",
+        response_class=HTMLResponse,
+    )
+    def previa_do_slide(
+        identificador: str, audiencia: Audiencia, slide: int, paleta: str | None = None
+    ) -> HTMLResponse:
+        """O slide montado, recolorido com outra paleta sem montar o Pacote de novo."""
+        _execucao_ou_404(identificador)
+        pasta = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, Formato.CARROSSEL)
+        arquivo = pasta / f"slide-{slide:02d}.html"
+        if not arquivo.is_file():
+            raise HTTPException(404, "este slide não tem prévia: monte o carrossel de novo")
+        html = recolorir(arquivo.read_text(encoding="utf-8"), _paleta_da_rota(paleta))
+        permitidas = [PASTA_DAS_FONTES, PASTA_PADRAO_DAS_FOTOS, pasta_execucoes / identificador]
+        return HTMLResponse(embutir_arquivos(html, permitidas=permitidas))
 
     @app.get("/api/execucoes/{identificador}/arquivos/{caminho:path}")
     def obter_arquivo(identificador: str, caminho: str) -> FileResponse:
@@ -1035,7 +1161,6 @@ def criar_app(
         execucao = _execucao_ou_404(identificador)
         pacotes = _pacotes_da_execucao(pasta_execucoes, identificador)
         return Filas(
-            h3_desempate=_fila_h3(execucao),
             h4_revisao=list(execucao.pendencias),
             h5_aprovacao_pacote=_fila_h5(pacotes),
         )
@@ -1106,6 +1231,31 @@ def criar_app(
             arquivo.write_text(pacote.model_dump_json(indent=2), encoding="utf-8")
             feedback_visual.registrar(pacote, feedback)
             return pacote
+
+    def _configuracoes_com_estado() -> ConfiguracoesComEstado:
+        return ConfiguracoesComEstado(
+            configuracoes=configuracoes_do_sistema.carregar(),
+            salvas=configuracoes_do_sistema.caminho_do_arquivo().exists(),
+            chaves=configuracoes_do_sistema.chaves_presentes(),
+            modelos_sugeridos={k: list(v) for k, v in configuracoes_do_sistema.MODELOS_SUGERIDOS.items()},
+        )
+
+    @app.get("/api/configuracoes")
+    def obter_configuracoes() -> ConfiguracoesComEstado:
+        """O que liga e desliga, o teto de requisições por minuto e o provedor e o modelo de cada papel."""
+        return _configuracoes_com_estado()
+
+    @app.put("/api/configuracoes")
+    def salvar_configuracoes(corpo: ConfiguracoesDoSistema) -> ConfiguracoesComEstado:
+        """Grava e passa a valer na próxima chamada, sem reiniciar o servidor."""
+        configuracoes_do_sistema.salvar(corpo)
+        return _configuracoes_com_estado()
+
+    @app.delete("/api/configuracoes")
+    def restaurar_configuracoes() -> ConfiguracoesComEstado:
+        """Apaga o que foi salvo: voltam a valer o ``.env`` e os padrões."""
+        configuracoes_do_sistema.restaurar()
+        return _configuracoes_com_estado()
 
     @app.get("/api/saude")
     def saude() -> Saude:

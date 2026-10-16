@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 from suno.api.app import criar_app
 from suno.api.pacotes import Montador
 from suno.dominio import Audiencia, Destino, Formato, MotivoReprovacao
+from suno.pacote import carrossel_html
 from suno.gerador.execucao import executar, gravar_execucao
 from tests.construtores_de_execucao import execucao_de_teste, historico_de_texto
 from tests.test_geracao import ATA, PASTA_ATAS
@@ -210,3 +211,108 @@ def test_montar_de_novo_depois_de_um_erro_funciona(tmp_path: Path):
     assert _montador(cliente).aguardar("saida-1", 10)
 
     assert cliente.get("/api/execucoes/saida-1/pacotes/montagem").json()["estado"] == "ok"
+
+
+@pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")
+def test_montar_com_referencia_visual_troca_o_design_da_saida_antes_de_montar(tmp_path: Path, monkeypatch):
+    from suno.gerador.execucao import carregar_execucao
+
+    monkeypatch.setenv("SUNO_RENDER", "puppeteer")
+
+    executar(COPOM, "falso", tmp_path, pedido=[CARROSSEL], identificador="saida-design")
+    cliente = _cliente(tmp_path)
+    referencias = cliente.get("/api/referencias-visuais").json()
+    noticia = next(r for r in referencias if r["composicao"].startswith("noticia"))
+
+    resposta = cliente.post(
+        "/api/execucoes/saida-design/pacotes/montar",
+        params={"audiencia": "iniciante", "formato": "carrossel", "referencia_visual": noticia["identificador"]},
+    )
+
+    assert resposta.status_code == 202
+    assert _montador(cliente).aguardar("saida-design", 90)
+    gravada = carregar_execucao("saida-design", tmp_path)
+    assert gravada.referencia_visual == noticia["identificador"]
+    assert gravada.composicao_visual.value == noticia["composicao"]
+    carrossel = next(p for p in cliente.get("/api/execucoes/saida-design/pacotes").json() if p["formato"] == "carrossel")
+    assert carrossel["direcao_de_arte"]["familia"] == "noticia"
+
+
+def test_montar_com_referencia_inexistente_responde_422_sem_mexer_na_saida(tmp_path: Path):
+    from suno.gerador.execucao import carregar_execucao
+
+    executar(COPOM, "falso", tmp_path, pedido=[CARROSSEL], identificador="saida-design")
+    cliente = _cliente(tmp_path)
+
+    resposta = cliente.post(
+        "/api/execucoes/saida-design/pacotes/montar",
+        params={"audiencia": "iniciante", "formato": "carrossel", "referencia_visual": "nao-existe"},
+    )
+
+    assert resposta.status_code == 422
+    assert carregar_execucao("saida-design", tmp_path).referencia_visual is None
+
+
+FLORESTA = "#0C1A14,#F1FBF5,#3DDC84,#1B6B45"
+
+
+@pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")
+def test_montar_com_paleta_recolore_e_a_previa_troca_de_paleta_sem_montar(tmp_path: Path, monkeypatch):
+    from suno.gerador.execucao import carregar_execucao
+
+    monkeypatch.setenv("SUNO_RENDER", "puppeteer")
+    executar(COPOM, "falso", tmp_path, pedido=[CARROSSEL], identificador="saida-paleta")
+    cliente = _cliente(tmp_path)
+    referencias = cliente.get("/api/referencias-visuais").json()
+    dados = next(r for r in referencias if r["composicao"].startswith("dados"))
+
+    resposta = cliente.post(
+        "/api/execucoes/saida-paleta/pacotes/montar",
+        params={
+            "audiencia": "iniciante",
+            "formato": "carrossel",
+            "referencia_visual": dados["identificador"],
+            "paleta": FLORESTA,
+        },
+    )
+
+    assert resposta.status_code == 202
+    assert _montador(cliente).aguardar("saida-paleta", 90)
+    assert carregar_execucao("saida-paleta", tmp_path).paleta_visual.destaque == "#3DDC84"
+    previa = cliente.get(
+        "/api/execucoes/saida-paleta/pacotes/iniciante/carrossel/1/previa",
+        params={"paleta": "#07252B,#EAFBFF,#FF6B6B,#0E5C6B"},
+    )
+    assert previa.status_code == 200
+    assert "#07252b" in previa.text
+    assert "file://" not in previa.text
+
+
+def test_previa_da_referencia_recolore_o_exemplo(tmp_path: Path):
+    cliente = _cliente(tmp_path)
+    referencias = cliente.get("/api/referencias-visuais").json()
+    dados = next(r for r in referencias if r["composicao"] == "dados_texto_grande")
+
+    original = cliente.get(f"/api/referencias-visuais/{dados['identificador']}/previa")
+    recolorida = cliente.get(
+        f"/api/referencias-visuais/{dados['identificador']}/previa", params={"paleta": FLORESTA}
+    )
+
+    assert original.status_code == recolorida.status_code == 200
+    assert "#b80000" in original.text
+    assert "#b80000" not in recolorida.text
+    assert "#3ddc84" in recolorida.text
+    assert "data:font/woff2;base64," in recolorida.text
+    assert "file://" not in recolorida.text
+
+
+def test_paleta_invalida_responde_422(tmp_path: Path):
+    cliente = _cliente(tmp_path)
+    referencias = cliente.get("/api/referencias-visuais").json()
+    dados = next(r for r in referencias if r["composicao"] == "dados_texto_grande")
+
+    resposta = cliente.get(
+        f"/api/referencias-visuais/{dados['identificador']}/previa", params={"paleta": "verde"}
+    )
+
+    assert resposta.status_code == 422

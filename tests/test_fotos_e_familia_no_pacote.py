@@ -162,12 +162,16 @@ from tests.test_pacote import celula_carrossel, celula_roteiro, celula_texto_ana
 
 
 def _execucao_com_foto_no_slide_dois(pasta_execucoes: Path) -> None:
+    _execucao_com_assunto_no_slide(pasta_execucoes, 1, "banco central")
+
+
+def _execucao_com_assunto_no_slide(pasta_execucoes: Path, posicao: int, assunto: str) -> None:
     arquivo = pasta_execucoes / IDENTIFICADOR / "execucao.json"
     execucao = Execucao.model_validate_json(arquivo.read_text(encoding="utf-8"))
     historico = next(h for h in execucao.celulas if h.formato is Formato.CARROSSEL)
     tentativa = historico.tentativas[-1]
     slides = [
-        slide.model_copy(update={"imagem": "banco central"}) if indice == 1 else slide
+        slide.model_copy(update={"imagem": assunto}) if indice == posicao else slide
         for indice, slide in enumerate(tentativa.celula.conteudo.slides or [])
     ]
     celula = tentativa.celula.model_copy(
@@ -203,6 +207,43 @@ def test_pacote_do_carrossel_usa_familia_foto_e_credito(
     assert pacote.conferencia.defeitos == []
     # O slide da foto usa o layout de foto; os sem foto não.
     assert pacote.direcao_de_arte.escolhas[1].composicao is ComposicaoCarrossel.EXPLICATIVO_TEXTO_IMAGEM
+
+
+@pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")
+def test_foto_pedida_por_slide_de_grafico_e_realocada_para_um_slide_que_comporta_foto(
+    execucao_em_disco: Path, monkeypatch  # noqa: F811
+) -> None:
+    monkeypatch.setenv("SUNO_RENDER", "puppeteer")
+    # Na família Dados, o slide 2 plota uma Âncora: só aceita layout de gráfico, então a foto vai para o slide 1.
+    _execucao_com_assunto_no_slide(execucao_em_disco, 1, "banco central")
+
+    pacotes = montar_pacote(IDENTIFICADOR, execucao_em_disco, familia_visual=FamiliaVisual.DADOS)
+
+    pacote = next(p for p in pacotes if p.formato is Formato.CARROSSEL)
+    assert [f.indice for f in pacote.fotos] == [0]
+    escolhas = pacote.direcao_de_arte.escolhas
+    com_foto = {i for i, e in enumerate(escolhas) if "foto" in e.composicao.value}
+    assert pacote.fotos[0].indice in com_foto, "a foto foi parar num slide cujo layout a desenha"
+    assert pacote.fotos[0].assunto == "banco central"
+    assert pacote.legenda.rstrip().endswith(pacote.fotos[0].credito)
+    assert pacote.conferencia.defeitos == []
+
+
+@pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")
+def test_assunto_sem_foto_gera_o_slide_sem_foto_e_sem_credito(
+    execucao_em_disco: Path, monkeypatch  # noqa: F811
+) -> None:
+    monkeypatch.setenv("SUNO_RENDER", "puppeteer")
+    _execucao_com_assunto_no_slide(execucao_em_disco, 1, "unicórnio dançando")
+
+    pacotes = montar_pacote(IDENTIFICADOR, execucao_em_disco, familia_visual=FamiliaVisual.EXPLICATIVO)
+
+    pacote = next(p for p in pacotes if p.formato is Formato.CARROSSEL)
+    assert pacote.fotos == [] and "Foto:" not in pacote.legenda
+    assert all(
+        not e.composicao.value.endswith("imagem") for e in pacote.direcao_de_arte.escolhas
+    ), "nenhum slide usa o layout que precisa de foto"
+    assert pacote.conferencia.defeitos == []
 
 
 @pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")

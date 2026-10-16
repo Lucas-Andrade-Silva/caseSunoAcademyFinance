@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PALETAS, PALETA_PADRAO, contraste, corSobre, ehPaleta, paletaPorId } from "./paletas";
+import { PALETAS, PALETA_PADRAO, contraste, corSobre, ehPaleta, paletaParaServidor, paletaPorId } from "./paletas";
 
 describe("contraste", () => {
   it("preto sobre branco é 21:1 e a mesma cor é 1:1", () => {
@@ -56,5 +56,15 @@ describe("paletaPorId e ehPaleta", () => {
     expect(ehPaleta(PALETA_PADRAO)).toBe(true);
     expect(ehPaleta({ ...PALETA_PADRAO, apoio: "vermelho" })).toBe(false);
     expect(ehPaleta({ id: "x" })).toBe(false);
+  });
+});
+
+describe("paleta para o servidor", () => {
+  it("a Suno mantém as cores do post: nada vai ao servidor", () => {
+    expect(paletaParaServidor(PALETA_PADRAO)).toBeUndefined();
+  });
+
+  it("as outras vão como fundo,texto,destaque,apoio", () => {
+    expect(paletaParaServidor(paletaPorId("floresta"))).toBe("#0C1A14,#F1FBF5,#3DDC84,#1B6B45");
   });
 });

@@ -80,13 +80,6 @@ CATALOGO_PADRAO: tuple[Origem, ...] = (
         ativa=True,
     ),
     Origem(
-        id="releases_b3",
-        nome="Releases de Resultados (B3)",
-        categoria=CategoriaDaAta.RELEASE,
-        disponivel=False,
-        aviso="em breve",
-    ),
-    Origem(
         id="importados",
         nome="Documentos importados",
         categoria=CategoriaDaAta.IMPORTADA,

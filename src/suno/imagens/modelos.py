@@ -8,22 +8,22 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Origem = Literal["biblioteca", "commons"]
-Validacao = Literal["humano", "visao"]
+Origem = Literal["biblioteca", "web"]
+Validacao = Literal["humano", "visao", "texto"]
 
 _SEM_CREDITO = re.compile(r"^(CC0|Public domain|PD)\b", re.IGNORECASE)
 
 
 class ImagemResolvida(BaseModel):
-    """Uma foto real, com licença que permite reuso e o crédito que a acompanha."""
+    """Uma foto real, com o crédito que a acompanha (a licença só é conhecida nas fotos semeadas)."""
 
     model_config = ConfigDict(frozen=True)
 
     arquivo: Path
     titulo: str
     autor: str
-    licenca: str = Field(description="Nome curto da licença, como 'CC BY 2.0'.")
-    url_origem: str = Field(description="A página da imagem no Wikimedia Commons.")
+    licenca: str = Field(description="Nome curto da licença, como 'CC BY 2.0', ou 'licença não verificada (MVP)'.")
+    url_origem: str = Field(description="A página onde a imagem foi encontrada.")
     consulta: str = Field(description="O assunto que a pessoa (ou o slide) pediu.")
     origem: Origem
     validada_por: Validacao | None = None

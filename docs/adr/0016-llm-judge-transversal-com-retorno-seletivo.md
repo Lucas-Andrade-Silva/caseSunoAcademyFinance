@@ -1,5 +1,8 @@
 # LLM Judge transversal com retorno seletivo
 
+> **Revogado pelo [ADR 0037](0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)** (15/10/2026):
+> o Judge quase nunca chegava a rodar e foi removido. Fica como registro histórico.
+
 A Matriz pode ter nove Células individualmente corretas e ainda assim apresentar repetição,
 contradição editorial, salto inadequado entre personas ou formatos que contam histórias
 incompatíveis. Essas propriedades não cabem nas métricas determinísticas de uma Célula isolada.

@@ -19,6 +19,8 @@
 # Ambiente
 .venv/
 .env
+# O que a aba de configurações salvou nesta máquina
+data/configuracoes.json
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -54,3 +56,6 @@ render/node_modules/
 # versionados os HTML recriados, as galerias (_galeria/) e as fotos (data/imagens/).
 templates/recriados/familia-*/png/
 templates/recriados/familia-*/comparacao/
+
+# Local Netlify folder
+.netlify

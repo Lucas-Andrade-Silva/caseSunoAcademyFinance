@@ -47,7 +47,6 @@ from suno.dominio import (
     PapelLLM,
     ParecerVisao,
     PedidoLLM,
-    ResultadoCicloTransversal,
     Slide,
     Tentativa,
     Unidade,
@@ -445,17 +444,14 @@ def test_matriz_com_pendencia_nao_bloqueia_pacotes_de_celulas_aprovadas(
     arquivo = execucao_em_disco / IDENTIFICADOR / "execucao.json"
     execucao = Execucao.model_validate_json(arquivo.read_text(encoding="utf-8"))
     avaliacao = AvaliacaoTransversal(
-        estado=EstadoAvaliacaoTransversal.APROVADA,
+        estado=EstadoAvaliacaoTransversal.REVISAO_HUMANA,
         total_recebido=9,
         total_com_conteudo=9,
-    )
-    ciclo = ResultadoCicloTransversal(
-        estado=EstadoAvaliacaoTransversal.REVISAO_HUMANA,
-        avaliacao_deterministica=avaliacao,
-        motivo_final="o LLM Judge encontrou problema grave",
+        posicoes_reprovadas=["avancado:roteiro"],
+        observacoes=["há Células reprovadas ou enviadas à revisão humana"],
     )
     arquivo.write_text(
-        execucao.model_copy(update={"ciclo_transversal": ciclo}).model_dump_json(indent=2),
+        execucao.model_copy(update={"avaliacao_transversal": avaliacao}).model_dump_json(indent=2),
         encoding="utf-8",
     )
 

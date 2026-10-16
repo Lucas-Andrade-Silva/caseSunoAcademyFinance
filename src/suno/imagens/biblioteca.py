@@ -81,7 +81,7 @@ class BibliotecaDeImagens:
         raise ImagemInexistente(identificador)
 
     def conhece_url(self, url_origem: str) -> EntradaDaImagem | None:
-        """A entrada que já veio dessa página do Commons, em qualquer estado."""
+        """A entrada que já veio dessa página, em qualquer estado."""
         return next((e for e in self.listar() if e.url_origem == url_origem), None)
 
     def buscar(self, consulta: str, *, apenas_aprovadas: bool = True) -> list[ImagemResolvida]:

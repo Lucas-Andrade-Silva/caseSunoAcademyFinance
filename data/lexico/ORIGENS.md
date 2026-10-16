@@ -55,3 +55,20 @@ Léxico, Limiares e Calibração são conhecimento de domínio da pessoa dona do
 Este arquivo — e `lexico.yaml` — devem ser revistos por ela na Calibração (H2, ~30 Células
 rotuladas à mão), quando termos que faltam ou termos que geram ruído (falsos positivos de
 Densidade) aparecerem na prática.
+
+## O núcleo foi ampliado (15/10/2026)
+
+O núcleo (`nucleo: true`) é o vocabulário que o Intermediário já conhece e **não precisa de explicação**.
+Nasceu com os 19 termos do enunciado. Depois de medir 40 reprovações de Densidade em Células reais do
+Intermediário, em que termos do dia a dia (`atividade econômica`, `reunião do Copom`, `risco`, `investidor`,
+`meta de inflação`) reprovavam junto com os realmente especializados, **60 termos de uso cotidiano
+foram promovidos**, cada um marcado com `nucleo_por: uso_cotidiano`. O núcleo passou de 19 para 79 de 174.
+
+- **Iniciante** continua explicando todos os termos. **Avançado** continua sem explicar nenhum.
+- **Ficaram de fora**, e o Intermediário continua explicando: o jargão que o enunciado põe no Avançado
+  (`curva de juros`, `forward guidance`, `hiato do produto`, `EBITDA ajustado`, `covenants`) e os especializados
+  (`expectativas desancoradas`, `balanço de riscos`, `prêmio de risco`, `restrição monetária`…).
+- É **julgamento de domínio**, sem pesquisa de frequência atrás: o critério foi "quem acompanha o mercado vê
+  quase todo dia". Quem cuida do Léxico (H2) decide termo a termo: basta trocar `nucleo` no YAML.
+- Efeito medido em 40 tentativas reais que reprovaram por Densidade: 6 passariam; as outras 34 continuam
+  reprovando, agora só por termo especializado.

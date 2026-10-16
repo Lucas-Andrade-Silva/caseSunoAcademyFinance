@@ -47,6 +47,7 @@ from suno.dominio import (
     EscolhaDeLayout,
     Formato,
     ImagemSlide,
+    PaletaVisual,
     ReferenciaVisual,
     Slide,
 )
@@ -449,11 +450,12 @@ def renderizar_carrossel(
     referencias_aprovadas: tuple[ReferenciaVisual, ...] = (),
     plano_direcao: tuple[EscolhaDeLayout, ...] | None = None,
     fotos: dict[int, Path] | None = None,
+    paleta: PaletaVisual | None = None,
 ) -> list[ImagemSlide]:
     """Um PNG 1080x1350 por Slide; Puppeteer quando disponível, Pillow como reserva.
 
-    ``fotos`` leva a foto resolvida de cada slide (índice → arquivo); só as famílias visuais a
-    usam, e a reserva Pillow não as conhece.
+    ``fotos`` leva a foto resolvida de cada slide (índice → arquivo) e ``paleta`` recolore os
+    Layouts; só as famílias visuais usam as duas, e a reserva Pillow não as conhece.
     """
     if celula.formato is not Formato.CARROSSEL:
         raise ValueError(f"renderizar_carrossel só aceita o Formato Carrossel, não {celula.formato}")
@@ -470,6 +472,7 @@ def renderizar_carrossel(
         referencias_aprovadas=referencias_aprovadas,
         plano_direcao=plano_direcao,
         imagens=fotos,
+        paleta=paleta,
     )
     return [
         ImagemSlide(indice=i, caminho=c, largura=LARGURA_SLIDE, altura=ALTURA_SLIDE)

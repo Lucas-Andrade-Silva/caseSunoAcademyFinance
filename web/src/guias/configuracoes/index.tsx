@@ -1,4 +1,5 @@
-// Configurações: o modo de geração, o nome do avatar e a limpeza do que fica no navegador.
+// Configurações: o modo de geração, o nome do avatar, o que o sistema liga e desliga (Jev, checador,
+// limite de requisições, provedor e modelo de cada papel) e a limpeza do que fica no navegador.
 // À direita, o estado do servidor.
 import { useState } from "react";
 import { obterSaude } from "../../dados/cliente";
@@ -10,6 +11,7 @@ import { usarDados } from "../../nucleo/dados";
 import { usarHistorico } from "../../nucleo/historico";
 import { JANELA_EM_DIAS } from "../../nucleo/janela";
 import { CHAVES } from "../../nucleo/precarga";
+import Sistema from "./Sistema";
 import { usarSelecao } from "../../nucleo/selecao";
 
 function Cartao({ children }: { children: React.ReactNode }) {
@@ -70,6 +72,8 @@ export default function GuiaConfiguracoes() {
               />
             </Cartao>
           </div>
+
+          <Sistema />
 
           <div className="mt-14">
             <TituloDeSecao>Dados deste navegador</TituloDeSecao>

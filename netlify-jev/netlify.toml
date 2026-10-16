@@ -1,0 +1,6 @@
+# Um site só de Function: o Suno Content chama /.netlify/functions/jev (ADR 0035).
+[build]
+  publish = "public"
+
+[functions]
+  directory = "functions"

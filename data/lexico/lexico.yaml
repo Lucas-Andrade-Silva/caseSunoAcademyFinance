@@ -45,7 +45,8 @@ termos:
 - termo: meta de inflação
   variantes:
   - meta de inflação contínua
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: hiato do produto
@@ -61,7 +62,8 @@ termos:
   origem: propria
 - termo: juro real
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: juro neutro
@@ -98,7 +100,8 @@ termos:
   variantes:
   - pontos-base
   - pb
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: taxa terminal
@@ -114,20 +117,23 @@ termos:
 - termo: prefixado
   variantes:
   - pré-fixado
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: pós-fixado
   variantes:
   - pos-fixado
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: Focus
   variantes:
   - pesquisa Focus
   - boletim Focus
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: Relatório de Inflação
@@ -140,12 +146,14 @@ termos:
   variantes:
   - votação unânime
   - votação por maioria
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: unanimidade
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: dissenso
@@ -155,7 +163,8 @@ termos:
   origem: propria
 - termo: reunião do Copom
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: viés de política monetária
@@ -237,7 +246,8 @@ termos:
 - termo: comunicado do Copom
   variantes:
   - nota do Copom
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: politica_monetaria
   origem: propria
 - termo: calendário de reuniões do Copom
@@ -286,19 +296,22 @@ termos:
 - termo: LCI
   variantes:
   - Letra de Crédito Imobiliário
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: LCA
   variantes:
   - Letra de Crédito do Agronegócio
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: debênture
   variantes:
   - debêntures incentivadas
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: duration
@@ -313,7 +326,8 @@ termos:
   origem: propria
 - termo: come-cotas
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: spread
@@ -324,18 +338,21 @@ termos:
   origem: propria
 - termo: Tesouro Selic
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: Tesouro IPCA+
   variantes:
   - Tesouro IPCA
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: Tesouro Prefixado
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: rating de crédito
@@ -346,28 +363,33 @@ termos:
   origem: propria
 - termo: risco de crédito
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: liquidez diária
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: carência
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: Fundo Garantidor de Créditos
   variantes:
   - FGC
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: taxa de administração
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: taxa de performance
@@ -404,12 +426,14 @@ termos:
   origem: propria
 - termo: rentabilidade líquida
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: rentabilidade bruta
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: tabela regressiva de imposto de renda
@@ -420,7 +444,8 @@ termos:
   origem: propria
 - termo: IOF
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: marcação na curva
@@ -431,7 +456,8 @@ termos:
 - termo: prazo de vencimento
   variantes:
   - vencimento
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_fixa
   origem: propria
 - termo: cupom de juros
@@ -539,35 +565,41 @@ termos:
 - termo: IPO
   variantes:
   - oferta pública inicial
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: ação ordinária
   variantes:
   - 'ON'
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: ação preferencial
   variantes:
   - PN
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: B3
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: Ibovespa
   variantes:
   - índice Bovespa
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: volatilidade
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: beta
@@ -577,18 +609,21 @@ termos:
   origem: propria
 - termo: dividend yield
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: lucro líquido
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: lucro por ação
   variantes:
   - LPA
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: margem líquida
@@ -614,7 +649,8 @@ termos:
 - termo: recompra de ações
   variantes:
   - buyback
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: oferta pública
@@ -662,12 +698,14 @@ termos:
   origem: propria
 - termo: blue chip
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: patrimônio líquido
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: retorno sobre patrimônio líquido
@@ -706,7 +744,8 @@ termos:
 - termo: fundo de índice
   variantes:
   - ETF
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: renda_variavel
   origem: propria
 - termo: PIB
@@ -728,7 +767,8 @@ termos:
   origem: propria
 - termo: balança comercial
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: fiscal primário
@@ -741,7 +781,8 @@ termos:
 - termo: dívida bruta
   variantes:
   - dívida bruta do governo geral
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: inflação de serviços
@@ -785,7 +826,8 @@ termos:
 - termo: taxa de desemprego
   variantes:
   - desemprego
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: produtividade do trabalho
@@ -796,17 +838,20 @@ termos:
   origem: propria
 - termo: atividade econômica
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: consumo das famílias
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: investimento
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: formação bruta de capital fixo
@@ -828,18 +873,21 @@ termos:
   origem: propria
 - termo: reservas internacionais
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: risco-país
   variantes:
   - EMBI+
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: commodities
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: termos de troca
@@ -860,7 +908,8 @@ termos:
   origem: propria
 - termo: IGP-M
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: macro
   origem: propria
 - termo: INCC
@@ -870,18 +919,21 @@ termos:
   origem: propria
 - termo: investidor
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: mercado financeiro
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: ativo financeiro
   variantes:
   - ativo
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: passivo financeiro
@@ -892,44 +944,52 @@ termos:
   origem: propria
 - termo: liquidez
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: risco
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: retorno
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: rentabilidade
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: alocação de ativos
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: carteira de investimentos
   variantes:
   - carteira
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: perfil de investidor
   variantes:
   - suitability
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: horizonte de investimento
   variantes: []
-  nucleo: false
+  nucleo: true
+  nucleo_por: uso_cotidiano
   area: geral
   origem: propria
 - termo: taxa livre de risco

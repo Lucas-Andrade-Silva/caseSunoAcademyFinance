@@ -49,14 +49,6 @@
       "aviso": null
     },
     {
-      "id": "releases_b3",
-      "nome": "Releases de Resultados (B3)",
-      "categoria": "release",
-      "ativa": false,
-      "disponivel": false,
-      "aviso": "em breve"
-    },
-    {
       "id": "importados",
       "nome": "Documentos importados",
       "categoria": "importada",

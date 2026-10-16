@@ -25,10 +25,8 @@ from suno.dominio import (
 )
 from suno.provedores import gemini as modulo_gemini
 from suno.provedores import groq as modulo_groq
-from suno.provedores import sambanova as modulo_sambanova
 from suno.provedores.gemini import ProvedorGemini, adaptar_schema, configuracao_de_raciocinio
 from suno.provedores.groq import ProvedorGroq
-from suno.provedores.sambanova import ProvedorSambaNova
 
 CHAVE = "chave-secreta-que-nunca-pode-vazar"
 
@@ -168,7 +166,6 @@ def test_gemini_sem_texto_por_teto_de_tokens_e_resposta_malformada():
     "classe, modulo, campo_do_teto, estrito",
     [
         (ProvedorGroq, modulo_groq, "max_completion_tokens", True),
-        (ProvedorSambaNova, modulo_sambanova, "max_tokens", False),
     ],
 )
 def test_dialeto_openai_manda_response_format_e_le_o_usage(classe, modulo, campo_do_teto, estrito):
@@ -223,7 +220,7 @@ def test_dialeto_openai_sem_texto_por_teto_de_tokens_e_resposta_malformada():
         return httpx.Response(200, json={"choices": [{"message": {"content": ""}, "finish_reason": "length"}]})
 
     with pytest.raises(RespostaMalformada):
-        ProvedorSambaNova(CHAVE, "m", cliente=_cliente(atender)).completar(_pedido(com_schema=False))
+        ProvedorGroq(CHAVE, "m", cliente=_cliente(atender)).completar(_pedido(com_schema=False))
 
 
 # ---------------------------------------------------------------------------
@@ -350,26 +347,8 @@ def test_groq_429_sem_pista_no_texto_cai_nos_cabecalhos_de_cota():
     assert por_minuto.esgotamento is EsgotamentoDeCota.POR_MINUTO
 
 
-def test_sambanova_429_usa_texto_e_cabecalho_de_espera_e_assume_desconhecido():
-    por_minuto = modulo_sambanova.interpretar_429(
-        429, {}, '{"error": {"message": "rate limit exceeded: 20 RPM"}}'
-    )
-    diario = modulo_sambanova.interpretar_429(
-        429, {}, '{"error": {"message": "Request would exceed rate limit: requests per day"}}'
-    )
-    sem_pista = modulo_sambanova.interpretar_429(
-        429, {"retry-after": "45"}, '{"error": {"message": "429 Request would exceed rate limit"}}'
-    )
-
-    assert por_minuto.esgotamento is EsgotamentoDeCota.POR_MINUTO
-    assert diario.esgotamento is EsgotamentoDeCota.POR_DIA
-    assert sem_pista.esgotamento is EsgotamentoDeCota.DESCONHECIDO
-    assert sem_pista.espera_s == 45.0
-    assert sem_pista.provedor == "sambanova"
-
-
 def test_interpretar_429_aguenta_corpo_que_nao_e_json():
-    for interpretar in (modulo_gemini.interpretar_429, modulo_groq.interpretar_429, modulo_sambanova.interpretar_429):
+    for interpretar in (modulo_gemini.interpretar_429, modulo_groq.interpretar_429):
         cota = interpretar(429, {}, "<html>429 Too Many Requests</html>")
         assert cota.esgotamento is EsgotamentoDeCota.DESCONHECIDO
 
@@ -379,7 +358,7 @@ def test_interpretar_429_aguenta_corpo_que_nao_e_json():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq, ProvedorSambaNova])
+@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq])
 @pytest.mark.parametrize("estado", [400, 429, 500])
 def test_a_chave_nunca_vaza_em_erro_de_http(classe, estado):
     def atender(_requisicao: httpx.Request) -> httpx.Response:
@@ -396,7 +375,7 @@ def test_a_chave_nunca_vaza_em_erro_de_http(classe, estado):
         assert isinstance(achado.value, CotaEsgotada)
 
 
-@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq, ProvedorSambaNova])
+@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq])
 def test_a_chave_nunca_vaza_em_falha_de_transporte(classe):
     def atender(_requisicao: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError(f"falhou ao conectar com key={CHAVE}")
@@ -407,7 +386,7 @@ def test_a_chave_nunca_vaza_em_falha_de_transporte(classe):
     assert CHAVE not in str(achado.value)
 
 
-@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq, ProvedorSambaNova])
+@pytest.mark.parametrize("classe", [ProvedorGemini, ProvedorGroq])
 def test_provedor_sem_chave_ou_sem_modelo_nao_e_construido(classe):
     with pytest.raises(ErroProvedor):
         classe("", "modelo")
@@ -498,16 +477,7 @@ def test_groq_manda_reasoning_effort_traduzido():
     assert "reasoning_effort" not in _corpo_enviado(requisicoes), "sem esforço declarado, nada é mandado"
 
 
-def test_sambanova_ignora_o_esforco_porque_a_doc_nao_confirma_o_parametro():
-    requisicoes: list[httpx.Request] = []
-    provedor = ProvedorSambaNova(CHAVE, "m", cliente=_cliente(_atendente_no_dialeto_openai(requisicoes, {})))
-
-    provedor.completar(_pedido(com_schema=False, esforco="alto"))
-
-    assert "reasoning_effort" not in _corpo_enviado(requisicoes)
-
-
-@pytest.mark.parametrize("classe", [ProvedorGroq, ProvedorSambaNova])
+@pytest.mark.parametrize("classe", [ProvedorGroq])
 def test_dialeto_openai_le_os_tokens_de_raciocinio_quando_vem_no_detalhe(classe):
     requisicoes: list[httpx.Request] = []
     uso = {
@@ -523,7 +493,7 @@ def test_dialeto_openai_le_os_tokens_de_raciocinio_quando_vem_no_detalhe(classe)
     assert resposta.tokens_saida == 300, "no dialeto OpenAI o raciocínio já está dentro de completion_tokens"
 
 
-@pytest.mark.parametrize("classe", [ProvedorGroq, ProvedorSambaNova])
+@pytest.mark.parametrize("classe", [ProvedorGroq])
 def test_dialeto_openai_sem_detalhe_de_raciocinio_conta_zero(classe):
     requisicoes: list[httpx.Request] = []
     uso = {"prompt_tokens": 10, "completion_tokens": 4}
@@ -539,3 +509,17 @@ def test_configuracao_de_raciocinio_e_pura_e_cobre_as_tres_intensidades():
     assert configuracao_de_raciocinio("models/gemini-2.5-pro", "baixo") == {"thinkingBudget": 0}
     assert configuracao_de_raciocinio("gemini-2.5-flash", "medio") is None
     assert configuracao_de_raciocinio("gemini-2.5-flash", None) is None
+
+
+def test_o_schema_estrito_achata_enum_opcional_para_a_groq() -> None:
+    """A Groq recusa ``anyOf`` de ``$ref`` com ``null`` (HTTP 400): o Roteiro derrubava a reserva."""
+    from suno.gerador.moldes import RespostaRoteiro
+    from suno.provedores._openai_compat import endurecer_schema
+
+    schema = endurecer_schema(RespostaRoteiro.model_json_schema())
+    bloco = schema["$defs"]["BlocoFala"]["properties"]
+    for campo in ("som_de_entrada", "som_de_efeito", "icone"):
+        assert "anyOf" not in bloco[campo]
+        assert bloco[campo]["type"] == ["string", "null"]
+        assert None in bloco[campo]["enum"]
+    assert "anyOf" not in str(schema["$defs"]["BlocoFala"])

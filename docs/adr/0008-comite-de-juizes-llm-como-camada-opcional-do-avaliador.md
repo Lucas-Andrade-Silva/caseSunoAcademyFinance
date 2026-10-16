@@ -1,5 +1,11 @@
 # O Avaliador ganha uma camada opcional de comitê de juízes-LLM, isolada atrás de sua própria interface
 
+> **Removido** ([ADR 0037](0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)) em 15/10/2026: sem o SambaNova não havia dois juízes que
+> não fossem o gerador, e a Qualidade (Jev) e a Fidelidade ocuparam o lugar. Fica como registro histórico.
+>
+> **Complementado pelo [ADR 0035](0035-qualidade-pelo-jev-depois-do-deterministico.md):** o Comitê continua
+> só informando; a Qualidade (Jev) é a camada que pode mandar a Célula ser escrita de novo.
+
 O [ADR 0001](0001-gerador-e-avaliador-como-modulos-separados.md) já reserva essa exceção: "o juiz
 estruturado por LLM é a exceção deliberada, e fica isolado atrás da sua própria interface, com as
 métricas determinísticas rodando sem ele." Este ADR decide a forma dessa camada, para quando ela

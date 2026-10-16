@@ -17,7 +17,8 @@ from suno.gerador.curador import DossieCurado
 from suno.provedores.base import Provedor
 
 if TYPE_CHECKING:
-    from suno.comite import Comite
+    from suno.avaliador.fidelidade import VerificadorDeFidelidade
+    from suno.avaliador.qualidade import AvaliadorDeQualidade
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,10 +32,18 @@ class AgenteGeradorPersona:
         dossie: DossieCurado,
         provedor: Provedor,
         *,
-        comite: "Comite | None" = None,
+        qualidade: "AvaliadorDeQualidade | None" = None,
+        fidelidade: "VerificadorDeFidelidade | None" = None,
         ao_andar: Andou | None = None,
     ) -> list[HistoricoCelula]:
-        return self.gerar_formatos(dossie, provedor, list(Formato), comite=comite, ao_andar=ao_andar)
+        return self.gerar_formatos(
+            dossie,
+            provedor,
+            list(Formato),
+            qualidade=qualidade,
+            fidelidade=fidelidade,
+            ao_andar=ao_andar,
+        )
 
     def gerar_formatos(
         self,
@@ -42,15 +51,14 @@ class AgenteGeradorPersona:
         provedor: Provedor,
         formatos: list[Formato],
         *,
-        comite: "Comite | None" = None,
-        orientacoes: dict[Formato, list[str]] | None = None,
+        qualidade: "AvaliadorDeQualidade | None" = None,
+        fidelidade: "VerificadorDeFidelidade | None" = None,
         ao_andar: Andou | None = None,
     ) -> list[HistoricoCelula]:
-        """Gera os Formatos pedidos (ou regenera os apontados pelo Judge), sempre pelas regras fixas."""
+        """Gera os Formatos pedidos, sempre pelas regras fixas."""
         escolhidos = [formato for formato in Formato if formato in set(formatos)]
         if not escolhidos:
             return []
-        orientacoes = orientacoes or {}
         with ThreadPoolExecutor(max_workers=len(escolhidos)) as executor:
             futuros = {
                 formato: executor.submit(
@@ -60,8 +68,8 @@ class AgenteGeradorPersona:
                     self.audiencia,
                     formato,
                     provedor,
-                    comite=comite,
-                    orientacoes_transversais=orientacoes.get(formato),
+                    qualidade=qualidade,
+                    fidelidade=fidelidade,
                     ao_andar=ao_andar,
                     duracao=dossie.duracao,
                 )
