@@ -356,6 +356,7 @@ modelo sem confirmar cota e licença de uso comercial.
 | Piper | GPL-3.0 | Contamina se linkado. |
 | Remotion | livre p/ indivíduo e ONG | Empresa com 4+ funcionários não se qualifica. |
 | Phoenix (Arize) | Elastic License 2.0 | Proíbe oferecer como serviço gerenciado. |
+| Binário do ffmpeg embutido no `imageio-ffmpeg` | GPLv3 (build "essentials" do gyan.dev: `--enable-gpl --enable-version3 --enable-libx264`) | O projeto só o chama por `subprocess`, sem linkar, o que não cria obra derivada. Revalidar se o projeto crescer além do case. O wrapper Python é BSD-2-Clause. |
 
 Padrão: várias peças gratuitas **deixam de ser gratuitas se o projeto virar negócio**.
 Isso precisa ser decisão consciente, não descoberta tardia.
