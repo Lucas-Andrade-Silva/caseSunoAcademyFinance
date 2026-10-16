@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import {
   listarExecucoes,
+  listarFamiliasVisuais,
   listarOrigens,
   listarReferenciasVisuais,
   obterAta,
@@ -16,7 +17,9 @@ export const CHAVES = {
   origens: "origens",
   execucoes: "execucoes",
   saude: "saude",
+  configuracoesDoSistema: "configuracoes-do-sistema",
   referencias: "referencias",
+  familias: "familias",
   ata: (identificador: string) => `ata:${identificador}`,
 } as const;
 
@@ -26,6 +29,7 @@ export function usarPrecarga(): void {
     precarregar(CHAVES.execucoes, listarExecucoes);
     precarregar(CHAVES.saude, obterSaude);
     precarregar(CHAVES.referencias, listarReferenciasVisuais);
+    precarregar(CHAVES.familias, listarFamiliasVisuais);
   }, []);
 
   const { dados } = usarDados(CHAVES.origens, listarOrigens);

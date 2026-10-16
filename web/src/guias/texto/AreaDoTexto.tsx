@@ -5,8 +5,8 @@
 import { useEffect, useState } from "react";
 import type { Audiencia } from "../../dados/cliente";
 import Botao from "../../interface/Botao";
-import { CorpoDaPrevia } from "../../interface/Divisao";
-import { IconeFechar, IconeLapis, IconeMais, IconeMarca, IconeSalvar } from "../../interface/Icones";
+import { CorpoDaPrevia, TituloDaGuia } from "../../interface/Divisao";
+import { IconeFechar, IconeLapis, IconeMarca, IconeSalvar } from "../../interface/Icones";
 import { Pilulas } from "../../interface/Pilulas";
 import { rotuloAudiencia } from "../../texto/rotulos";
 import EditorDoTexto from "./EditorDoTexto";
@@ -32,7 +32,6 @@ interface Propriedades {
   html: string;
   onAplicar: (html: string) => void;
   onSalvar: (formato: FormatoDoTexto, html: string) => void;
-  onGerarOutro: () => void;
 }
 
 /** Um aviso que acende e apaga sozinho: "Salvo", "Edição salva". */
@@ -55,14 +54,12 @@ export default function AreaDoTexto({
   html,
   onAplicar,
   onSalvar,
-  onGerarOutro,
 }: Propriedades) {
   const [editando, definirEditando] = useState(false);
   const [trabalhos, definirTrabalhos] = useState<Partial<Record<Audiencia, Trabalho>>>({});
   const [salvando, definirSalvando] = useState(false);
   const [salvo, avisarSalvo] = usarAviso(1800);
   const [editado, avisarEditado] = usarAviso(1800);
-  const [confirmandoNovo, avisarConfirmandoNovo] = usarAviso(3000);
 
   const trabalho = trabalhos[audiencia];
   const pendente = trabalho !== undefined && trabalho.rascunho !== trabalho.base;
@@ -87,6 +84,9 @@ export default function AreaDoTexto({
       <div className="texto-fundo-do-editor" aria-hidden="true" />
 
       <header className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-3 px-5 pb-3 pt-10 lg:pl-[var(--area-da-rail)] lg:pr-[50px]">
+        <div className="basis-full">
+          <TituloDaGuia>Texto analítico</TituloDaGuia>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <Botao
             variante="escuro"
@@ -104,18 +104,6 @@ export default function AreaDoTexto({
               opcoes={audiencias.map((a) => ({ valor: a, rotulo: rotuloAudiencia(a) }))}
             />
           )}
-          <button
-            type="button"
-            aria-label="Gerar outro texto"
-            title="Gerar outro texto"
-            onClick={() => (confirmandoNovo ? onGerarOutro() : avisarConfirmandoNovo())}
-            className={`inline-flex h-[50px] shrink-0 items-center justify-center gap-2.5 rounded-lg bg-superficie text-[15px] font-semibold uppercase tracking-[0.01em] transition-colors duration-150 hover:bg-superficie-alta ${
-              confirmandoNovo ? "px-6" : "w-[50px]"
-            }`}
-          >
-            <IconeMais size={18} />
-            {confirmandoNovo && "Confirmar"}
-          </button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-3">
           <Pilulas<FormatoDoTexto>

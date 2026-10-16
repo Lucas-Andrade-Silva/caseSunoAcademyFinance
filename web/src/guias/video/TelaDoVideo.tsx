@@ -3,19 +3,20 @@
 // histórico. Serve tanto à geração desta sessão quanto a um salvo reaberto do Histórico: quem
 // chama entrega os roteiros já prontos, e o salvo reaberto vem sem popup nem sessão.
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Audiencia, BlocoFala } from "../../dados/cliente";
+import { editarTextoDaCelula, obterPlanoDeEdicao, type Audiencia, type BlocoFala, type Laudo } from "../../dados/cliente";
 import Barras from "../../interface/Barras";
 import Botao from "../../interface/Botao";
-import { CorpoDaPrevia, Divisao, Ilha, Titulo, TopoDaPrevia } from "../../interface/Divisao";
+import { CorpoDaPrevia, Divisao, Ilha, TituloDaGuia, TopoDaPrevia } from "../../interface/Divisao";
 import { IconeFechar, IconeMarca, IconeSalvar } from "../../interface/Icones";
 import { Pilulas } from "../../interface/Pilulas";
 import Vazio from "../../interface/Vazio";
 import { usarHistorico } from "../../nucleo/historico";
-import type { BarraDoLaudo } from "../../nucleo/laudo";
+import { barrasDoLaudo, celulaBloqueada, type BarraDoLaudo } from "../../nucleo/laudo";
 import { rotuloAudiencia } from "../../texto/rotulos";
 import CartaoDoPrompt from "./CartaoDoPrompt";
-import CenasDoRoteiro from "./CenasDoRoteiro";
+import CenasDoRoteiro, { type CamposDaCena } from "./CenasDoRoteiro";
 import EscolhaDeJeitos from "./EscolhaDeJeitos";
+import { lerAtuacao, type AtuacaoDoPlano } from "./atuacao";
 import { montarPrompt } from "./instrucao";
 import type { ClimaDoNarrador, RitmoDoNarrador } from "./jeitos";
 import { mostrarNaRolagem } from "./rolagem";
@@ -43,8 +44,13 @@ interface Propriedades {
 }
 
 /** O que identifica o que está na tela, para saber se o que a pessoa vê já está salvo. */
-function assinatura(audiencia: Audiencia, clima: ClimaDoNarrador | null, ritmo: RitmoDoNarrador | null): string {
-  return [audiencia, clima ?? "", ritmo ?? ""].join("|");
+function assinatura(
+  audiencia: Audiencia,
+  clima: ClimaDoNarrador | null,
+  ritmo: RitmoDoNarrador | null,
+  edicoes = 0,
+): string {
+  return [audiencia, clima ?? "", ritmo ?? "", edicoes].join("|");
 }
 
 export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, reaberto }: Propriedades) {
@@ -57,13 +63,55 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
   const [salvoComo, definirSalvoComo] = useState<string | null>(
     reaberto ? assinatura(audiencias[0], reaberto.clima, reaberto.ritmo) : null,
   );
+  // O texto corrigido nas cenas vale no lugar do gerado: o prompt e o salvo saem dele.
+  const [editados, definirEditados] = useState<Partial<Record<Audiencia, BlocoFala[]>>>({});
+  const [edicoes, definirEdicoes] = useState(0);
   const cartao = useRef<HTMLDivElement>(null);
 
   const audiencia = audiencias.includes(escolhida) ? escolhida : audiencias[0];
   const roteiro = roteiros[audiencia];
-  const blocos = useMemo(() => roteiro?.blocos ?? [], [roteiro]);
+  const blocos = useMemo(() => editados[audiencia] ?? roteiro?.blocos ?? [], [editados, audiencia, roteiro]);
+  const textoEditado = editados[audiencia] !== undefined;
+  const [laudosNovos, definirLaudosNovos] = useState<Partial<Record<Audiencia, Laudo>>>({});
+  const [textoSalvo, definirTextoSalvo] = useState<Partial<Record<Audiencia, boolean>>>({});
+  const [salvandoTexto, definirSalvandoTexto] = useState(false);
+  const [erroDoTexto, definirErroDoTexto] = useState<string | null>(null);
+
+  async function salvarTexto() {
+    if (execucaoId === null) return;
+    definirSalvandoTexto(true);
+    definirErroDoTexto(null);
+    try {
+      const novo = await editarTextoDaCelula(execucaoId, audiencia, "roteiro", {
+        blocos: blocos.map(({ fala, tela }) => ({ fala, tela })),
+      });
+      definirLaudosNovos((atuais) => ({ ...atuais, [audiencia]: novo }));
+      definirTextoSalvo((atuais) => ({ ...atuais, [audiencia]: true }));
+    } catch (erro) {
+      definirErroDoTexto(erro instanceof Error ? erro.message : "Não consegui salvar o texto.");
+    } finally {
+      definirSalvandoTexto(false);
+    }
+  }
+
+  function editarCena(indice: number, campos: Partial<CamposDaCena>) {
+    definirEditados((atuais) => {
+      const base = atuais[audiencia] ?? roteiro?.blocos ?? [];
+      return { ...atuais, [audiencia]: base.map((bloco, i) => (i === indice ? { ...bloco, ...campos } : bloco)) };
+    });
+    definirEdicoes((n) => n + 1);
+    definirTextoSalvo((atuais) => ({ ...atuais, [audiencia]: false }));
+  }
   // Derivado a cada escolha: o prompt na tela nunca fica velho em relação ao estilo marcado.
-  const instrucao = useMemo(() => montarPrompt({ blocos, clima, ritmo }), [blocos, clima, ritmo]);
+  // A atuação do avatar vem do plano do servidor (a LLM preenche uma vez por Roteiro e o servidor
+  // guarda): olhar, expressão, gesto, entonação, pausas, pronúncia e legendas.
+  const [atuacoes, definirAtuacoes] = useState<Partial<Record<Audiencia, AtuacaoDoPlano | null>>>({});
+  const [buscandoAtuacao, definirBuscandoAtuacao] = useState(false);
+  const atuacao = atuacoes[audiencia] ?? null;
+  const instrucao = useMemo(
+    () => montarPrompt({ blocos, clima, ritmo, atuacao }),
+    [blocos, clima, ritmo, atuacao],
+  );
 
   useEffect(() => {
     if (pedidos === 0) return;
@@ -79,10 +127,24 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
     );
   }
 
-  const { barras, bloqueado } = roteiro;
-  const jaSalvo = salvoComo === assinatura(audiencia, clima, ritmo);
+  const novoLaudo = laudosNovos[audiencia];
+  const barras = novoLaudo ? barrasDoLaudo(novoLaudo) : roteiro.barras;
+  const bloqueado = novoLaudo ? celulaBloqueada(novoLaudo) : roteiro.bloqueado;
+  const jaSalvo = salvoComo === assinatura(audiencia, clima, ritmo, edicoes);
 
-  function pedirPrompt() {
+  async function pedirPrompt() {
+    if (execucaoId !== null && !(audiencia in atuacoes)) {
+      definirBuscandoAtuacao(true);
+      let lida: AtuacaoDoPlano | null = null;
+      try {
+        lida = lerAtuacao((await obterPlanoDeEdicao(execucaoId, audiencia)).plano);
+      } catch {
+        lida = null; // sem plano (servidor fora ou Roteiro não aprovado): o prompt sai sem atuação
+      } finally {
+        definirBuscandoAtuacao(false);
+      }
+      definirAtuacoes((atuais) => ({ ...atuais, [audiencia]: lida }));
+    }
     definirMostrando(true);
     definirPedidos((n) => n + 1);
   }
@@ -97,12 +159,12 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
       execucaoId,
       dados,
     });
-    definirSalvoComo(assinatura(audiencia, clima, ritmo));
+    definirSalvoComo(assinatura(audiencia, clima, ritmo, edicoes));
   }
 
   const esquerda = (
     <>
-      <Titulo>Vídeo</Titulo>
+      <TituloDaGuia>Vídeo</TituloDaGuia>
       {audiencias.length > 1 && (
         <div className="mt-6">
           <Pilulas<Audiencia>
@@ -115,7 +177,28 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
       )}
 
       <div className="mt-8">
-        <CenasDoRoteiro key={audiencia} blocos={blocos} />
+        <CenasDoRoteiro key={audiencia} blocos={blocos} aoEditar={editarCena} />
+        {textoEditado && (
+          <div className="mt-4">
+            <p className="text-[13px] text-etiqueta">
+              {textoSalvo[audiencia]
+                ? "Texto salvo e reavaliado: o Laudo ao lado já é o da sua versão."
+                : "Texto editado: o prompt já usa a sua versão. Salve para reavaliar o Laudo."}
+            </p>
+            {execucaoId !== null && !textoSalvo[audiencia] && (
+              <div className="mt-3">
+                <Botao variante="claro" tamanho="pequeno" disabled={salvandoTexto} onClick={() => void salvarTexto()}>
+                  {salvandoTexto ? "Reavaliando…" : "Salvar texto e reavaliar"}
+                </Botao>
+              </div>
+            )}
+            {erroDoTexto && (
+              <p role="alert" className="mt-3 text-[14px] text-coral-claro">
+                {erroDoTexto}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-14">
@@ -124,8 +207,10 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
 
       {/* O -bottom-16 desconta o pb-16 da coluna (Divisao): o botão gruda rente à borda da tela. */}
       <div className="sticky bottom-0 mt-10 bg-fundo pb-6 pt-4 before:pointer-events-none before:absolute before:inset-x-0 before:-top-8 before:h-8 before:bg-linear-to-t before:from-fundo before:to-transparent lg:-bottom-16">
-        <Botao variante="claro" tamanho="grande" disabled={bloqueado} onClick={pedirPrompt}>
-          Quero o prompt
+        <Botao variante="claro" tamanho="grande" disabled={bloqueado || buscandoAtuacao}
+          onClick={() => void pedirPrompt()}
+        >
+          {buscandoAtuacao ? "Dirigindo o avatar…" : "Quero o prompt"}
         </Botao>
         {bloqueado && (
           <p role="status" className="mt-3 text-[14px] leading-snug text-coral-claro">

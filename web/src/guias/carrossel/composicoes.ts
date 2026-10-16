@@ -35,6 +35,16 @@ const ROTULOS_DAS_FAMILIAS: Readonly<Record<string, string>> = {
   asset: "Asset",
 };
 
+/** A família de uma composição do servidor (o prefixo do nome), ou `null` nas seis que o editor desenha. */
+export function familiaDaComposicao(composicao: string): string | null {
+  if (ehComposicao(composicao)) return null;
+  return composicao.split("_", 1)[0] ?? null;
+}
+
+export function rotuloDaFamilia(familia: string): string {
+  return ROTULOS_DAS_FAMILIAS[familia] ?? familia;
+}
+
 /** Rótulo de qualquer composição do servidor, inclusive as das famílias (que o editor não desenha). */
 export function rotuloDaComposicao(composicao: string): string {
   const desenhavel = COMPOSICOES.find((c) => c.valor === composicao);

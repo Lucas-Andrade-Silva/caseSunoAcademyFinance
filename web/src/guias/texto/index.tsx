@@ -13,7 +13,6 @@ import AreaDoTexto from "./AreaDoTexto";
 import { markdownParaHtml } from "./conversao";
 import {
   CHAVE_DAS_EDICOES,
-  SEM_EDICOES,
   comEdicao,
   lerEdicoes,
   valemPara,
@@ -75,12 +74,6 @@ export default function GuiaTexto() {
     });
   }
 
-  function gerarOutro() {
-    definirEdicoes(SEM_EDICOES);
-    sessao.limpar();
-    definirRodada((atual) => atual + 1);
-  }
-
   const tela =
     audiencia === undefined ? (
       <Vazio titulo="Não há texto para mostrar." />
@@ -95,7 +88,6 @@ export default function GuiaTexto() {
         html={htmlDe(audiencia)}
         onAplicar={(html) => definirEdicoes((atuais) => comEdicao(atuais, execucaoId, audiencia, html))}
         onSalvar={(formatoEscolhido, html) => guardar(audiencia, formatoEscolhido, html)}
-        onGerarOutro={gerarOutro}
       />
     );
 

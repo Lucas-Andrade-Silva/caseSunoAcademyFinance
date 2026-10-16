@@ -24,6 +24,8 @@ export type MotivoReprovacao = components["schemas"]["MotivoReprovacao"];
 export type Faixa = components["schemas"]["Faixa"];
 export type PacotePublicacao = components["schemas"]["PacotePublicacao"];
 type Saude = components["schemas"]["Saude"];
+export type ConfiguracoesComEstado = components["schemas"]["ConfiguracoesComEstado"];
+export type ConfiguracoesDoSistema = components["schemas"]["ConfiguracoesDoSistema"];
 export type PosicaoResumo = components["schemas"]["PosicaoResumo"];
 export type DecisaoHumana = components["schemas"]["DecisaoHumana"];
 type EstadoDecisao = components["schemas"]["EstadoDecisao"];
@@ -40,8 +42,10 @@ export type Sugestao = components["schemas"]["Sugestao"];
 type Sugestoes = components["schemas"]["Sugestoes"];
 export type EstadoDaAtualizacao = components["schemas"]["EstadoDaAtualizacao"];
 export type Disponivel = components["schemas"]["Disponivel"];
-type EstadoDaMontagem = components["schemas"]["EstadoDaMontagem"];
+export type EstadoDaMontagem = components["schemas"]["EstadoDaMontagem"];
 export type ComposicaoCarrossel = components["schemas"]["ComposicaoCarrossel"];
+export type FamiliaVisual = components["schemas"]["FamiliaVisual"];
+export type PapeisDaFamilia = components["schemas"]["PapeisDaFamilia"];
 export type Slide = components["schemas"]["Slide"];
 
 export type DuracaoDoVideo = components["schemas"]["DuracaoDoVideo"];
@@ -186,6 +190,20 @@ export function aprovarPacote(
   );
 }
 
+export function obterConfiguracoesDoSistema(): Promise<ConfiguracoesComEstado> {
+  return extrair(api.GET("/api/configuracoes", {}));
+}
+
+export function salvarConfiguracoesDoSistema(
+  configuracoes: ConfiguracoesDoSistema,
+): Promise<ConfiguracoesComEstado> {
+  return extrair(api.PUT("/api/configuracoes", { body: configuracoes }));
+}
+
+export function restaurarConfiguracoesDoSistema(): Promise<ConfiguracoesComEstado> {
+  return extrair(api.DELETE("/api/configuracoes", {}));
+}
+
 export function obterSaude(): Promise<Saude> {
   return extrair(api.GET("/api/saude", {}));
 }
@@ -263,6 +281,30 @@ export function registrarDecisao(
   );
 }
 
+/** O texto que a pessoa corrigiu, na ordem da Célula: só o campo do Formato dela vale. */
+export type EdicaoDeTexto = components["schemas"]["EdicaoDeTexto"];
+
+/**
+ * Grava o texto corrigido na Célula e o julga de novo no servidor (sem LLM). Devolve o Laudo novo,
+ * que o Pacote e o render passam a usar junto com o texto editado.
+ */
+export async function editarTextoDaCelula(
+  identificador: string,
+  audiencia: Audiencia,
+  formato: Formato,
+  corpo: EdicaoDeTexto,
+): Promise<Laudo> {
+  const historico = await extrair(
+    api.PUT("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/texto", {
+      params: { path: { identificador, audiencia, formato } },
+      body: corpo,
+    }),
+  );
+  const laudo = historico.tentativas?.at(-1)?.laudo;
+  if (!laudo) throw new ErroApi(502, "O servidor não devolveu o Laudo.");
+  return laudo;
+}
+
 /** Inicia a geração em segundo plano. Responde na hora com o andamento (202). */
 export function criarSaida(corpo: NovaSaida): Promise<Andamento> {
   return extrair(api.POST("/api/execucoes", { body: corpo }));
@@ -277,16 +319,19 @@ export function obterAndamento(identificador: string): Promise<Andamento> {
 }
 
 /** Monta os Pacotes das Células aprovadas, em segundo plano. */
+/** `referenciaVisual` troca o design da Saída antes de montar (a família do exemplo escolhido). */
 export function montarPacotes(
   identificador: string,
   audiencia?: Audiencia,
   formato?: Formato,
+  referenciaVisual?: string,
+  paleta?: string,
 ): Promise<EstadoDaMontagem> {
   return extrair(
     api.POST("/api/execucoes/{identificador}/pacotes/montar", {
       params: {
         path: { identificador },
-        query: { audiencia, formato },
+        query: { audiencia, formato, referencia_visual: referenciaVisual, paleta },
       },
     }),
   );
@@ -347,6 +392,10 @@ export function listarReferenciasVisuais(): Promise<ReferenciaVisual[]> {
   return extrair(api.GET("/api/referencias-visuais", {}));
 }
 
+export function listarFamiliasVisuais(): Promise<PapeisDaFamilia[]> {
+  return extrair(api.GET("/api/familias-visuais", {}));
+}
+
 export function importarReferenciaVisual(
   corpo: NovaReferenciaVisual,
 ): Promise<ReferenciaVisual> {
@@ -385,6 +434,29 @@ export async function analisarImagemDaReferencia(
     );
   }
   return corpo as ReferenciaVisual;
+}
+
+/** `paleta` na forma da rota (`fundo,texto,destaque,apoio`); sem ela, as cores do post. */
+function comPaleta(url: string, paleta: string | undefined): string {
+  return paleta ? `${url}?paleta=${encodeURIComponent(paleta)}` : url;
+}
+
+/** O Layout da referência com o texto de exemplo, recolorido, em HTML. */
+export function urlDaPreviaDaReferencia(identificador: string, paleta?: string): string {
+  return comPaleta(`/api/referencias-visuais/${encodeURIComponent(identificador)}/previa`, paleta);
+}
+
+/** Um slide do carrossel já montado, recolorido com `paleta`, em HTML. `slide` começa em 1. */
+export function urlDaPreviaDoSlide(
+  identificador: string,
+  audiencia: Audiencia,
+  slide: number,
+  paleta?: string,
+): string {
+  return comPaleta(
+    `/api/execucoes/${encodeURIComponent(identificador)}/pacotes/${audiencia}/carrossel/${slide}/previa`,
+    paleta,
+  );
 }
 
 export function urlDaImagemDaReferencia(

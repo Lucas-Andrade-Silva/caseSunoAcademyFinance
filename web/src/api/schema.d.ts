@@ -210,6 +210,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/familias-visuais": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Familias Visuais
+         * @description Cada família recriada dos posts da Suno e os papéis que ela cobre (a Asset: só capa e aviso).
+         */
+        get: operations["listar_familias_visuais_api_familias_visuais_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/referencias-visuais/coleta/perfis": {
         parameters: {
             query?: never;
@@ -337,6 +357,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/referencias-visuais/{identificador}/previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Previa Da Referencia
+         * @description O Layout da referência com o texto de exemplo, recolorido: a prévia antes de montar.
+         */
+        get: operations["previa_da_referencia_api_referencias_visuais__identificador__previa_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/execucoes": {
         parameters: {
             query?: never;
@@ -422,6 +462,29 @@ export interface paths {
         put?: never;
         /** Registrar Decisao */
         post: operations["registrar_decisao_api_execucoes__identificador__celulas__audiencia___formato__decisao_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/texto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Editar Texto Da Celula
+         * @description Grava o texto corrigido por uma pessoa e o julga de novo, sem LLM e sem rede.
+         *
+         *     O Laudo novo vira a Tentativa final: o Pacote e o render do servidor passam a usar o texto
+         *     editado. A decisão humana anterior sobre a Célula deixa de valer.
+         */
+        put: operations["editar_texto_da_celula_api_execucoes__identificador__celulas__audiencia___formato__texto_put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -536,6 +599,11 @@ export interface paths {
          *
          *     Cada Célula é considerada individualmente; uma pendência em outra posição da Matriz não
          *     bloqueia seu Pacote. Recusa apenas quando nenhuma Célula foi aprovada.
+         *
+         *     ``referencia_visual`` troca o design da Saída antes de montar: a pessoa escolheu outro
+         *     exemplo no editor depois de a geração ter acontecido, e o Pacote sai com o dele (a
+         *     família visual inclusive), em vez do que ficou gravado no pedido. A ``paleta``
+         *     (``fundo,texto,destaque,apoio``) vai junto e recolore a família; sem ela, as cores do post.
          */
         post: operations["montar_pacotes_api_execucoes__identificador__pacotes_montar_post"];
         delete?: never;
@@ -570,6 +638,26 @@ export interface paths {
         };
         /** Listar Pacotes */
         get: operations["listar_pacotes_api_execucoes__identificador__pacotes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/execucoes/{identificador}/pacotes/{audiencia}/carrossel/{slide}/previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Previa Do Slide
+         * @description O slide montado, recolorido com outra paleta sem montar o Pacote de novo.
+         */
+        get: operations["previa_do_slide_api_execucoes__identificador__pacotes__audiencia__carrossel__slide__previa_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -661,6 +749,34 @@ export interface paths {
         /** Aprovar Pacote */
         post: operations["aprovar_pacote_api_execucoes__identificador__pacotes__audiencia___formato__aprovar_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/configuracoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Configuracoes
+         * @description O que liga e desliga, o teto de requisições por minuto e o provedor e o modelo de cada papel.
+         */
+        get: operations["obter_configuracoes_api_configuracoes_get"];
+        /**
+         * Salvar Configuracoes
+         * @description Grava e passa a valer na próxima chamada, sem reiniciar o servidor.
+         */
+        put: operations["salvar_configuracoes_api_configuracoes_put"];
+        post?: never;
+        /**
+         * Restaurar Configuracoes
+         * @description Apaga o que foi salvo: voltam a valer o ``.env`` e os padrões.
+         */
+        delete: operations["restaurar_configuracoes_api_configuracoes_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -819,11 +935,6 @@ export interface components {
             ata: string;
             /** Provedor */
             provedor: string;
-            /**
-             * Comite
-             * @default false
-             */
-            comite: boolean;
             /** @default copom */
             categoria: components["schemas"]["CategoriaDaAta"];
             /**
@@ -1107,7 +1218,7 @@ export interface components {
             conteudo: components["schemas"]["Conteudo"];
             /**
              * Rodada
-             * @description 0 = original; 1 e 2 = correções.
+             * @description 0 = original; 1 em diante = correções.
              * @default 0
              */
             rodada: number;
@@ -1138,6 +1249,49 @@ export interface components {
             juiz_visao?: components["schemas"]["ParecerVisao"] | null;
             /** Mensagem Juiz Visao */
             mensagem_juiz_visao?: string | null;
+        };
+        /**
+         * ConfiguracoesComEstado
+         * @description As configurações salvas e o que a tela precisa para editá-las.
+         */
+        ConfiguracoesComEstado: {
+            configuracoes: components["schemas"]["ConfiguracoesDoSistema"];
+            /** Salvas */
+            salvas: boolean;
+            /** Chaves */
+            chaves: {
+                [key: string]: boolean;
+            };
+            /** Modelos Sugeridos */
+            modelos_sugeridos: {
+                [key: string]: string[];
+            };
+        };
+        /** ConfiguracoesDoSistema */
+        ConfiguracoesDoSistema: {
+            /** Jev Ligado */
+            jev_ligado: boolean;
+            /**
+             * Jev Url
+             * @default
+             */
+            jev_url: string;
+            /** Jev Limiar */
+            jev_limiar?: number | null;
+            /** Fidelidade Ligada */
+            fidelidade_ligada: boolean;
+            /** Requisicoes Por Minuto */
+            requisicoes_por_minuto: number;
+            /** Rodadas De Correcao */
+            rodadas_de_correcao: number;
+            /** Modelo Padrao */
+            modelo_padrao: {
+                [key: string]: string;
+            };
+            /** Papeis */
+            papeis: {
+                [key: string]: components["schemas"]["EntradaDeProvedor"][];
+            };
         };
         /**
          * Conteudo
@@ -1189,24 +1343,6 @@ export interface components {
              */
             instrucao: string;
         };
-        /**
-         * CorrecaoTransversalAplicada
-         * @description Versão substituída e instruções enviadas de volta à persona.
-         */
-        CorrecaoTransversalAplicada: {
-            /** Rodada */
-            rodada: number;
-            audiencia: components["schemas"]["Audiencia"];
-            formato: components["schemas"]["Formato"];
-            /** Instrucoes */
-            instrucoes: string[];
-            historico_anterior: components["schemas"]["HistoricoCelula"];
-        };
-        /**
-         * CriterioTransversal
-         * @enum {string}
-         */
-        CriterioTransversal: "fidelidade_dossie" | "coerencia_matriz" | "progressao_personas" | "adequacao_persona" | "consistencia_formatos" | "clareza_narrativa" | "omissao_relevante" | "afirmacao_sem_evidencia";
         /**
          * Custo
          * @description Quanto custou de verdade: chamadas, tokens e tempo. Entra no relatório.
@@ -1289,12 +1425,6 @@ export interface components {
          */
         Destino: "aprovado" | "reprovado_corrigivel" | "reprovado_revisao_humana";
         /**
-         * DimensaoSubjetiva
-         * @description As dimensões que só o comitê julga (ADR 0008).
-         * @enum {string}
-         */
-        DimensaoSubjetiva: "tom" | "clareza" | "coerencia";
-        /**
          * DirecaoDeArteCarrossel
          * @description Plano efetivamente renderizado, com diversidade mensurável e auditável.
          */
@@ -1346,12 +1476,60 @@ export interface components {
          * @enum {string}
          */
         DuracaoDoVideo: "40" | "60" | "90" | "120" | "180";
+        /** EdicaoDeBloco */
+        EdicaoDeBloco: {
+            /** Fala */
+            fala: string;
+            /**
+             * Tela
+             * @default
+             */
+            tela: string;
+        };
+        /** EdicaoDeSlide */
+        EdicaoDeSlide: {
+            /** Titulo */
+            titulo: string;
+            /** Corpo */
+            corpo: string;
+        };
+        /**
+         * EdicaoDeTexto
+         * @description O texto que a pessoa corrigiu, na ordem da Célula. Só o campo do Formato da Célula vale.
+         *
+         *     Só entram os campos que a pessoa pode mexer: o que é direção (tipo, dado, ícone, tempos)
+         *     fica como o Gerador deixou.
+         */
+        EdicaoDeTexto: {
+            /** Texto */
+            texto?: string | null;
+            /** Slides */
+            slides?: components["schemas"]["EdicaoDeSlide"][] | null;
+            /** Blocos */
+            blocos?: components["schemas"]["EdicaoDeBloco"][] | null;
+        };
         /**
          * EfeitoDeCena
          * @description O único efeito contínuo da cena; ``nenhum`` é a escolha sóbria, e a mais comum.
          * @enum {string}
          */
         EfeitoDeCena: "nenhum" | "zoom_lento" | "pulso" | "sublinhado" | "contagem";
+        /**
+         * EntradaDeProvedor
+         * @description Um provedor da fila de um papel. ``modelo`` vazio usa o modelo padrão do provedor.
+         */
+        EntradaDeProvedor: {
+            /**
+             * Provedor
+             * @enum {string}
+             */
+            provedor: "gemini" | "groq";
+            /**
+             * Modelo
+             * @default
+             */
+            modelo: string;
+        };
         /**
          * EscolhaDeLayout
          * @description Por que uma composição foi aplicada a um slide do Carrossel.
@@ -1379,7 +1557,7 @@ export interface components {
         EstadoAnaliseVisual: "nao_solicitada" | "pendente" | "concluida" | "erro";
         /**
          * EstadoAvaliacaoTransversal
-         * @description Veredito único sobre a Matriz completa, depois dos nove ciclos individuais.
+         * @description Veredito da conferência determinística da Matriz, depois dos ciclos individuais.
          * @enum {string}
          */
         EstadoAvaliacaoTransversal: "aprovada" | "revisao_humana";
@@ -1463,23 +1641,17 @@ export interface components {
          */
         EstadoDoAndamento: "na_fila" | "gerando" | "concluida" | "interrompida" | "falhou";
         /**
-         * EstadoJulgamentoTransversal
-         * @description Decisão do LLM Judge sobre a Matriz que já passou pelas regras fixas.
-         * @enum {string}
-         */
-        EstadoJulgamentoTransversal: "aprovado" | "corrigivel" | "grave" | "falha";
-        /**
          * EstadoMedida
-         * @description Medida calculada, sem base para calcular, ou aguardando desempate humano (H3).
+         * @description Medida calculada, ou sem base para calcular.
          * @enum {string}
          */
-        EstadoMedida: "medida" | "ausente" | "revisao_humana";
+        EstadoMedida: "medida" | "ausente";
         /**
          * EtapaDaCelula
          * @description Onde uma Célula está enquanto a Matriz é gerada.
          * @enum {string}
          */
-        EtapaDaCelula: "aguardando" | "gerando" | "corrigindo" | "aprovada" | "revisao_humana";
+        EtapaDaCelula: "aguardando" | "gerando" | "corrigindo" | "avaliando_deterministica" | "avaliando_jev" | "avaliando_llm" | "aprovada" | "revisao_humana";
         /**
          * Execucao
          * @description O único arquivo de estado de uma execução: ``data/execucoes/<id>/execucao.json``.
@@ -1506,15 +1678,8 @@ export interface components {
             /** Pendencias */
             pendencias?: components["schemas"]["Pendencia"][];
             custo?: components["schemas"]["Custo"];
-            /**
-             * Comite Ligado
-             * @default false
-             */
-            comite_ligado: boolean;
             /** @description Veredito da Matriz completa; ausente apenas em execuções antigas. */
             avaliacao_transversal?: components["schemas"]["AvaliacaoTransversal"] | null;
-            /** @description Ciclo do LLM Judge e correções; ausente apenas em execuções antigas. */
-            ciclo_transversal?: components["schemas"]["ResultadoCicloTransversal"] | null;
             /**
              * Nome
              * @description Nome dado pelo usuário à Saída; vazio vira o identificador.
@@ -1543,6 +1708,8 @@ export interface components {
              * @description Referência aprovada escolhida na curadoria; ausente em Saídas antigas.
              */
             referencia_visual?: string | null;
+            /** @description Paleta que recolore o Carrossel de família visual; ausente mantém as cores do post. */
+            paleta_visual?: components["schemas"]["PaletaVisual"] | null;
         };
         /**
          * ExecucaoResumo
@@ -1635,17 +1802,12 @@ export interface components {
          * @description Os pontos de interferência humana que a interface expõe como fila.
          * @enum {string}
          */
-        FilaHumana: "h3_desempate" | "h4_revisao" | "h5_aprovacao_pacote";
+        FilaHumana: "h4_revisao" | "h5_aprovacao_pacote";
         /**
          * Filas
-         * @description As três filas humanas H3, H4 e H5, sempre listas de ``Pendencia``.
+         * @description As duas filas humanas H4 e H5, sempre listas de ``Pendencia``.
          */
         Filas: {
-            /**
-             * H3 Desempate
-             * @default []
-             */
-            h3_desempate: components["schemas"]["Pendencia"][];
             /**
              * H4 Revisao
              * @default []
@@ -1694,11 +1856,6 @@ export interface components {
             /** Credito */
             credito: string;
         };
-        /**
-         * GravidadeProblemaTransversal
-         * @enum {string}
-         */
-        GravidadeProblemaTransversal: "baixa" | "media" | "alta" | "grave";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1752,41 +1909,6 @@ export interface components {
          */
         IntensidadeVisual: "baixa" | "media" | "alta";
         /**
-         * JulgamentoDimensao
-         * @description Dois votos por dimensão. Discordância marca REVISAO_HUMANA (H3), sem terceira chamada.
-         */
-        JulgamentoDimensao: {
-            dimensao: components["schemas"]["DimensaoSubjetiva"];
-            estado: components["schemas"]["EstadoMedida"];
-            /** Votos */
-            votos?: components["schemas"]["VotoJuiz"][];
-            /** Consenso */
-            consenso?: number | null;
-        };
-        /**
-         * JulgamentoTransversal
-         * @description Uma resposta auditável do LLM Judge, inclusive quando o provedor falha.
-         */
-        JulgamentoTransversal: {
-            /** Rodada */
-            rodada: number;
-            estado: components["schemas"]["EstadoJulgamentoTransversal"];
-            /** Problemas */
-            problemas?: components["schemas"]["ProblemaTransversal"][];
-            /**
-             * Provedor
-             * @default
-             */
-            provedor: string;
-            /** Falha */
-            falha?: string | null;
-            /**
-             * Avaliado Em
-             * Format: date-time
-             */
-            avaliado_em?: string;
-        };
-        /**
          * Laudo
          * @description O resultado da avaliação de uma Célula: medidas, veredito e o que precisa mudar.
          */
@@ -1800,8 +1922,6 @@ export interface components {
             motivos?: components["schemas"]["MotivoReprovacao"][];
             /** Correcoes */
             correcoes?: components["schemas"]["Correcao"][];
-            /** @description None = comitê desligado. Nunca nota zero (ADR 0008). */
-            comite?: components["schemas"]["ResultadoComite"] | null;
             /**
              * Avaliado Em
              * Format: date-time
@@ -1862,10 +1982,10 @@ export interface components {
         };
         /**
          * Metrica
-         * @description As cinco medidas determinísticas.
+         * @description As cinco medidas determinísticas, mais a Qualidade (Jev) e a Fidelidade (LLM), que só existem ligadas.
          * @enum {string}
          */
-        Metrica: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "integridade";
+        Metrica: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "integridade" | "qualidade" | "fidelidade";
         /**
          * ModoDeGeracao
          * @description Demo roda sem rede, com respostas prontas; Real usa o roteador e gasta cota gratuita.
@@ -1883,7 +2003,7 @@ export interface components {
          * @description Enumerado, não texto livre: é o que permite contar reprovação por motivo (ADR 0013).
          * @enum {string}
          */
-        MotivoReprovacao: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "falha_de_extracao";
+        MotivoReprovacao: "flesch_br" | "densidade" | "aderencia" | "recomendacao" | "falha_de_extracao" | "qualidade" | "fidelidade";
         /** NovaReferenciaVisual */
         NovaReferenciaVisual: {
             /** Titulo */
@@ -1915,11 +2035,6 @@ export interface components {
             modo: components["schemas"]["ModoDeGeracao"];
             /** Pedido */
             pedido: components["schemas"]["PosicaoDaMatriz"][];
-            /**
-             * Comite
-             * @default false
-             */
-            comite: boolean;
             /** @default 60 */
             duracao: components["schemas"]["DuracaoDoVideo"];
             composicao_visual?: components["schemas"]["ComposicaoCarrossel"] | null;
@@ -2014,6 +2129,35 @@ export interface components {
             aprovado_por_humano: boolean;
             feedback_visual_humano?: components["schemas"]["FeedbackVisualHumano"] | null;
         };
+        /**
+         * PaletaVisual
+         * @description As quatro cores que recolorem um Carrossel de família visual (a paleta escolhida no editor).
+         */
+        PaletaVisual: {
+            /** Fundo */
+            fundo: string;
+            /** Texto */
+            texto: string;
+            /** Destaque */
+            destaque: string;
+            /** Apoio */
+            apoio: string;
+        };
+        /**
+         * PapeisDaFamilia
+         * @description Os papéis de slide que uma família visual sabe desenhar.
+         */
+        PapeisDaFamilia: {
+            familia: components["schemas"]["FamiliaVisual"];
+            /** Papeis */
+            papeis: components["schemas"]["TipoSlide"][];
+        };
+        /**
+         * PapelLLM
+         * @description Que papel a chamada cumpre. O roteador escolhe o provedor por papel.
+         * @enum {string}
+         */
+        PapelLLM: "gerador" | "juiz_visao" | "checador" | "diretor_arte" | "analista_visual" | "video";
         /**
          * ParecerVisao
          * @description Resposta do Eval visual sobre a folha de contato. Nunca aprova sozinho.
@@ -2170,23 +2314,7 @@ export interface components {
             bloqueada: boolean;
             /** Sem Conteudo */
             sem_conteudo: boolean;
-            /** Revisao Comite */
-            revisao_comite: boolean;
             etapa?: components["schemas"]["EtapaDaCelula"] | null;
-        };
-        /**
-         * ProblemaTransversal
-         * @description Problema subjetivo localizado pelo Judge em uma Célula concreta.
-         */
-        ProblemaTransversal: {
-            audiencia: components["schemas"]["Audiencia"];
-            formato: components["schemas"]["Formato"];
-            gravidade: components["schemas"]["GravidadeProblemaTransversal"];
-            criterio: components["schemas"]["CriterioTransversal"];
-            /** Evidencia */
-            evidencia: string;
-            /** Correcao */
-            correcao: string;
         };
         /**
          * ReferenciaVisual
@@ -2235,33 +2363,6 @@ export interface components {
             /** Nome */
             nome: string;
         };
-        /**
-         * ResultadoCicloTransversal
-         * @description Estado final depois das regras fixas e do LLM Judge.
-         */
-        ResultadoCicloTransversal: {
-            estado: components["schemas"]["EstadoAvaliacaoTransversal"];
-            avaliacao_deterministica: components["schemas"]["AvaliacaoTransversal"];
-            /** Julgamentos */
-            julgamentos?: components["schemas"]["JulgamentoTransversal"][];
-            /** Correcoes Aplicadas */
-            correcoes_aplicadas?: components["schemas"]["CorrecaoTransversalAplicada"][];
-            /** Motivo Final */
-            motivo_final: string;
-        };
-        /**
-         * ResultadoComite
-         * @description Presente no Laudo só quando o comitê rodou. Informação, nunca Limiar de aprovação.
-         */
-        ResultadoComite: {
-            /** Dimensoes */
-            dimensoes: components["schemas"]["JulgamentoDimensao"][];
-            /**
-             * Provedores
-             * @description Os dois provedores usados, em ordem.
-             */
-            provedores: string[];
-        };
         /** ResultadoDaColeta */
         ResultadoDaColeta: {
             /** Janela Dias */
@@ -2306,6 +2407,11 @@ export interface components {
             demo_disponivel: boolean;
             /** Extracao Completa */
             extracao_completa: boolean;
+            /**
+             * Qualitativa
+             * @default false
+             */
+            qualitativa: boolean;
         };
         /** Saude */
         Saude: {
@@ -2427,19 +2533,6 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
-        };
-        /** VotoJuiz */
-        VotoJuiz: {
-            dimensao: components["schemas"]["DimensaoSubjetiva"];
-            /** Nota */
-            nota: number;
-            /** Justificativa */
-            justificativa: string;
-            /**
-             * Provedor
-             * @description Qual provedor julgou. Nunca o que gerou a Célula.
-             */
-            provedor: string;
         };
     };
     responses: never;
@@ -2754,6 +2847,26 @@ export interface operations {
             };
         };
     };
+    listar_familias_visuais_api_familias_visuais_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PapeisDaFamilia"][];
+                };
+            };
+        };
+    };
     listar_perfis_de_referencia_api_referencias_visuais_coleta_perfis_get: {
         parameters: {
             query?: never;
@@ -3024,6 +3137,39 @@ export interface operations {
             };
         };
     };
+    previa_da_referencia_api_referencias_visuais__identificador__previa_get: {
+        parameters: {
+            query?: {
+                paleta?: string | null;
+            };
+            header?: never;
+            path: {
+                identificador: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_execucoes_rota_api_execucoes_get: {
         parameters: {
             query?: never;
@@ -3271,6 +3417,43 @@ export interface operations {
             };
         };
     };
+    editar_texto_da_celula_api_execucoes__identificador__celulas__audiencia___formato__texto_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identificador: string;
+                audiencia: components["schemas"]["Audiencia"];
+                formato: components["schemas"]["Formato"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EdicaoDeTexto"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoricoCelula"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     exportar_execucao_api_execucoes__identificador__exportar_get: {
         parameters: {
             query: {
@@ -3438,6 +3621,8 @@ export interface operations {
             query?: {
                 audiencia?: components["schemas"]["Audiencia"] | null;
                 formato?: components["schemas"]["Formato"] | null;
+                referencia_visual?: string | null;
+                paleta?: string | null;
             };
             header?: never;
             path: {
@@ -3516,6 +3701,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PacotePublicacao"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    previa_do_slide_api_execucoes__identificador__pacotes__audiencia__carrossel__slide__previa_get: {
+        parameters: {
+            query?: {
+                paleta?: string | null;
+            };
+            header?: never;
+            path: {
+                identificador: string;
+                audiencia: components["schemas"]["Audiencia"];
+                slide: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
                 };
             };
             /** @description Validation Error */
@@ -3694,6 +3914,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_configuracoes_api_configuracoes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracoesComEstado"];
+                };
+            };
+        };
+    };
+    salvar_configuracoes_api_configuracoes_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfiguracoesDoSistema"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracoesComEstado"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restaurar_configuracoes_api_configuracoes_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracoesComEstado"];
                 };
             };
         };

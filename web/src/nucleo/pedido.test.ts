@@ -14,6 +14,7 @@ function ata(identificador: string, mudar: Partial<ResumoDaAta> = {}): ResumoDaA
     calibrada: true,
     demo_disponivel: true,
     extracao_completa: true,
+    qualitativa: false,
     ...mudar,
   };
 }
@@ -41,7 +42,12 @@ describe("motivoDeRecusa", () => {
 
   it("extração incompleta não gasta cota", () => {
     const ruim = [ata("a", { extracao_completa: false })];
-    expect(motivoDeRecusa({ atas: ruim, modo: "real", audiencias: ["iniciante"] })).toMatch(/número/);
+    expect(motivoDeRecusa({ atas: ruim, modo: "real", audiencias: ["iniciante"] })).toMatch(/curto demais/);
+  });
+
+  it("notícia sem número mas com texto gera: o conteúdo é qualitativo", () => {
+    const qualitativa = [ata("a", { qualitativa: true })];
+    expect(motivoDeRecusa({ atas: qualitativa, modo: "real", audiencias: ["iniciante"] })).toBeNull();
   });
 });
 

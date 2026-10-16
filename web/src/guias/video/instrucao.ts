@@ -11,6 +11,7 @@ import {
   nomeDaCena,
   nomeDoIcone,
 } from "./direcao";
+import { linhaDaAtuacao, type AtuacaoDoPlano } from "./atuacao";
 import type { ClimaDoNarrador, RitmoDoNarrador } from "./jeitos";
 import {
   duracaoDoRoteiro,
@@ -23,6 +24,8 @@ export interface EntradaDoPrompt {
   blocos: readonly BlocoFala[];
   clima: ClimaDoNarrador | null;
   ritmo: RitmoDoNarrador | null;
+  /** A atuação que a LLM preencheu no servidor; sem ela, o prompt sai só com a direção de cena. */
+  atuacao?: AtuacaoDoPlano | null;
 }
 
 interface JeitoEscrito {
@@ -97,7 +100,7 @@ function textoDaTela(tela: string, cena: string): string {
   return `${como}: ${partes.map(citar).join("; ")}`;
 }
 
-function linhasDaCena(bloco: BlocoFala, ordem: number): string[] {
+function linhasDaCena(bloco: BlocoFala, ordem: number, atuacao?: AtuacaoDoPlano | null): string[] {
   const linhas = [`Cena ${ordem} · ${formatarIntervalo(bloco.inicio_s, bloco.fim_s)} · ${nomeDaCena(bloco.cena)}`];
 
   const layout = layoutDaCena(bloco.cena);
@@ -127,10 +130,13 @@ function linhasDaCena(bloco: BlocoFala, ordem: number): string[] {
   const efeito = efeitoPorExtenso(bloco.efeito);
   if (efeito) linhas.push(`Efeito: ${efeito}.`);
 
+  const daCena = atuacao?.cenas[ordem - 1];
+  if (daCena) linhas.push(linhaDaAtuacao(daCena));
+
   return linhas;
 }
 
-export function montarPrompt({ blocos, clima, ritmo }: EntradaDoPrompt): string {
+export function montarPrompt({ blocos, clima, ritmo, atuacao }: EntradaDoPrompt): string {
   if (blocos.length === 0) return "";
 
   const abertura =
@@ -152,7 +158,17 @@ export function montarPrompt({ blocos, clima, ritmo }: EntradaDoPrompt): string 
       ...(edicao.length > 0 ? edicao : [EDICAO_NEUTRA]),
       "Use só os ícones, as transições e os efeitos indicados em cada cena.",
     ]),
-    secao("Cenas", [blocos.map((bloco, indice) => linhasDaCena(bloco, indice + 1).join("\n")).join("\n\n")]),
+    ...(atuacao
+      ? [
+          secao("Atuação do avatar", atuacao.geral),
+          secao("Voz", atuacao.voz),
+          ...(atuacao.pronuncia.length > 0 ? [secao("Pronúncia", atuacao.pronuncia.map((p) => `- ${p}`))] : []),
+          ...(atuacao.legendas.length > 0 ? [secao("Legendas", atuacao.legendas)] : []),
+        ]
+      : []),
+    secao("Cenas", [
+      blocos.map((bloco, indice) => linhasDaCena(bloco, indice + 1, atuacao).join("\n")).join("\n\n"),
+    ]),
     secao("Regras", REGRAS.map((regra) => `- ${regra}`)),
   ].join("\n\n");
 }
