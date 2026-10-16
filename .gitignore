@@ -1,6 +1,53 @@
-# Skills do pacote Matt Pocock (.claude/skills/) não adotadas neste projeto:
-# dependem de fluxo de issue-tracker/tickets multi-sessão que este case (2 pessoas, 2 semanas) não usa,
-# ou duplicam skills nativas já disponíveis (research, tdd).
+# ── Credenciais e configuração local ─────────────────────────────────────────────
+# Chaves de API ficam só no .env de cada máquina; o modelo versionado é .env.example.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# O que a aba Configurações salvou nesta máquina (src/suno/configuracoes.py)
+data/configuracoes.json
+
+# ── Python ───────────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ── Node (web/, render/, netlify-jev/) ───────────────────────────────────────────
+node_modules/
+*.tsbuildinfo
+web/dist/
+.vite/
+.netlify/
+npm-debug.log*
+
+# ── Sistema operacional e editores ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.log
+
+# ── Agentes de IA ────────────────────────────────────────────────────────────────
+# Versionados: AGENTS.md, CLAUDE.md, .claude/launch.json, .claude/skills/, .agents/skills/ e
+# skills-lock.json. Ignorado: o que é da máquina ou da sessão de quem roda o agente.
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+.superpowers/
+
+# Skills do pacote Matt Pocock (.claude/skills/) não adotadas neste projeto: dependem de fluxo de
+# issue-tracker/tickets multi-sessão que este case não usa, ou duplicam skills nativas (research, tdd).
 .claude/skills/ask-matt/
 .claude/skills/implement/
 .claude/skills/improve-codebase-architecture/
@@ -12,50 +59,23 @@
 .claude/skills/triage/
 .claude/skills/wayfinder/
 
-# Configuração pessoal do Claude Code (MCP servers, permissões locais) —
-# não é do projeto, é da máquina de quem está rodando.
-.claude/settings.local.json
-
-# Ambiente
-.venv/
-.env
-# O que a aba de configurações salvou nesta máquina
-data/configuracoes.json
-__pycache__/
-*.pyc
-.pytest_cache/
-.superpowers/
-*.egg-info/
-build/
-dist/
-
-# Interface (ADR 0005)
-web/node_modules/
-web/dist/
-
-# Só a demo versionada entra no repositório; qualquer outra execução (scripts/demo, testes
-# manuais, --provedor roteador) é scratch local, inclusive a que scripts/demo grava em
-# demo-ao-vivo/. Dentro da demo versionada, o vídeo é gravado fora do repositório (ADR 0004):
-# quem quiser vê-lo roda `suno.cli video` depois do clone.
+# ── Dados gerados pelo sistema ───────────────────────────────────────────────────
+# Só a demo versionada entra no repositório; qualquer outra execução (scripts/demo, testes manuais,
+# --provedor roteador) é scratch local, inclusive data/execucoes/demo-ao-vivo/. Dentro da demo, o
+# vídeo e o áudio ficam fora do repositório (ADR 0004): quem quiser vê-los roda `suno.cli video`.
 data/execucoes/*
 !data/execucoes/demo-copom-280
 data/execucoes/demo-copom-280/pacote/**/*.mp4
 data/execucoes/demo-copom-280/pacote/**/*.wav
 data/execucoes/demo-copom-280/pacote/**/*.mp3
 
-# Atas baixadas ou importadas pela interface são cópia local; só o catálogo de Origens entra no
-# repositório. As Atas do Copom da demo continuam versionadas em data/atas/.
+# Atas baixadas ou importadas pela interface são cópia local; só o catálogo de Origens entra. As Atas
+# do Copom da demo continuam versionadas em data/atas/ (ADR 0006).
 data/fontes/*
 !data/fontes/catalogo.json
 
-# Render do Carrossel (ADR 0020)
-render/node_modules/
-
-# Famílias visuais (ADR 0030): as comparações original × recriado e os PNG de teste de
-# templates/recriados/ são artefato de trabalho, regerável com _ferramentas/renderizar.py. Ficam
-# versionados os HTML recriados, as galerias (_galeria/) e as fotos (data/imagens/).
+# Famílias visuais (ADR 0030): os PNG de teste e as comparações original × recriado de
+# templates/recriados/ são regeráveis com _ferramentas/renderizar.py. Ficam versionados os HTML,
+# as galerias (_galeria/) e as fotos.
 templates/recriados/familia-*/png/
 templates/recriados/familia-*/comparacao/
-
-# Local Netlify folder
-.netlify

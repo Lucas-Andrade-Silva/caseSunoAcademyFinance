@@ -25,5 +25,6 @@ uma pasta por família, um `.html` por *layout* (não por slide).
 
 ## Pendências conhecidas
 - Fotos de exemplo não casam com o assunto dos textos (só existem 9 em `_imagens`).
-- Ainda não integrado ao catálogo de composições nem ao Gerador/Diretor de Arte.
+- Esta pasta é a bancada de recriação. A versão que o sistema usa foi integrada em
+  `src/suno/pacote/templates/familias/` (lida por `src/suno/pacote/familias.py`); nada no código lê esta pasta.
 - Slots com `<br>` ou largura calibrada para o texto de exemplo: texto de outro tamanho pode quebrar diferente.
