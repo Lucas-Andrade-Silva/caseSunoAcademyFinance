@@ -2,7 +2,7 @@
 
 O que o sistema faz hoje, do ponto de vista de quem o opera: comandos, configuração, onde cada
 coisa grava e o que a API expõe. O desenho e o porquê estão em [ARQUITETURA.md](ARQUITETURA.md)
-e em [adr/](adr/). Todos os comandos rodam na raiz do repositório.
+e em [DECISOES.md](DECISOES.md) (texto completo em [adr/](adr/)). Todos os comandos rodam na raiz do repositório.
 
 ## Componentes
 
@@ -143,7 +143,7 @@ Detalhe de cada guia, desenvolvimento e testes em [web/README.md](../web/README.
 | Suíte Python (inclui `pydantic-evals`) | `scripts/test.sh` ou `scripts\test.ps1` |
 | Interface | `cd web && npm test` (Vitest) e `npm run build` (inclui `tsc`) |
 | Ponte do Jev | `cd netlify-jev && npm test` |
-| Vocabulário do código (lista nomes com palavras _Avoid_; hoje já acusa nomes antigos) | `uv run --offline python scripts/vocabulario.py` |
+| Vocabulário do código (lista nomes com palavras _Avoid_; precisa do `CONTEXT.md` local, que não é versionado) | `uv run --offline python scripts/vocabulario.py` |
 | Relatório de uma execução | `uv run --offline python scripts/relatorio.py --execucao demo-copom-280` |
 
 `tests/conftest.py` derruba qualquer socket: um teste que tente usar a rede falha. Dois scripts
