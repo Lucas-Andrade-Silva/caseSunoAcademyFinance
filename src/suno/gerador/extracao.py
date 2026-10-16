@@ -241,12 +241,27 @@ def por_regra_fixa(ata: Ata, candidatos: Sequence[NumeroEncontrado]) -> list[Anc
     return [ancora for ancora in achadas if ancora is not None]
 
 
+def _data_dos_metadados(ata: Ata) -> AncoraNumerica:
+    referencia = ata.data_referencia
+    return AncoraNumerica(
+        chave=CHAVE_DATA_DO_COMUNICADO,
+        rotulo=ROTULOS.get(CHAVE_DATA_DO_COMUNICADO, "data do comunicado"),
+        valor_literal=referencia.strftime("%d/%m/%Y"),
+        unidade=Unidade.DATA,
+        trecho=re.sub(r"\s+", " ", ata.titulo).strip() or ata.identificador,
+        data_iso=referencia,
+    )
+
+
 def por_regra_generica(ata: Ata, candidatos: Sequence[NumeroEncontrado]) -> list[AncoraNumerica]:
     """As duas chaves essenciais de uma Ata fora do Copom, sem LLM nenhum no caminho.
 
-    ``data_do_documento``: uma data de verdade achada no texto (a que bate com os metadados,
-    se houver; senão a primeira). Ano solto ("2026") não é data. ``numero_principal``: o primeiro
-    valor em reais ou, sem ele, o primeiro número que não seja data.
+    ``data_do_comunicado``: uma data de verdade achada no texto (a que bate com os metadados,
+    se houver; senão a primeira). Ano solto ("2026") não é data. Sem nenhuma data no texto, vale
+    a data de referência dos metadados da Ata, com o título como trecho: todo documento tem uma
+    data, e sem número nem data no corpo ele ainda assim vira conteúdo (ADR 0034).
+    ``numero_principal``: o primeiro valor em reais ou, sem ele, o primeiro número que não seja
+    data. Pode faltar: então o fato central é uma Âncora textual (``extrair_ancoras``).
     """
     achadas: list[AncoraNumerica] = []
     datas = [c for c in candidatos if c.unidade is Unidade.DATA and c.data_iso is not None]
@@ -254,6 +269,8 @@ def por_regra_generica(ata: Ata, candidatos: Sequence[NumeroEncontrado]) -> list
         iguais = [c for c in datas if c.data_iso == ata.data_referencia]
         escolhida = max(iguais, key=lambda c: len(c.literal)) if iguais else datas[0]
         achadas.append(_ancora_do_candidato(CHAVE_DATA_DO_COMUNICADO, escolhida))
+    else:
+        achadas.append(_data_dos_metadados(ata))
     numeros = [c for c in candidatos if c.unidade is not Unidade.DATA]
     em_reais = [c for c in numeros if c.unidade is Unidade.REAIS]
     principal = (em_reais or numeros or [None])[0]
@@ -283,8 +300,16 @@ def montar_pedido_de_extracao(
 ) -> PedidoLLM:
     """O pedido de rotulagem. Só índice sai daqui; nenhum número volta em prosa."""
     pedidas = "\n".join(f"- {chave}: {ROTULOS.get(chave, chave)}" for chave in faltantes)
+    sem_numeros = not candidatos and ata.categoria is not CategoriaDaAta.COPOM
     fechamento = (
-        "Devolva também as afirmações factuais centrais da Ata (Âncoras textuais). O campo "
+        (
+            "Esta Ata não traz número nenhum: o conteúdo será qualitativo. Devolva de 1 a 5 "
+            "afirmações factuais centrais dela (Âncoras textuais): quem fez o quê, o que foi "
+            "anunciado ou decidido, o que muda. "
+            if sem_numeros
+            else "Devolva também as afirmações factuais centrais da Ata (Âncoras textuais). "
+        )
+        + "O campo "
         "'trecho' precisa ser cópia literal de uma frase da Ata: afirmação com trecho que "
         "não está na Ata é descartada pelo sistema."
     )

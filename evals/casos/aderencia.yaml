@@ -19,7 +19,7 @@ cases:
       texto: >-
         O Copom decidiu manter a taxa Selic em 14,00% a.a. na reunião de 4 e 5 de agosto de
         2026, por 7 votos a 0, mantendo inalterado o grau de restrição monetária
-        considerado adequado ao horizonte relevante.
+        considerado adequado ao horizonte relevante da política monetária.
       ancoras: &essenciais
         - chave: selic_decidida
           rotulo: Selic decidida
@@ -54,7 +54,7 @@ cases:
       texto: >-
         O Copom decidiu manter a taxa Selic em 13,25% a.a. na reunião de 4 e 5 de agosto de
         2026, por 7 votos a 0, mantendo inalterado o grau de restrição monetária
-        considerado adequado ao horizonte relevante.
+        considerado adequado ao horizonte relevante da política monetária.
       ancoras: *essenciais
     expected_output:
       destino: reprovado_corrigivel

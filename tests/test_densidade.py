@@ -164,3 +164,52 @@ def test_copula_com_acento_continua_explicando_de_verdade() -> None:
 
     termo_selic = next(t for t in resultado.termos if t.termo == "Selic")
     assert termo_selic.explicado is True
+
+
+# ---------------------------------------------------------------------------
+# O núcleo: o vocabulário que o Intermediário já conhece
+# ---------------------------------------------------------------------------
+
+TERMOS_DO_ENUNCIADO = {
+    "CDI", "Selic", "IPCA", "dividendos", "juros", "inflação", "Copom", "Banco Central", "PIB",
+    "câmbio", "dólar", "Tesouro Direto", "ação", "bolsa", "renda fixa", "renda variável", "fundo",
+    "poupança", "CDB",
+}
+JARGAO_DO_AVANCADO_NO_ENUNCIADO = {
+    "curva de juros", "forward guidance", "hiato do produto", "EBITDA ajustado", "covenants",
+}
+
+
+def test_o_nucleo_tem_os_19_do_enunciado_mais_os_de_uso_cotidiano() -> None:
+    from suno.avaliador.densidade import termos_do_nucleo
+
+    nucleo = termos_do_nucleo()
+    assert TERMOS_DO_ENUNCIADO <= nucleo
+    assert {"atividade econômica", "reunião do Copom", "risco", "investidor", "meta de inflação"} <= nucleo
+    assert len(nucleo) > len(TERMOS_DO_ENUNCIADO)
+
+
+def test_o_jargao_que_o_enunciado_poe_no_avancado_continua_fora_do_nucleo() -> None:
+    from suno.avaliador.densidade import termos_do_nucleo
+
+    assert not JARGAO_DO_AVANCADO_NO_ENUNCIADO & termos_do_nucleo()
+    assert not {"expectativas desancoradas", "balanço de riscos", "prêmio de risco"} & termos_do_nucleo()
+
+
+def test_intermediario_nao_precisa_explicar_termo_cotidiano_mas_precisa_do_especializado() -> None:
+    cotidiano = medir_densidade(
+        "A atividade econômica segue firme e o investidor acompanha a meta de inflação.",
+        ExigenciaDeExplicacao.FORA_DO_NUCLEO,
+    )
+    especializado = medir_densidade(
+        "As expectativas desancoradas preocupam o mercado.", ExigenciaDeExplicacao.FORA_DO_NUCLEO
+    )
+
+    assert cotidiano.sem_explicacao == []
+    assert especializado.sem_explicacao == ["expectativas desancoradas"]
+
+
+def test_iniciante_continua_explicando_o_termo_cotidiano() -> None:
+    iniciante = medir_densidade("A atividade econômica segue firme.", ExigenciaDeExplicacao.SEMPRE)
+
+    assert iniciante.sem_explicacao == ["atividade econômica"]

@@ -35,6 +35,7 @@ from suno.dominio import (
     RespostaMalformada,
 )
 from suno.provedores.base import ProvedorBase
+from suno.provedores.limitador import esperar_vaga
 
 # Timeout explícito: sem ele o httpx espera para sempre e a Matriz de nove Células trava.
 TEMPO_LIMITE_S = 60.0
@@ -181,12 +182,49 @@ def endurecer_schema(schema: Any) -> Any:
     em ``required`` (https://console.groq.com/docs/structured-outputs, 18/09/2026). Campos
     opcionais do pydantic já viram ``anyOf`` com ``null``, então exigi-los não mente: o
     modelo responde ``null``. Função pura — não muda o schema recebido.
+
+    Enum opcional (``anyOf`` de ``$ref`` a um enum com ``null``) sai achatado num enum só, que
+    aceita ``null``: a Groq recusa esse ``anyOf`` com HTTP 400 ("anyOf branches must be
+    disambiguated"), e era isso que derrubava a reserva no Roteiro (som e ícone; 16/10/2026).
     """
+    if isinstance(schema, dict) and isinstance(schema.get("$defs"), dict):
+        schema = _achatar_enums_opcionais(schema, schema["$defs"])
+    return _endurecer(schema)
+
+
+def _enum_opcional(no: dict, defs: dict) -> dict | None:
+    ramos = no.get("anyOf")
+    if not isinstance(ramos, list) or len(ramos) != 2 or {"type": "null"} not in ramos:
+        return None
+    outro = next(ramo for ramo in ramos if ramo != {"type": "null"})
+    ref = outro.get("$ref") if isinstance(outro, dict) else None
+    if isinstance(ref, str) and ref.startswith("#/$defs/"):
+        outro = defs.get(ref.removeprefix("#/$defs/"), {})
+    if not isinstance(outro, dict) or not isinstance(outro.get("enum"), list) or outro.get("type") != "string":
+        return None
+    achatado = {chave: valor for chave, valor in no.items() if chave not in ("anyOf", "default")}
+    achatado["type"] = ["string", "null"]
+    achatado["enum"] = [*outro["enum"], None]
+    return achatado
+
+
+def _achatar_enums_opcionais(schema: Any, defs: dict) -> Any:
     if isinstance(schema, list):
-        return [endurecer_schema(parte) for parte in schema]
+        return [_achatar_enums_opcionais(parte, defs) for parte in schema]
     if not isinstance(schema, dict):
         return schema
-    novo = {chave: endurecer_schema(valor) for chave, valor in schema.items()}
+    achatado = _enum_opcional(schema, defs)
+    if achatado is not None:
+        return achatado
+    return {chave: _achatar_enums_opcionais(valor, defs) for chave, valor in schema.items()}
+
+
+def _endurecer(schema: Any) -> Any:
+    if isinstance(schema, list):
+        return [_endurecer(parte) for parte in schema]
+    if not isinstance(schema, dict):
+        return schema
+    novo = {chave: _endurecer(valor) for chave, valor in schema.items()}
     if novo.get("type") == "object" or "properties" in novo:
         propriedades = novo.get("properties")
         if isinstance(propriedades, dict):
@@ -314,6 +352,7 @@ class ProvedorNoDialetoOpenAI(ProvedorBase):
     # -- contrato -----------------------------------------------------------
 
     def completar(self, pedido: PedidoLLM) -> RespostaLLM:
+        esperar_vaga()
         comeco = time.perf_counter()
         try:
             resposta_http = self._cliente.post(

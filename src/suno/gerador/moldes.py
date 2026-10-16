@@ -27,7 +27,8 @@ import re
 
 from pydantic import BaseModel, Field
 
-from suno.avaliador.densidade import medir_densidade
+from suno.avaliador.densidade import carregar_lexico, medir_densidade
+from suno.avaliador.flesch_br import contar
 from suno.dominio import (
     LIMIARES_PROVISORIOS,
     Ancoras,
@@ -45,6 +46,7 @@ from suno.dominio import (
     PapelLLM,
     PedidoLLM,
     Slide,
+    Unidade,
 )
 from suno.video.design import cronometrar, diretriz_de_duracao, instrucao_de_direcao
 
@@ -88,9 +90,21 @@ def max_tokens_do_roteiro(duracao: DuracaoDoVideo) -> int:
 # ---------------------------------------------------------------------------
 
 
+RACIOCINIO = Field(
+    default="",
+    description=(
+        "Só nas rodadas de correção: uma linha por problema listado, dizendo qual frase muda e "
+        "como. Na primeira geração, deixe vazio."
+    ),
+)
+"""O campo vem PRIMEIRO em cada resposta (o provedor gera na ordem do schema): o modelo raciocina
+sobre o que corrigir antes de escrever a Célula revisada. É descartado depois (ADR 0013)."""
+
+
 class RespostaTextoAnalitico(BaseModel):
     """As três partes fixas do Texto analítico (ARQUITETURA.md)."""
 
+    raciocinio: str = RACIOCINIO
     titulo: str
     o_que_foi_decidido: str = Field(description="A Âncora numérica principal, citada por chave.")
     por_que: str = Field(description="O argumento da Ata, parafraseado.")
@@ -102,6 +116,7 @@ class RespostaTextoAnalitico(BaseModel):
 class RespostaCarrossel(BaseModel):
     """De cinco a sete slides: gancho, corpo, conclusão."""
 
+    raciocinio: str = RACIOCINIO
     slides: list[Slide] = Field(min_length=SLIDES_MINIMOS, max_length=SLIDES_MAXIMOS)
 
 
@@ -109,6 +124,7 @@ class RespostaRoteiro(BaseModel):
     """Blocos de fala com direção de cena; o primeiro é o gancho. O tempo de cada um é
     recalculado em ``montar_conteudo`` pelo número de palavras."""
 
+    raciocinio: str = RACIOCINIO
     blocos: list[BlocoFala] = Field(min_length=2)
 
 
@@ -131,22 +147,27 @@ LINHA_QUE_NAO_SE_CRUZA = (
 
 INSTRUCAO_DA_AUDIENCIA: dict[Audiencia, str] = {
     Audiencia.INICIANTE: (
-        "Audiência Iniciante: quem nunca acompanhou uma decisão de juros. Nenhum termo de "
-        "mercado entra sem uma analogia do dia a dia na mesma frase — se escrever 'Selic', "
-        "explique ali mesmo com 'ou seja', travessão ou parêntese. O foco é o impacto no "
-        "bolso de quem lê. Frases curtas, uma ideia por frase."
+        "Audiência Iniciante: quem nunca acompanhou o mercado financeiro nem lê comunicado de "
+        "empresa ou de governo. Nenhum termo de mercado ou do setor do comunicado entra sem uma "
+        "analogia do dia a dia na mesma frase — se escrever um termo técnico, explique ali mesmo "
+        "com 'ou seja', travessão ou parêntese. O foco é o que o fato muda para quem lê. Frases "
+        "curtas, uma ideia por frase."
     ),
     Audiencia.INTERMEDIARIO: (
-        "Audiência Intermediário: quem já acompanha o mercado. Use o vocabulário padrão "
-        "(CDI, Selic, IPCA, dividendos) sem explicar. Explique só o que está fora desse "
-        "núcleo. O foco é alocação e tendência, descritas em terceira pessoa — descreva o "
-        "cenário, nunca diga o que o leitor deve fazer com ele."
+        "Audiência Intermediário: quem já acompanha o mercado e conhece o vocabulário do dia a "
+        "dia (juros, inflação, dividendos, lucro, ações, investidor, risco). Esses termos entram "
+        "sem explicação. Já os termos especializados — do mercado ou do setor do comunicado — "
+        "exigem explicação na primeira vez em que aparecem: logo depois do termo, em parêntese e "
+        "com palavras comuns — 'bônus de assinatura (o valor pago ao governo para ganhar a área)' "
+        "— ou troque o termo por uma palavra comum. Não explique o termo do dia a dia. O foco é "
+        "o cenário e a tendência, descritos em terceira pessoa — descreva o que aconteceu, nunca "
+        "diga o que o leitor deve fazer com isso."
     ),
     Audiencia.AVANCADO: (
-        "Audiência Avançado: quem trabalha com isso. Termos plenos, sem explicação: curva "
-        "de juros, forward guidance, hiato do produto, balanço de riscos. O foco é "
-        "analítico — mecanismo de transmissão, assimetria do balanço de riscos, "
-        "consistência entre a decisão e as projeções."
+        "Audiência Avançado: quem trabalha com isso. Termos plenos do mercado e do setor do "
+        "comunicado, sem explicação. O foco é analítico — o mecanismo por trás do fato, os "
+        "riscos que o próprio comunicado aponta e a coerência entre o que foi decidido e o que "
+        "foi dito antes."
     ),
 }
 
@@ -182,11 +203,13 @@ COMO_ESCREVER_NO_ALVO: dict[Audiencia, str] = {
     Audiencia.INICIANTE: (
         "Como chegar lá: frases de 8 a 12 palavras, nunca acima de 15. Uma ideia por frase; "
         "troque vírgula por ponto. Prefira palavras de duas ou três sílabas ('alta' em vez de "
-        "'elevação', 'caro' em vez de 'oneroso'). Corte advérbios em '-mente'."
+        "'elevação', 'caro' em vez de 'oneroso', 'área' em vez de 'exploratório'). Corte "
+        "advérbios em '-mente'. O título é uma frase à parte: no máximo 6 palavras curtas."
     ),
     Audiencia.INTERMEDIARIO: (
-        "Como chegar lá: frases de 15 a 22 palavras, alternando curtas e médias. Vocabulário "
-        "de mercado, sem empilhar orações subordinadas na mesma frase."
+        "Como chegar lá: frases de 12 a 20 palavras, alternando curtas e médias. Vocabulário "
+        "de mercado, sem empilhar orações subordinadas na mesma frase. Para cada palavra longa "
+        "que o assunto exige, use palavras curtas ao redor."
     ),
     Audiencia.AVANCADO: (
         "Como chegar lá: frases longas, de 28 a 40 palavras, com orações subordinadas "
@@ -197,6 +220,15 @@ COMO_ESCREVER_NO_ALVO: dict[Audiencia, str] = {
 }
 """O Flesch-BR é 248,835 − 1,015 × palavras por frase − 84,6 × sílabas por palavra. O LLM não
 calcula o índice, mas controla as duas variáveis: este texto traduz o alvo nelas."""
+
+COMO_O_INDICE_E_MEDIDO = (
+    "Como a Facilidade de leitura é medida: cai com as palavras por frase e, muito mais, com as "
+    "sílabas por palavra — uma palavra a mais de sílaba pesa como 80 palavras a mais na frase. "
+    "O título de cada slide conta como frase própria. Todo número `{{chave}}` conta como uma "
+    "palavra curta, então citar a Âncora nunca deixa o texto mais difícil: não troque número por "
+    "descrição longa nem apague número para facilitar a leitura."
+)
+"""O que o Gerador precisa saber do medidor para mirar nele (ADR 0002)."""
 
 MAXIMO_DE_TERMOS_LISTADOS = 25
 
@@ -221,12 +253,25 @@ def _bloco_de_explicacao(ata_texto: str, audiencia: Audiencia) -> str | None:
     if exigencia is ExigenciaDeExplicacao.NUNCA:
         return None
     termos = medir_densidade(ata_texto, exigencia).sem_explicacao[:MAXIMO_DE_TERMOS_LISTADOS]
-    if not termos:
-        return MARCAS_DE_EXPLICACAO
-    return (
-        f"{MARCAS_DE_EXPLICACAO}\nTermos desta Ata que exigem explicação se você usar (ou "
-        f"troque por palavra comum): {', '.join(termos)}."
-    )
+    bloco = MARCAS_DE_EXPLICACAO
+    if termos:
+        bloco += (
+            "\nTermos desta Ata que exigem explicação se você usar (ou troque por palavra "
+            f"comum): {', '.join(termos)}."
+        )
+    if exigencia is ExigenciaDeExplicacao.FORA_DO_NUCLEO:
+        # O modelo também puxa termo que a Ata não traz ('viés de política monetária'): a lista
+        # fechada de tudo o que o Intermediário cobra explicado fecha esse furo.
+        vistos = set(termos)
+        outros = sorted(
+            termo.termo for termo in carregar_lexico() if not termo.nucleo and termo.termo not in vistos
+        )
+        if outros:
+            bloco += (
+                "\nOs demais termos especializados, que também exigem explicação na primeira "
+                f"vez, mesmo que não estejam na Ata: {', '.join(outros)}."
+            )
+    return bloco
 
 
 DICA_POR_METRICA: dict[Metrica, str] = {
@@ -237,12 +282,44 @@ DICA_POR_METRICA: dict[Metrica, str] = {
         "sinônimo comum ('volta' em vez de 'retorno', 'chance de perda' em vez de 'risco')."
     ),
     Metrica.ADERENCIA: (
-        "Todo número sai de uma `{{chave}}` da lista; apague o número que não tem chave."
+        "Todo número sai de uma `{{chave}}` da lista; apague só o número que não tem chave e "
+        "mantenha as `{{chave}}` que já estavam certas."
+    ),
+    Metrica.FIDELIDADE: (
+        "Reescreva só esses trechos para dizer o que a Ata diz, ou apague-os. Não acrescente "
+        "informação que a Ata não traz: explicação de termo e analogia continuam valendo."
+    ),
+    Metrica.QUALIDADE: (
+        "Melhore só as dimensões listadas: explique o porquê de cada fato e feche o texto com uma "
+        "conclusão. Faça isso ACRESCENTANDO frases novas do mesmo tamanho e com palavras tão "
+        "simples quanto as que já existem — nunca alongando as frases existentes nem trocando "
+        "palavras curtas por longas: a Facilidade de leitura é medida de novo e reprova se cair. "
+        "Não corte conteúdo nem número."
     ),
 }
 
 
-def _dica_de_flesch(correcao: Correcao) -> str:
+PALAVRAS_POR_FRASE_ALVO: dict[Audiencia, float] = {
+    Audiencia.INICIANTE: 10.0,
+    Audiencia.INTERMEDIARIO: 16.0,
+    Audiencia.AVANCADO: 34.0,
+}
+"""O meio da faixa de ``COMO_ESCREVER_NO_ALVO``: com ela, o alvo de sílabas por palavra sai da fórmula."""
+
+
+def _silabas_por_palavra_alvo(audiencia: Audiencia) -> float | None:
+    """Quantas sílabas por palavra, no máximo (ou no mínimo, no Avançado), fecham o alvo interno."""
+    faixa = ALVO_FLESCH_BR[audiencia]
+    alvo = faixa.minimo if faixa.minimo is not None else faixa.maximo
+    if alvo is None:
+        return None
+    return (248.835 - 1.015 * PALAVRAS_POR_FRASE_ALVO[audiencia] - alvo) / 84.6
+
+
+def _dica_de_flesch(
+    correcao: Correcao, rascunho: str | None = None, audiencia: Audiencia | None = None
+) -> str:
+    """A dica diz qual das duas variáveis do índice está fora, com o valor medido no rascunho."""
     faixa = correcao.faixa
     facil_demais = (
         faixa is not None
@@ -250,9 +327,31 @@ def _dica_de_flesch(correcao: Correcao) -> str:
         and correcao.valor_medido is not None
         and correcao.valor_medido >= faixa.maximo
     )
+    medidas = ""
+    if rascunho and audiencia is not None:
+        contagens = contar(rascunho)
+        if contagens.palavras and contagens.frases:
+            por_frase = contagens.palavras / contagens.frases
+            por_palavra = contagens.silabas / contagens.palavras
+            alvo_frase = PALAVRAS_POR_FRASE_ALVO[audiencia]
+            alvo_silabas = _silabas_por_palavra_alvo(audiencia)
+            medidas = (
+                f" Medido no rascunho: {por_frase:.1f} palavras por frase (mire em {alvo_frase:.0f}) e "
+                f"{por_palavra:.2f} sílabas por palavra"
+                + (f" (mire em {alvo_silabas:.2f})" if alvo_silabas is not None else "")
+                + ". Cada 0,1 sílaba por palavra vale 8,5 pontos; cada palavra por frase vale 1 ponto."
+            )
     if facil_demais:
-        return "O texto está fácil demais: junte frases curtas em frases longas e use termos técnicos."
-    return "O texto está difícil demais: quebre as frases longas e troque palavras longas por curtas."
+        return (
+            "O texto está fácil demais: junte frases curtas em frases longas e use termos técnicos."
+            + medidas
+        )
+    return (
+        "O texto está difícil demais. O que mais pesa são as palavras longas: troque cada palavra de "
+        "quatro sílabas ou mais por uma curta ('aumentar' por 'subir', 'participação' por 'parte', "
+        "'companhia' por 'empresa') e quebre as frases longas. Mantenha todas as `{{chave}}`: "
+        "número conta como palavra curta e apagá-lo reprova a Aderência." + medidas
+    )
 
 
 def _alvo_em_palavras(audiencia: Audiencia) -> str:
@@ -264,6 +363,24 @@ def _alvo_em_palavras(audiencia: Audiencia) -> str:
     return f"de {faixa.maximo:.0f} para baixo"
 
 
+INSTRUCAO_SEM_NUMERO = (
+    "Esta Ata não traz valor nenhum para citar (só a data, no máximo). Escreva um conteúdo "
+    "qualitativo: o que aconteceu, quem fez, o que isso significa para a Audiência e por que "
+    "importa. Não invente número, percentual, valor em reais, prazo nem quantidade, por mais "
+    "natural que pareça: tudo que o texto afirmar precisa estar nas afirmações centrais da Ata "
+    "ou no texto dela. Não escreva 'não há números'; só não os use."
+)
+
+
+def sem_numero_a_citar(ancoras: Ancoras) -> bool:
+    """A tabela só tem datas (ou nada): o conteúdo precisa ser qualitativo."""
+    return all(a.unidade is Unidade.DATA for a in ancoras.numericas)
+
+
+def _lista_de_afirmacoes(ancoras: Ancoras) -> str:
+    return "\n".join(f"- {a.afirmacao}" for a in ancoras.textuais)
+
+
 def _lista_de_ancoras(ancoras: Ancoras) -> str:
     return "\n".join(
         f"- {{{{{ancora.chave}}}}}: {ancora.rotulo} ({ancora.unidade.value})"
@@ -271,11 +388,13 @@ def _lista_de_ancoras(ancoras: Ancoras) -> str:
     )
 
 
-def _bloco_de_correcoes(correcoes: list[Correcao], rascunho: str | None = None) -> str:
+def _bloco_de_correcoes(
+    correcoes: list[Correcao], rascunho: str | None = None, audiencia: Audiencia | None = None
+) -> str:
     linhas: list[str] = []
     for correcao in correcoes:
         dica = (
-            _dica_de_flesch(correcao)
+            _dica_de_flesch(correcao, rascunho, audiencia)
             if correcao.metrica is Metrica.FLESCH_BR
             else DICA_POR_METRICA.get(correcao.metrica)
         )
@@ -289,20 +408,14 @@ def _bloco_de_correcoes(correcoes: list[Correcao], rascunho: str | None = None) 
         # entram termos novos sem explicação (execução copom-281, 2026-10-10).
         partes.append(f"A Célula da rodada anterior, já com os números preenchidos:\n{rascunho}")
     partes.append(
-        "Reescreva a Célula inteira partindo dessa versão e corrija exatamente isso. Não mude o "
-        "que já estava certo nem introduza termo técnico novo. Os números continuam entrando "
-        "como `{{chave}}`."
+        "Responda em duas etapas. Primeiro preencha `raciocinio`: para cada problema listado, uma "
+        "linha dizendo qual frase muda e como. Depois devolva a Célula com a mudança MÍNIMA: "
+        "altere só as frases listadas e copie todas as outras idênticas, palavra por palavra. Não "
+        "introduza termo técnico novo. Os números continuam entrando como `{{chave}}`. Todas as "
+        "medidas do Avaliador rodam de novo sobre a versão nova: consertar um problema criando "
+        "outro (frase mais longa, palavra mais difícil, número a menos) reprova de novo."
     )
     return "\n\n".join(partes)
-
-
-def _bloco_transversal(orientacoes: list[str]) -> str:
-    linhas = "\n".join(f"- {orientacao}" for orientacao in orientacoes)
-    return (
-        "Correções do avaliador transversal para esta Célula:\n"
-        f"{linhas}\n"
-        "Reescreva a Célula inteira. Preserve todos os fatos e Âncoras que já estavam certos."
-    )
 
 
 DESCRICAO_DO_COMUNICADO: dict[CategoriaDaAta, str] = {
@@ -334,7 +447,6 @@ def montar_pedido(
     formato: Formato,
     rodada: int = 0,
     correcoes: list[Correcao] | None = None,
-    orientacoes_transversais: list[str] | None = None,
     comunicado: str = DESCRICAO_DO_COMUNICADO[CategoriaDaAta.COPOM],
     instrucoes_do_conjunto: str | None = None,
     duracao: DuracaoDoVideo = DURACAO_PADRAO_DO_ROTEIRO,
@@ -358,7 +470,8 @@ def montar_pedido(
             ),
             (
                 "Facilidade de leitura alvo (índice Flesch-BR): "
-                f"{_alvo_em_palavras(audiencia)}. {COMO_ESCREVER_NO_ALVO[audiencia]}"
+                f"{_alvo_em_palavras(audiencia)}. {COMO_ESCREVER_NO_ALVO[audiencia]} "
+                f"{COMO_O_INDICE_E_MEDIDO}"
             ),
             *([explicacao] if (explicacao := _bloco_de_explicacao(ata_texto, audiencia)) else []),
             (
@@ -369,6 +482,7 @@ def montar_pedido(
                 "(se a chave da reunião sai só o número, escreva 'ª reunião' logo depois dela)."
             ),
             *([instrucoes_do_conjunto] if instrucoes_do_conjunto else []),
+            *([INSTRUCAO_SEM_NUMERO] if sem_numero_a_citar(ancoras) else []),
             LINHA_QUE_NAO_SE_CRUZA,
         ]
     )
@@ -381,10 +495,13 @@ def montar_pedido(
             "ou em dígitos que não seja uma chave desta lista."
         ),
     ]
+    if sem_numero_a_citar(ancoras) and ancoras.textuais:
+        partes_do_usuario.append(
+            "Afirmações centrais da Ata (o que o conteúdo pode dizer):\n"
+            f"{_lista_de_afirmacoes(ancoras)}"
+        )
     if rodada > 0 and correcoes:
-        partes_do_usuario.append(_bloco_de_correcoes(correcoes, rascunho))
-    if orientacoes_transversais:
-        partes_do_usuario.append(_bloco_transversal(orientacoes_transversais))
+        partes_do_usuario.append(_bloco_de_correcoes(correcoes, rascunho, audiencia))
     return PedidoLLM(
         papel=PapelLLM.GERADOR,
         rotulo=f"celula:{audiencia}:{formato}:{rodada}",

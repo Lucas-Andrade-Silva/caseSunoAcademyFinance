@@ -242,7 +242,7 @@ def test_o_plano_e_autocontido_e_versionado() -> None:
     plano = montar_plano(_roteiro(60), Audiencia.INICIANTE)
 
     assert plano["esquema"] == "suno.roteiro-de-video"
-    assert plano["versao"] == "1"
+    assert plano["versao"] == "2"
     assert plano["design_system"]["cores"] == design.CORES
     assert plano["video"]["duracao_alvo_s"] == 60
     assert (plano["video"]["largura_px"], plano["video"]["altura_px"]) == (1080, 1920)
@@ -521,3 +521,95 @@ def test_a_rota_do_plano_recusa_roteiro_reprovado_e_audiencia_sem_roteiro(tmp_pa
 
     assert cliente.get(f"/api/execucoes/{IDENTIFICADOR}/celulas/iniciante/roteiro/plano").status_code == 409
     assert cliente.get(f"/api/execucoes/{IDENTIFICADOR}/celulas/avancado/roteiro/plano").status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# A atuação do avatar: padrão fixo, LLM só preenche
+# ---------------------------------------------------------------------------
+
+
+def test_o_plano_leva_atuacao_voz_pronuncia_e_legendas() -> None:
+    plano = montar_plano(_roteiro(), Audiencia.INICIANTE)
+    assert plano["avatar"]["atuacao"]["olhar"].startswith("direto para a câmera")
+    assert plano["avatar"]["voz"]["pronuncia"]["a.a."] == "ao ano"
+    assert plano["avatar"]["voz"]["pausas"]["entre_ideias_s"] > 0
+    assert plano["legendas"]["posicao"] == "faixa_inferior"
+    assert all("atuacao" in cena for cena in plano["cenas"])
+
+
+def test_a_atuacao_padrao_respeita_o_layout_da_cena() -> None:
+    from suno.video.atuacao import direcao_padrao
+
+    cenas = direcao_padrao(_roteiro(), Audiencia.AVANCADO).cenas
+    assert cenas[0].entonacao == "ascendente"
+    assert {c.gesto for c in cenas} == {"nenhum"}
+
+
+def test_a_llm_so_preenche_e_o_gesto_invalido_volta_ao_padrao() -> None:
+    from suno.video.atuacao import AtuacaoDaCena, DirecaoDeAtuacao, preencher_direcao
+
+    class Falso:
+        nome = "falso"
+
+        def completar(self, pedido):  # pragma: no cover
+            raise AssertionError
+
+        def completar_estruturado(self, pedido, modelo):
+            assert pedido.rotulo == "atuacao:iniciante"
+            return DirecaoDeAtuacao(
+                cenas=[
+                    AtuacaoDaCena(ordem=1, expressao="serena", gesto="apontar_para_tela",
+                                  entonacao="ascendente", pausa_depois_s=0.5),
+                    AtuacaoDaCena(ordem=2, expressao="atenta", gesto="minimo",
+                                  entonacao="ascendente", pausa_depois_s=0.4),
+                ]
+            )
+
+    cenas = preencher_direcao(_roteiro(), Audiencia.INICIANTE, Falso()).cenas
+    assert len(cenas) == 3  # a cena que faltou vem do padrão
+    assert cenas[0].gesto != "apontar_para_tela"  # gancho tem avatar grande, sem tela para apontar
+    assert cenas[1].entonacao != "ascendente"  # só o gancho pergunta
+
+
+def test_falha_da_llm_cai_no_padrao_sem_derrubar_o_plano() -> None:
+    from suno.video.atuacao import preencher_direcao
+
+    class Quebrado:
+        nome = "quebrado"
+
+        def completar(self, pedido):  # pragma: no cover
+            raise RuntimeError
+
+        def completar_estruturado(self, pedido, modelo):
+            raise RuntimeError("429")
+
+    assert len(preencher_direcao(_roteiro(), Audiencia.INICIANTE, Quebrado()).cenas) == 3
+
+
+def test_a_atuacao_da_llm_e_gravada_uma_vez_e_o_padrao_nao(tmp_path: Path) -> None:
+    from suno.video.atuacao import AtuacaoDaCena, DirecaoDeAtuacao, direcao_em_disco
+
+    chamadas: list[str] = []
+
+    class Falso:
+        nome = "falso"
+
+        def completar(self, pedido):  # pragma: no cover
+            raise AssertionError
+
+        def completar_estruturado(self, pedido, modelo):
+            chamadas.append(pedido.rotulo)
+            return DirecaoDeAtuacao(
+                cenas=[
+                    AtuacaoDaCena(ordem=i, expressao="serena", gesto="minimo",
+                                  entonacao="firme", pausa_depois_s=0.3)
+                    for i in (1, 2, 3)
+                ]
+            )
+
+    roteiro = _roteiro()
+    direcao_em_disco(tmp_path, roteiro, Audiencia.INICIANTE, None)
+    assert not (tmp_path / "atuacao.json").exists()  # padrão não congela
+    direcao_em_disco(tmp_path, roteiro, Audiencia.INICIANTE, Falso())
+    direcao_em_disco(tmp_path, roteiro, Audiencia.INICIANTE, Falso())
+    assert chamadas == ["atuacao:iniciante"]

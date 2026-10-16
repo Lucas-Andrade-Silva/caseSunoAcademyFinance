@@ -1,7 +1,7 @@
 """O contrato de provedor de LLM. É a única porta de entrada (ADR 0007).
 
-Regras que este arquivo fixa e que os provedores concretos (``gemini.py``, ``groq.py``,
-``sambanova.py``) e o ``roteador.py`` herdam:
+Regras que este arquivo fixa e que os provedores concretos (``gemini.py`` e ``groq.py``)
+e o ``roteador.py`` herdam:
 
 - O schema de saída viaja dentro do ``PedidoLLM``. Nenhum cliente guarda binding de schema;
   por isso trocar de provedor no meio de uma execução não perde a saída estruturada.

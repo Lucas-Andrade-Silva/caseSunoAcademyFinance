@@ -1,6 +1,6 @@
 """Linha de comando do Suno Content.
 
-    python -m suno.cli executar   --ata data/atas/<ata>.pdf --provedor falso [--comite]
+    python -m suno.cli executar   --ata data/atas/<ata>.pdf --provedor falso [--sem-jev] [--fidelidade]
     python -m suno.cli pacote     --execucao <id>
     python -m suno.cli buscar-ata [--reuniao 280]          # H1: roda antes, com rede
     python -m suno.cli video      --execucao <id> --audiencia iniciante
@@ -42,26 +42,24 @@ def cmd_executar(args: argparse.Namespace) -> int:
     from suno.gerador.execucao import executar
     from suno.video.design import duracao_valida
 
-    # --comite liga; sem a flag, SUNO_COMITE=1 no .env também liga (ADR 0008: nasce desligado).
-    comite = args.comite or os.environ.get("SUNO_COMITE", "0") == "1"
+    # O Jev (Qualidade) está sempre ligado; --sem-jev o desliga só nesta execução (ADR 0035).
+    jev = False if args.sem_jev else None
+    # --fidelidade liga o checador de fidelidade; sem a flag, SUNO_FIDELIDADE=1 também liga (ADR 0036).
+    fidelidade = False if args.sem_fidelidade else True if args.fidelidade else None
     execucao = executar(
         Path(args.ata),
         args.provedor,
         _pasta_execucoes(args.execucoes),
-        comite=comite,
+        jev=jev,
+        fidelidade=fidelidade,
         identificador=args.identificador,
         duracao=duracao_valida(args.duracao),
     )
     aprovadas = sum(1 for h in execucao.celulas if h.destino_final.value == "aprovado")
     print(f"execucao={execucao.identificador} ata={execucao.ata} provedor={execucao.provedor_gerador}")
     print(f"celulas={len(execucao.celulas)} aprovadas={aprovadas} pendencias={len(execucao.pendencias)}")
-    if execucao.ciclo_transversal is not None:
-        print(
-            "matriz="
-            f"{execucao.ciclo_transversal.estado.value} "
-            f"julgamentos={len(execucao.ciclo_transversal.julgamentos)} "
-            f"correcoes={len(execucao.ciclo_transversal.correcoes_aplicadas)}"
-        )
+    if execucao.avaliacao_transversal is not None:
+        print(f"matriz={execucao.avaliacao_transversal.estado.value}")
     for h in execucao.celulas:
         laudo = h.laudo_final
         motivos = ",".join(m.value for m in laudo.motivos) if laudo else ""
@@ -115,7 +113,14 @@ def cmd_video(args: argparse.Namespace) -> int:
 def cmd_plano(args: argparse.Namespace) -> int:
     from suno.video.plano import plano_do_roteiro
 
-    caminho = plano_do_roteiro(args.execucao, Audiencia(args.audiencia), _pasta_execucoes(args.execucoes))
+    provedor = None
+    if args.provedor != "falso":
+        from suno.provedores.roteador import provedor_por_nome
+
+        provedor = provedor_por_nome(args.provedor)
+    caminho = plano_do_roteiro(
+        args.execucao, Audiencia(args.audiencia), _pasta_execucoes(args.execucoes), provedor
+    )
     print(f"plano={caminho}")
     print(f"markdown={caminho.with_suffix('.md')}")
     return 0
@@ -126,7 +131,31 @@ def cmd_servir(args: argparse.Namespace) -> int:
 
     from suno.api.app import criar_app
 
-    app = criar_app(_pasta_execucoes(args.execucoes))
+    # Fotos da web ao montar o Pacote: ligam sozinhas quando há SERPER_API_KEY (Google Imagens, ADR 0033).
+    buscar_fotos = bool(os.environ.get("SERPER_API_KEY", "").strip()) and not args.sem_fotos_da_web
+    provedor_fotos = None
+    if buscar_fotos:
+        from suno.dominio import ErroProvedor, PapelLLM
+        from suno.provedores.roteador import ProvedorTardio, roteador_para
+
+        try:
+            roteador_para(PapelLLM.JUIZ_VISAO)  # só confere que há chave
+            provedor_fotos = ProvedorTardio(PapelLLM.JUIZ_VISAO)
+        except ErroProvedor as erro:
+            print(f"sem juiz de visão para as fotos em dúvida ({erro})", file=sys.stderr)
+    print(f"fotos da web ao montar o Pacote: {'ligadas' if buscar_fotos else 'desligadas'}")
+    # Atuação do avatar no plano de vídeo: a LLM preenche quando há chave; sem chave, o padrão.
+    # Montado a cada chamada: a aba de configurações troca provedor e modelo sem reiniciar o servidor.
+    from suno.dominio import PapelLLM as _Papel
+    from suno.provedores.roteador import ProvedorTardio
+
+    provedor_atuacao = ProvedorTardio(_Papel.VIDEO)
+    app = criar_app(
+        _pasta_execucoes(args.execucoes),
+        buscar_fotos=buscar_fotos,
+        provedor_fotos=provedor_fotos,
+        provedor_atuacao=provedor_atuacao,
+    )
     uvicorn.run(app, host=args.host, port=args.porta)
     return 0
 
@@ -177,8 +206,10 @@ def construir_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("executar", help="gera as nove Células de uma Ata e as avalia")
     p.add_argument("--ata", required=True, help="caminho do .pdf ou .txt em data/atas/")
-    p.add_argument("--provedor", default="falso", help="falso | gemini | groq | sambanova | roteador")
-    p.add_argument("--comite", action="store_true", help="liga o comitê de juízes-LLM (ADR 0008)")
+    p.add_argument("--provedor", default="falso", help="falso | gemini | groq | roteador")
+    p.add_argument("--sem-jev", action="store_true", help="desliga a Qualidade do Jev nesta execução (ADR 0035)")
+    p.add_argument("--fidelidade", action="store_true", help="liga o checador de fidelidade à Ata (já é o padrão; ADR 0036)")
+    p.add_argument("--sem-fidelidade", action="store_true", help="desliga o checador de fidelidade nesta execução")
     p.add_argument("--execucoes", default=None, help="pasta de saída (padrão: SUNO_EXECUCOES ou data/execucoes)")
     p.add_argument(
         "--duracao", type=int, default=60, choices=[40, 60, 90, 120, 180],
@@ -199,7 +230,7 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--buscar-fotos",
         action="store_true",
-        help="busca no Wikimedia Commons as fotos que a biblioteca local não tem (precisa de rede; a demo não usa)",
+        help="busca na web (Bing Imagens) as fotos que a biblioteca local não tem (precisa de rede; a demo não usa)",
     )
     p.set_defaults(funcao=cmd_pacote)
 
@@ -221,22 +252,28 @@ def construir_parser() -> argparse.ArgumentParser:
     p.add_argument("--execucao", required=True)
     p.add_argument("--audiencia", required=True, choices=[a.value for a in Audiencia])
     p.add_argument("--execucoes", default=None)
+    p.add_argument(
+        "--provedor",
+        default="falso",
+        help="falso (atuação padrão, sem LLM) | gemini | groq | roteador (a LLM preenche a atuação)",
+    )
     p.set_defaults(funcao=cmd_plano)
 
     p = sub.add_parser("servir", help="sobe a API e a interface")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--porta", type=int, default=8000)
     p.add_argument("--execucoes", default=None)
+    p.add_argument("--sem-fotos-da-web", action="store_true", help="só a biblioteca local de fotos, sem rede")
     p.set_defaults(funcao=cmd_servir)
 
-    p = sub.add_parser("imagens", help="fotos reais dos slides: biblioteca local e Wikimedia Commons")
+    p = sub.add_parser("imagens", help="fotos reais dos slides: biblioteca local e busca na web")
     p.add_argument("--pasta", default="data/imagens", help="pasta da biblioteca (padrão: data/imagens)")
     acoes = p.add_subparsers(dest="acao", required=True)
     acoes.add_parser("listar", help="lista as fotos do índice e seu estado")
     a = acoes.add_parser("buscar", help="resolve um assunto em uma foto aprovada e imprime o crédito")
     a.add_argument("consulta")
     a.add_argument("--contexto", default="", help="o que o slide diz, para o juiz de visão")
-    a.add_argument("--rede", action="store_true", help="busca no Commons se a biblioteca não tiver (precisa de rede)")
+    a.add_argument("--rede", action="store_true", help="busca na web se a biblioteca não tiver (precisa de rede)")
     a = acoes.add_parser("aprovar", help="aprova à mão uma foto pendente")
     a.add_argument("id")
     p.set_defaults(funcao=cmd_imagens)

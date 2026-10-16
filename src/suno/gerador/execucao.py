@@ -32,7 +32,6 @@ from suno.dominio import (
     ComposicaoCarrossel,
     Custo,
     Destino,
-    EstadoAvaliacaoTransversal,
     Execucao,
     FaseDaExecucao,
     FilaHumana,
@@ -41,13 +40,12 @@ from suno.dominio import (
     Pendencia,
     PedidoLLM,
     PosicaoDaMatriz,
-    ResultadoCicloTransversal,
     RespostaLLM,
 )
+from suno.avaliador.transversal import avaliar_matriz
 from suno.gerador.ciclo import Andou
 from suno.gerador.curador import AgenteCurador, compor_uniao
 from suno.gerador.matriz import gerar_matriz_do_dossie
-from suno.gerador.orquestracao import rodar_ciclo_transversal
 from suno.ingestao.pdf import carregar_ata
 from suno.provedores.base import Provedor, ProvedorBase
 from suno.provedores.roteador import provedor_por_nome
@@ -136,18 +134,31 @@ class ProvedorContado(ProvedorBase):
         return self._caderno.custo(segundos)
 
 
-def _comite_de_ambiente(provedor_gerador: str, *, ligado: bool):
-    """``ligado`` vem da linha de comando e sobrepõe ``SUNO_COMITE`` (ADR 0008).
+def _qualidade_de_ambiente(*, ligado: bool | None, exigir: bool = False):
+    """O Jev (ADR 0035), sempre ligado. ``ligado=False`` ou ``SUNO_JEV=0`` o desligam (testes); sem chave, é ``None``.
 
-    Comitê ausente é um Laudo sem comitê, nunca um Laudo pior: se ele não puder ser montado,
-    ``de_ambiente`` já explica no log e devolve ``None``, e a execução segue.
+    Qualidade ausente é um Laudo só com as medidas determinísticas, nunca um Laudo pior.
     """
     try:
-        from suno.comite import Comite
+        from suno.avaliador.qualidade import AvaliadorDeQualidade
 
-        return Comite.de_ambiente(provedor_gerador, ligado=ligado)
+        return AvaliadorDeQualidade.de_ambiente(ligado=ligado, exigir=exigir)
     except (ImportError, AttributeError, NotImplementedError) as erro:
-        _registro.warning("comitê pedido mas indisponível, seguindo sem ele: %s", erro)
+        _registro.warning("Jev pedido mas indisponível, seguindo sem ele: %s", erro)
+        return None
+
+
+def _fidelidade_de_ambiente(texto_da_ata: str, *, ligado: bool | None):
+    """O checador de fidelidade (ADR 0036). ``ligado`` sobrepõe ``SUNO_FIDELIDADE``.
+
+    Sem Groq nem Gemini, ou desligado, é ``None``: o Laudo fica só com as outras medidas.
+    """
+    try:
+        from suno.avaliador.fidelidade import VerificadorDeFidelidade
+
+        return VerificadorDeFidelidade.de_ambiente(texto_da_ata, ligado=ligado)
+    except (ImportError, AttributeError, NotImplementedError) as erro:
+        _registro.warning("checador pedido mas indisponível, seguindo sem ele: %s", erro)
         return None
 
 
@@ -173,34 +184,6 @@ def _pendencias(celulas: list[HistoricoCelula]) -> list[Pendencia]:
         )
         for historico in celulas
         if historico.destino_final is Destino.REPROVADO_REVISAO_HUMANA
-    ]
-
-
-def _pendencias_transversais(
-    ciclo: ResultadoCicloTransversal,
-    posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
-) -> list[Pendencia]:
-    """Problema do Judge entra na H4 por Célula, sem duplicar falha determinística."""
-    if ciclo.estado is EstadoAvaliacaoTransversal.APROVADA:
-        return []
-    if ciclo.avaliacao_deterministica.estado is not EstadoAvaliacaoTransversal.APROVADA:
-        return []
-
-    ultimo = ciclo.julgamentos[-1] if ciclo.julgamentos else None
-    citadas = (
-        {(problema.audiencia, problema.formato) for problema in ultimo.problemas}
-        if ultimo is not None and ultimo.problemas
-        else set(posicoes)
-    )
-    return [
-        Pendencia(
-            fila=FilaHumana.H4_REVISAO,
-            audiencia=audiencia,
-            formato=formato,
-            motivo=ciclo.motivo_final,
-        )
-        for audiencia, formato in posicoes
-        if (audiencia, formato) in citadas
     ]
 
 
@@ -259,7 +242,8 @@ def executar(
     provedor: str,
     pasta_execucoes: Path,
     *,
-    comite: bool = False,
+    jev: bool | None = None,
+    fidelidade: bool | None = None,
     identificador: str | None = None,
     pedido: Sequence[tuple[Audiencia, Formato]] | None = None,
     nome: str | None = None,
@@ -285,6 +269,10 @@ def executar(
     duas, a avaliação da Matriz e o Judge não rodam: coerência entre Células pede ao menos
     duas. ``nome`` é o rótulo de tela; vazio vira o identificador. ``ao_mudar_fase`` e
     ``ao_andar`` são os avisos de andamento que a API grava em ``andamento.json`` (ADR 0017).
+    ``jev`` é ``None`` por padrão e então a Qualidade (ADR 0035) está ligada, se houver a chave do Jev;
+    ``jev=False`` a desliga.
+    ``fidelidade`` liga o checador de fidelidade à Ata (ADR 0036); ``None`` obedece a
+    ``SUNO_FIDELIDADE``, que nasce desligado.
     ``duracao`` é a duração que a pessoa escolheu para o Roteiro (40s a 3m); as outras duas
     formas não a leem.
     """
@@ -309,28 +297,26 @@ def executar(
     dossie = replace(
         curador.preparar_uniao(atas) if unida else curador.preparar(ata), duracao=duracao
     )
-    juizes = _comite_de_ambiente(contado.nome, ligado=comite)
+    # Com provedor real o Jev não pode ficar de fora em silêncio: sem chave, a execução para.
+    qualidade = _qualidade_de_ambiente(ligado=jev, exigir=provedor != "falso")
+    verificador = _fidelidade_de_ambiente(ata.texto, ligado=fidelidade)
     _avisar_fase(ao_mudar_fase, FaseDaExecucao.GERANDO_CELULAS)
     celulas = gerar_matriz_do_dossie(
-        dossie, contado, comite=juizes, posicoes=posicoes, ao_andar=ao_andar
+        dossie,
+        contado,
+        qualidade=qualidade,
+        fidelidade=verificador,
+        posicoes=posicoes,
+        ao_andar=ao_andar,
     )
-    ciclo_transversal: ResultadoCicloTransversal | None = None
     avaliacao_transversal = None
     if len(posicoes) >= 2:
         _avisar_fase(ao_mudar_fase, FaseDaExecucao.AVALIANDO_MATRIZ)
-        celulas, ciclo_transversal = rodar_ciclo_transversal(
-            dossie, celulas, contado, comite=juizes, posicoes=posicoes, ao_andar=ao_andar
-        )
-        avaliacao_transversal = ciclo_transversal.avaliacao_deterministica
+        avaliacao_transversal = avaliar_matriz(celulas, dossie.ancoras, posicoes=posicoes)
     _avisar_fase(ao_mudar_fase, FaseDaExecucao.GRAVANDO)
 
     concluida_em = datetime.now(timezone.utc)
     padrao = f"{ata.identificador}-{provedor}-{iniciada_em.strftime('%Y%m%d-%H%M%S')}"
-    pendencias_transversais = (
-        _pendencias_transversais(ciclo_transversal, posicoes)
-        if ciclo_transversal is not None
-        else []
-    )
     execucao = Execucao(
         identificador=nome_da_pasta if nome_da_pasta is not None else padrao,
         nome=nome or "",
@@ -345,11 +331,9 @@ def executar(
         selecao=dossie.selecao,
         ancoras=dossie.ancoras,
         celulas=celulas,
-        pendencias=[*_pendencias(celulas), *pendencias_transversais],
+        pendencias=_pendencias(celulas),
         custo=contado.custo(time.perf_counter() - relogio),
-        comite_ligado=juizes is not None,
         avaliacao_transversal=avaliacao_transversal,
-        ciclo_transversal=ciclo_transversal,
     )
     gravar_execucao(execucao, Path(pasta_execucoes))
     return execucao

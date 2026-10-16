@@ -7,14 +7,14 @@ uma camada opcional, injetada por quem chama, e nasce desligado.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Callable, Sequence
 
 from suno.dominio import Ancora, Audiencia, Conteudo, Laudo, Limiares
-from suno.avaliador.juiz_transversal import AgenteAvaliadorTransversal
 from suno.avaliador.transversal import avaliar_matriz
 
 if TYPE_CHECKING:
-    from suno.comite import Comite
+    from suno.avaliador.fidelidade import VerificadorDeFidelidade
+    from suno.avaliador.qualidade import AvaliadorDeQualidade
 
 
 def avaliar(
@@ -23,28 +23,41 @@ def avaliar(
     audiencia: Audiencia,
     *,
     limiares: Limiares | None = None,
-    comite: "Comite | None" = None,
+    qualidade: "AvaliadorDeQualidade | None" = None,
+    fidelidade: "VerificadorDeFidelidade | None" = None,
     chaves_essenciais: frozenset[str] | None = None,
+    ao_etapa: Callable[[str], None] | None = None,
 ) -> Laudo:
     """A única assinatura que atravessa a costura entre Gerador e Avaliador.
 
     ``limiares`` cai em ``LIMIARES_PROVISORIOS[audiencia]`` quando não informado.
-    ``comite`` é ``None`` por padrão: o Laudo sai com ``comite=None``, nunca com nota zero.
+    ``qualidade`` e ``fidelidade`` são ``None`` por padrão: sem elas o Laudo tem só as cinco medidas
+    determinísticas (ADR 0035 e 0036).
     ``chaves_essenciais`` é ``None`` por padrão e então vale o conjunto do Copom; só uma Ata de
     outra categoria passa o conjunto genérico (``suno.dominio.chaves_essenciais_da``).
     """
     from suno.avaliador.laudo import avaliar as _avaliar
 
     if chaves_essenciais is None:
-        return _avaliar(conteudo, ancoras, audiencia, limiares=limiares, comite=comite)
+        return _avaliar(
+            conteudo,
+            ancoras,
+            audiencia,
+            limiares=limiares,
+            qualidade=qualidade,
+            fidelidade=fidelidade,
+            ao_etapa=ao_etapa,
+        )
     return _avaliar(
         conteudo,
         ancoras,
         audiencia,
         limiares=limiares,
-        comite=comite,
+        qualidade=qualidade,
+        fidelidade=fidelidade,
         chaves_essenciais=chaves_essenciais,
+        ao_etapa=ao_etapa,
     )
 
 
-__all__ = ["AgenteAvaliadorTransversal", "avaliar", "avaliar_matriz"]
+__all__ = ["avaliar", "avaliar_matriz"]

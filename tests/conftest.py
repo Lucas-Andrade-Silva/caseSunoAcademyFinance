@@ -14,6 +14,9 @@ import pytest
 
 # A suíte roda sem Node: o motor de reserva (Pillow) é o determinístico em CI (ADR 0020).
 os.environ.setdefault("SUNO_RENDER", "pillow")
+# Fixtures de sessão rodam antes da fixture por teste: o teto histórico de correções vale desde o início.
+os.environ["SUNO_RODADAS"] = "2"
+os.environ["SUNO_RPM"] = "0"
 
 RAIZ = Path(__file__).resolve().parent.parent
 DADOS = RAIZ / "data"
@@ -88,12 +91,23 @@ def trava_de_rede():
 
 
 @pytest.fixture(autouse=True)
-def sem_chaves_de_provedor(monkeypatch: pytest.MonkeyPatch):
+def sem_chaves_de_provedor(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: pytest.TempPathFactory):
     """Nenhum teste enxerga chave de API, mesmo que exista um .env na máquina."""
     for chave in CHAVES_DE_PROVEDOR:
         monkeypatch.delenv(chave, raising=False)
-    monkeypatch.setenv("SUNO_COMITE", "0")
     monkeypatch.setenv("SUNO_JUIZ_VISAO", "0")
+    # O Jev e o checador de fidelidade (ADR 0035, 0036) nascem desligados na suíte, mesmo que um teste
+    # da CLI tenha carregado o .env da máquina no processo.
+    monkeypatch.setenv("SUNO_JEV", "0")
+    monkeypatch.setenv("SUNO_FIDELIDADE", "0")
+    # O limite de 8 requisições por minuto não vale na suíte: nenhum teste chama a rede.
+    monkeypatch.setenv("SUNO_RPM", "0")
+    # O teto de correções da suíte é o histórico (duas): é o que o test_ciclo e os custos esperam.
+    monkeypatch.setenv("SUNO_RODADAS", "2")
+    # Nenhum teste lê nem grava a data/configuracoes.json da máquina.
+    monkeypatch.setenv("SUNO_CONFIGURACOES", str(tmp_path_factory.mktemp("configuracoes") / "configuracoes.json"))
+    for variavel in ("JEV_API_KEY", "TYPESAFE_API_KEY", "JEV_URL", "SUNO_JEV_LIMIAR"):
+        monkeypatch.delenv(variavel, raising=False)
     yield
 
 

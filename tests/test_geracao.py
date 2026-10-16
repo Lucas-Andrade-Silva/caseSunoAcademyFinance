@@ -96,7 +96,6 @@ def _pedir(gerenciador: Gerenciador, **trocas) -> Andamento:
         "modo": ModoDeGeracao.DEMO,
         "pedido": [CARROSSEL, ROTEIRO],
         "nome": None,
-        "comite": False,
     }
     argumentos.update(trocas)
     return gerenciador.pedir(**argumentos)
@@ -347,7 +346,7 @@ def test_ata_cuja_extracao_vai_falhar_e_recusada_antes_de_gastar_cota(tmp_path: 
         repositorio=RepositorioDeAtas(PASTA_ATAS, tmp_path / "fontes"),
     )
 
-    with pytest.raises(PedidoRecusado, match="número com unidade"):
+    with pytest.raises(PedidoRecusado, match="curto demais"):
         _pedir(gerenciador, ata="sem-numero", modo=ModoDeGeracao.REAL)
 
     assert executor.chamadas == []

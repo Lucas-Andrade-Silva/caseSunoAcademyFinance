@@ -1,5 +1,8 @@
 # Origens e categoria da Ata: o Copom é o único calibrado
 
+> **O conjunto essencial das demais categorias mudou no [ADR 0034](0034-ata-sem-numero-gera-conteudo-qualitativo.md):
+> sem número, uma afirmação central conferida contra o texto substitui o `numero_principal`.**
+
 A guia Fontes traz Atas de fora do Copom: Fatos Relevantes da CVM e documentos importados. O
 Avaliador foi calibrado só com Atas do Copom: as Âncoras essenciais (`selic_decidida`,
 `data_reuniao`, `placar_votacao`), os Limiares e o Léxico.
