@@ -201,6 +201,16 @@ def layouts_da_familia(familia: FamiliaVisual) -> list[LayoutDeFamilia]:
     return [layout for layout in carregar_layouts().values() if layout.familia is familia]
 
 
+def papeis_cobertos(familia: FamiliaVisual) -> frozenset[TipoSlide]:
+    """Os papéis que a família desenha sem depender de Âncora: um carrossel com outro papel não cabe nela."""
+    return frozenset(
+        papel
+        for layout in layouts_da_familia(familia)
+        if not layout.exige_dado
+        for papel in layout.papeis
+    )
+
+
 # ---------------------------------------------------------------------------
 # Texto do slide em pedaços
 # ---------------------------------------------------------------------------
@@ -416,11 +426,21 @@ def preencher_layout(
         layout, slide, ancoras=ancoras, indice=indice, total=total, imagem_uri=imagem_uri
     )
     corpo = preencher_slots(modelo, layout.slots, valores)
-    sem_imagem = layout.usa_imagem and not imagem_uri
+    return _documento(corpo, layout, sem_imagem=layout.usa_imagem and not imagem_uri), numeros
+
+
+def documento_de_exemplo(layout: LayoutDeFamilia) -> str:
+    """O template com o texto de exemplo dele, pronto para abrir; sem foto, degrada como no render."""
+    modelo = (PASTA_DOS_TEMPLATES / layout.arquivo).read_text(encoding="utf-8")
+    return _documento(modelo, layout, sem_imagem=layout.usa_imagem)
+
+
+def _documento(corpo: str, layout: LayoutDeFamilia, *, sem_imagem: bool) -> str:
     classe = ' class="sem-imagem"' if sem_imagem else ""
-    # O <body> é explícito para carregar o fundo medido (contraste) e a classe de degradação.
+    # O <body> é explícito para carregar o fundo medido (contraste) e a classe de degradação; o
+    # ``data-fundo-cor`` também diz à recoloração se o Layout é claro ou escuro.
     corpo = corpo.replace(
         "</style>", f'</style><body{classe} data-fundo data-fundo-cor="{layout.fundo}">', 1
     )
     corpo = corpo.replace("{{FONTES}}", bloco_de_fontes())
-    return corpo + script_de_ajuste(), numeros
+    return corpo + script_de_ajuste()

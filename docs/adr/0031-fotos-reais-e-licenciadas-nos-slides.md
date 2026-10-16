@@ -2,7 +2,8 @@
 
 ## Status
 
-Aceita. **Substitui a parte do [ADR 0009](0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md)
+Aceita. **Fonte e licença (itens 1 e 5) substituídas pelo [ADR 0032](0032-fotos-da-web-pelo-bing-imagens-sem-verificar-licenca.md):
+o MVP busca na web, sem verificar licença.** Substitui a parte do [ADR 0009](0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md)
 que proibia foto de terceiros.** O resto do 0009 continua: 1080×1350 em todo slide, e o sistema
 não raspa foto de notícia nem reaproveita imagem de veículo de imprensa.
 

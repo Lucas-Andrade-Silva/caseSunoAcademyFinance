@@ -165,3 +165,43 @@ def test_upload_recusa_arquivo_que_nao_e_imagem(tmp_path: Path) -> None:
     )
 
     assert resposta.status_code == 422
+
+
+def test_referencia_de_familia_serve_a_miniatura_do_layout_sem_imagem_enviada(tmp_path: Path) -> None:
+    cliente = TestClient(
+        criar_app(
+            tmp_path / "execucoes",
+            pasta_atas=tmp_path / "atas",
+            pasta_fontes=tmp_path / "fontes",
+            recuperar_ao_iniciar=False,
+        )
+    )
+    referencias = cliente.get("/api/referencias-visuais").json()
+    com_miniatura = [r for r in referencias if r["imagem_disponivel"]]
+    assert com_miniatura, "as referências das famílias trazem miniatura"
+
+    for referencia in com_miniatura:
+        resposta = cliente.get(f"/api/referencias-visuais/{referencia['identificador']}/imagem")
+        assert resposta.status_code == 200, referencia["identificador"]
+        assert resposta.headers["content-type"] == "image/png"
+        assert resposta.content.startswith(b"\x89PNG")
+
+
+def test_api_diz_os_papeis_que_cada_familia_cobre(tmp_path: Path) -> None:
+    """A guia usa isto para não oferecer uma família que não monta o carrossel (a Asset)."""
+    cliente = TestClient(
+        criar_app(
+            tmp_path / "execucoes",
+            pasta_atas=tmp_path / "atas",
+            pasta_fontes=tmp_path / "fontes",
+            recuperar_ao_iniciar=False,
+        )
+    )
+
+    resposta = cliente.get("/api/familias-visuais")
+
+    assert resposta.status_code == 200
+    papeis = {item["familia"]: set(item["papeis"]) for item in resposta.json()}
+    assert papeis["asset"] == {"hook", "cta"}
+    assert papeis["dados"] == {"hook", "ponto", "citacao", "cta"}
+    assert "suno_escuro" not in papeis
