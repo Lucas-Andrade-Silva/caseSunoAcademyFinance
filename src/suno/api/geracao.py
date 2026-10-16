@@ -118,7 +118,6 @@ class _Trabalho:
     provedor: str
     pedido: list[tuple[Audiencia, Formato]]
     nome: str
-    comite: bool
     duracao: DuracaoDoVideo
     composicao_visual: ComposicaoCarrossel | None
     referencia_visual: str | None
@@ -153,7 +152,6 @@ class Gerenciador:
         modo: ModoDeGeracao,
         pedido: list[PosicaoDaMatriz],
         nome: str | None,
-        comite: bool,
         ata: str | None = None,
         itens: list[str] | None = None,
         duracao: DuracaoDoVideo = DuracaoDoVideo.S60,
@@ -199,7 +197,6 @@ class Gerenciador:
                 ata=ata_do_dossie,
                 atas=identificadores,
                 provedor=provedor,
-                comite=comite,
                 categoria=categoria,
                 estado=EstadoDoAndamento.NA_FILA,
                 celulas=[
@@ -220,7 +217,6 @@ class Gerenciador:
                     provedor=provedor,
                     pedido=sorted(posicoes, key=_ordem_da_matriz),
                     nome=rotulo,
-                    comite=comite,
                     duracao=duracao,
                     composicao_visual=composicao_visual,
                     referencia_visual=referencia_visual,
@@ -240,9 +236,9 @@ class Gerenciador:
         resumo = self._repositorio.resumir(identificador)
         if resumo is not None and not resumo.extracao_completa:
             raise PedidoRecusado(
-                f"a Ata {identificador!r} não tem uma data e um número com unidade no texto: toda "
-                "Célula reprovaria por falha de extração e a geração só gastaria cota. Importe o "
-                "documento completo, com valores."
+                f"a Ata {identificador!r} tem texto curto demais, sem número: não há uma afirmação "
+                "central para conferir, toda Célula reprovaria por falha de extração e a geração "
+                "só gastaria cota. Importe o documento completo."
             )
         return caminho, carregada.categoria, carregada.identificador
 
@@ -392,7 +388,6 @@ class Gerenciador:
                 trabalho.caminho_ata,
                 trabalho.provedor,
                 self._pasta,
-                comite=trabalho.comite,
                 duracao=trabalho.duracao,
                 identificador=trabalho.identificador,
                 pedido=trabalho.pedido,

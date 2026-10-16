@@ -56,29 +56,25 @@ que a API expõe e que este relatório cita
 com respostas fixas por rótulo. Para gerar com um provedor de verdade:
 
 ```sh
-cp .env.example .env        # preencha GEMINI_API_KEY / GROQ_API_KEY / SAMBANOVA_API_KEY
+cp .env.example .env        # preencha GEMINI_API_KEY / GROQ_API_KEY (e JEV_API_KEY, para a Qualidade)
 uv run --offline python -m suno.cli executar --ata data/atas/copom-280-2026-08-05.pdf --provedor roteador
 ```
 
 Nenhuma chave é obrigatória — sem elas, `--provedor roteador` falha com um erro que diz
-qual variável falta. Orçamento é **R$ 0**: os três provedores usados (Gemini gera, Groq
-julga, SambaNova é reserva) rodam em tier gratuito. Nenhuma chamada paga entra no
+qual variável falta. Orçamento é **R$ 0**: os provedores usados (Gemini gera, Groq
+julga e é a reserva) rodam em tier gratuito; o Jev roda em créditos do plano Free da Netlify. Nenhuma chamada paga entra no
 pipeline, inclusive a API da Anthropic. Cotas medidas na pesquisa (podem mudar sem
 aviso — os provedores não fixam número na documentação oficial):
 
 | Provedor | Papel | Cota (tier gratuito, medida em set/2026) |
 |---|---|---|
 | Gemini Flash | Gerador | instável; painel em `aistudio.google.com/rate-limit`, sem número fixo publicado |
-| Groq (`gpt-oss-120b`) | Juiz do comitê | 30 RPM, 1.000 RPD, 200k TPD (por organização, não por chave) |
-| SambaNova Cloud (`gpt-oss-120b`) | Reserva | 20 RPM, 20 RPD, 200k TPM, sem cartão |
+| Groq (`gpt-oss-120b`) | Checador de fidelidade e reserva do Gemini | 30 RPM, 1.000 RPD, 200k TPD (por organização, não por chave) |
+| Jev (TypeSafe, pela Netlify) | Qualidade | créditos do plano Free da Netlify (300); gasto por chamada não medido |
 
 Detalhe completo, incluindo a Cerebras descartada como reserva (exige cartão desde
 17/08/2026) em [docs/research/viabilidade-tecnica.md §4](docs/research/viabilidade-tecnica.md#4-llm-a-custo-zero)
 e [ADR 0007](docs/adr/0007-roteador-de-provedores-distingue-tipo-de-429.md).
-
-O comitê de juízes-LLM ([ADR 0008](docs/adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md))
-nasce desligado — liga com `--comite` — porque, ligado, os três provedores ficam ocupados
-numa mesma execução e não sobra reserva para 429.
 
 ## H1 e H2: os dois pontos que rodam antes da demo
 
@@ -125,7 +121,7 @@ inviável; o `CLAUDE.md` resume os cinco, e cada um tem um ADR:
 | Avaliação | DeepEval ou Ragas | `pydantic-evals` | [0003](docs/adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md) |
 | Vídeo | avatar sintético (fora do escopo) | composição determinística em CPU, fora do grafo | [0004](docs/adr/0004-renderizacao-de-video-fora-do-grafo.md) |
 | Interface | Streamlit, FastAPI+React ou Gradio | React + Vite + Tailwind sobre FastAPI, cliente TS gerado do OpenAPI | [0005](docs/adr/0005-interface-em-react-vite-sobre-fastapi.md) |
-| Orquestração | LangGraph ou Pydantic AI, multiagente | 1 curador + 3 geradores + regras fixas + LLM Judge transversal; fluxo limitado, sem MCP | [0015](docs/adr/0015-papeis-especializados-em-fluxo-deterministico.md), [0016](docs/adr/0016-llm-judge-transversal-com-retorno-seletivo.md) |
+| Orquestração | LangGraph ou Pydantic AI, multiagente | 1 curador + 3 geradores + regras fixas + Jev + checador de fidelidade (o Judge transversal foi removido); fluxo limitado, sem MCP | [0015](docs/adr/0015-papeis-especializados-em-fluxo-deterministico.md), [0037](docs/adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md) |
 
 As dezesseis decisões estruturais completas estão em [docs/adr/](docs/adr/); o porquê de
 cada uma nunca é repetido fora de lá. O que foi verificado contra fonte primária antes de
@@ -156,16 +152,14 @@ Ordem de corte sob atraso, do `CLAUDE.md`: (1) teste de retenção nas redes, (2
 automática — um humano publica sempre, por decisão, não só por prazo — (3) avatar falante
 no vídeo. O juiz de visão do Pacote ([ADR 0014](docs/adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md))
 está implementado e desligado por padrão, abaixo da linha dos seis entregáveis. O comitê de
-juízes-LLM ([ADR 0008](docs/adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md))
-está implementado e desligado na demo, para não disputar cota com o roteador. Nenhum dos
-seis entregáveis do enunciado caiu.
+juízes-LLM e o Judge transversal foram removidos ([ADR 0037](docs/adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)); a Qualidade
+(Jev) e a Fidelidade os substituem. Nenhum dos seis entregáveis do enunciado caiu.
 
 ## Estrutura do repositório
 
 ```
 src/suno/avaliador/   as cinco medidas determinísticas + Laudo — sem LLM, sem rede
 src/suno/gerador/     extração de Âncoras, Matriz 3×3, Ciclo de correção
-src/suno/comite/      juízes-LLM opcionais (ADR 0008)
 src/suno/pacote/      Carrossel (matplotlib+Pillow), legenda, conferência visual (ADR 0009, 0014)
 src/suno/video/       vídeo fora do grafo, composição determinística em CPU (ADR 0004)
 src/suno/provedores/  interface única de LLM + roteador (ADR 0007)

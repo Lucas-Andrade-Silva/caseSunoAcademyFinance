@@ -1,5 +1,9 @@
 # Papéis especializados em fluxo determinístico
 
+> **Nota (15/10/2026):** o papel de Avaliador transversal (LLM Judge) citado abaixo foi removido pelo
+> [ADR 0037](0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md). O Curador e os três
+> geradores por persona continuam.
+
 O produto passou a exigir cinco responsabilidades explícitas: um curador, três geradores de
 persona e um avaliador transversal. Esses papéis não alteram a conclusão do
 [ADR 0010](0010-gerador-nao-e-agente-com-tools-nem-usa-mcp.md): o sistema não precisa de loop

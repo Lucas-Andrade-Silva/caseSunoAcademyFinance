@@ -312,7 +312,6 @@ def test_filas_separa_h3_h4_h5_no_cenario_da_fixture(cliente: TestClient) -> Non
 
     assert resposta.status_code == 200
     corpo = resposta.json()
-    assert corpo["h3_desempate"] == [], "a fixture não liga o comitê: sem desempate"
 
     assert len(corpo["h4_revisao"]) == 1
     pendencia_h4 = corpo["h4_revisao"][0]
@@ -785,3 +784,52 @@ def test_rota_interna_da_spa_devolve_o_index_html(
     assert "spa de teste" in interna.text
     assert raiz.status_code == 200
     assert api_inexistente.status_code == 404
+
+
+def test_editar_texto_do_carrossel_grava_tentativa_nova_e_julga_de_novo(
+    cliente: TestClient, execucao_em_disco: Path
+) -> None:
+    antes = carregar_execucao(IDENTIFICADOR, execucao_em_disco)
+    slides = antes.historico(Audiencia.INICIANTE, Formato.CARROSSEL).celula_final.conteudo.slides
+    corpo = [{"titulo": f"Título {i}", "corpo": f"Corpo {i}"} for i, _ in enumerate(slides)]
+
+    resposta = cliente.put(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/iniciante/carrossel/texto", json={"slides": corpo}
+    )
+
+    assert resposta.status_code == 200
+    em_disco = carregar_execucao(IDENTIFICADOR, execucao_em_disco)
+    historico = em_disco.historico(Audiencia.INICIANTE, Formato.CARROSSEL)
+    assert len(historico.tentativas) == len(antes.historico(Audiencia.INICIANTE, Formato.CARROSSEL).tentativas) + 1
+    assert historico.celula_final.provedor == "humano"
+    assert [s.titulo for s in historico.celula_final.conteudo.slides] == [c["titulo"] for c in corpo]
+
+
+def test_editar_texto_apaga_a_decisao_anterior_da_celula(cliente: TestClient, execucao_em_disco: Path) -> None:
+    cliente.post(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/intermediario/roteiro/decisao",
+        json={"estado": "aprovada"},
+    )
+    atual = carregar_execucao(IDENTIFICADOR, execucao_em_disco)
+    blocos = atual.historico(Audiencia.INTERMEDIARIO, Formato.ROTEIRO).celula_final.conteudo.blocos
+
+    resposta = cliente.put(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/intermediario/roteiro/texto",
+        json={"blocos": [{"fala": "Fala nova.", "tela": ""} for _ in blocos]},
+    )
+
+    assert resposta.status_code == 200
+    assert carregar_execucao(IDENTIFICADOR, execucao_em_disco).decisoes == []
+
+
+def test_editar_texto_recusa_numero_diferente_de_quadros_e_texto_vazio(cliente: TestClient) -> None:
+    url = f"/api/execucoes/{IDENTIFICADOR}/celulas/iniciante/carrossel/texto"
+    assert cliente.put(url, json={"slides": []}).status_code == 422
+    assert cliente.put(url, json={"blocos": [{"fala": "x"}]}).status_code == 422
+
+
+def test_editar_texto_de_celula_inexistente_da_404(cliente: TestClient) -> None:
+    resposta = cliente.put(
+        f"/api/execucoes/{IDENTIFICADOR}/celulas/avancado/carrossel/texto", json={"slides": []}
+    )
+    assert resposta.status_code == 404

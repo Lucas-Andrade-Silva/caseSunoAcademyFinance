@@ -13,7 +13,6 @@ from datetime import date
 import pytest
 
 from suno.avaliador import avaliar
-from suno.comite import Comite
 from suno.dominio import (
     AncoraNumerica,
     AncoraTextual,
@@ -144,7 +143,6 @@ def test_texto_facil_para_iniciante_sai_aprovado_com_as_cinco_medidas() -> None:
         Metrica.RECOMENDACAO,
     ]
     assert all(m.atingiu for m in laudo.medidas)
-    assert laudo.comite is None
     assert laudo.audiencia is Audiencia.INICIANTE
     assert laudo.formato is Formato.TEXTO_ANALITICO
 
@@ -344,7 +342,9 @@ def test_ancora_essencial_faltando_manda_para_a_revisao_humana_sem_correcao() ->
 
     # As outras quatro medidas continuam no Laudo: o humano da fila H4 quer vê-las.
     assert len(laudo.medidas) == 5
-    assert all(laudo.medida(metrica) is not None for metrica in Metrica)
+    # Qualidade (Jev, ADR 0035) e Fidelidade (ADR 0036) só existem com o LLM ligado.
+    deterministicas = [m for m in Metrica if m not in (Metrica.QUALIDADE, Metrica.FIDELIDADE)]
+    assert all(laudo.medida(metrica) is not None for metrica in deterministicas)
 
 
 def test_falha_de_extracao_nao_apaga_a_correcao_das_outras_metricas() -> None:
@@ -407,95 +407,6 @@ def test_carrossel_com_todos_os_slides_em_branco_tambem_reprova() -> None:
 
     assert MotivoReprovacao.FLESCH_BR in laudo.motivos
     assert laudo.destino is not Destino.APROVADO
-
-
-# ---------------------------------------------------------------------------
-# 9. O comitê não toca no Roteiro
-# ---------------------------------------------------------------------------
-
-
-def _juiz(nome: str, notas: tuple[int, ...] = (4, 4, 4)) -> ProvedorFalso:
-    provedor = ProvedorFalso(
-        {"*": [{"nota": nota, "justificativa": "texto encadeado"} for nota in notas]}
-    )
-    provedor.nome = nome
-    return provedor
-
-
-def test_roteiro_nao_vai_ao_comite_mesmo_com_o_comite_ligado() -> None:
-    primeiro, segundo = _juiz("juiz-a"), _juiz("juiz-b")
-    conteudo = Conteudo(
-        formato=Formato.ROTEIRO,
-        blocos=[
-            BlocoFala(inicio_s=0, fim_s=6, fala="A Selic (a taxa básica de juros) não mudou."),
-            BlocoFala(inicio_s=6, fim_s=12, fala="O Banco Central: é a casa do dinheiro."),
-        ],
-    )
-
-    laudo = avaliar(
-        conteudo,
-        _ancoras(),
-        Audiencia.INICIANTE,
-        comite=Comite((primeiro, segundo), provedor_gerador="gemini"),
-    )
-
-    assert laudo.comite is None
-    assert primeiro.pedidos == []
-    assert segundo.pedidos == []
-    assert len(laudo.medidas) == 5
-
-
-def test_texto_analitico_com_comite_ligado_anexa_o_resultado_sem_mover_o_destino() -> None:
-    primeiro, segundo = _juiz("juiz-a"), _juiz("juiz-b")
-
-    laudo = avaliar(
-        _analitico(TEXTO_FACIL),
-        _ancoras(),
-        Audiencia.INICIANTE,
-        comite=Comite((primeiro, segundo), provedor_gerador="gemini"),
-    )
-
-    assert laudo.comite is not None
-    assert laudo.comite.provedores == ["juiz-a", "juiz-b"]
-    assert laudo.destino is Destino.APROVADO
-    assert laudo.motivos == []
-    assert len(primeiro.pedidos) == 3
-    assert len(segundo.pedidos) == 3
-
-
-def test_carrossel_com_comite_ligado_tambem_e_julgado() -> None:
-    primeiro, segundo = _juiz("juiz-a"), _juiz("juiz-b")
-    conteudo = Conteudo(
-        formato=Formato.CARROSSEL,
-        slides=[
-            Slide(titulo="A Selic parada", corpo="A Selic (a taxa básica de juros) não mudou."),
-            Slide(titulo="O que muda", corpo="O Banco Central: é a casa que cuida do dinheiro."),
-        ],
-    )
-
-    laudo = avaliar(conteudo, _ancoras(), Audiencia.INICIANTE, comite=Comite((primeiro, segundo)))
-
-    assert laudo.comite is not None
-    assert len(laudo.comite.dimensoes) == 3
-
-
-def test_comite_que_fica_sem_cota_deixa_o_laudo_sair_sem_comite() -> None:
-    from suno.dominio import CotaEsgotada, EsgotamentoDeCota
-
-    primeiro = ProvedorFalso({"*": [CotaEsgotada("juiz-a", EsgotamentoDeCota.POR_DIA)]})
-    primeiro.nome = "juiz-a"
-    segundo = _juiz("juiz-b")
-
-    laudo = avaliar(
-        _analitico(TEXTO_FACIL),
-        _ancoras(),
-        Audiencia.INICIANTE,
-        comite=Comite((primeiro, segundo)),
-    )
-
-    # Comitê ausente, nunca nota zero (ADR 0008); o veredito determinístico não muda.
-    assert laudo.comite is None
-    assert laudo.destino is Destino.APROVADO
 
 
 # ---------------------------------------------------------------------------

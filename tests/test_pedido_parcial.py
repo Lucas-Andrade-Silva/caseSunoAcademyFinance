@@ -24,9 +24,8 @@ from suno.dominio import (
     MotivoReprovacao,
 )
 from suno.gerador.matriz import gerar_matriz_do_dossie
-from suno.gerador.orquestracao import rodar_ciclo_transversal
 from suno.provedores.falso import ProvedorFalso
-from tests.test_orquestracao import _ancoras, _conteudo, _dossie, _historico, _problema
+from tests.test_curador_e_matriz import _ancoras, _conteudo, _dossie, _historico
 
 UMA = MATRIZ[:1]
 CINCO = (MATRIZ[0], MATRIZ[2], MATRIZ[4], MATRIZ[6], MATRIZ[8])
@@ -100,7 +99,7 @@ def ciclo_rapido(monkeypatch):
             audiencia=audiencia, formato=formato, conteudo=_conteudo(formato), rodada=rodada
         )
 
-    def aprovar(conteudo, ancoras, audiencia, *, limiares=None, comite=None):
+    def aprovar(conteudo, ancoras, audiencia, *, limiares=None, ao_etapa=None):
         return Laudo(
             audiencia=audiencia, formato=conteudo.formato, medidas=[], destino=Destino.APROVADO
         )
@@ -155,7 +154,7 @@ def test_a_rodada_de_correcao_aparece_como_corrigindo(monkeypatch):
             audiencia=audiencia, formato=formato, conteudo=_conteudo(formato), rodada=rodada
         )
 
-    def avaliar_na_segunda(conteudo, ancoras, audiencia, *, limiares=None, comite=None):
+    def avaliar_na_segunda(conteudo, ancoras, audiencia, *, limiares=None, ao_etapa=None):
         primeira = not chamadas_do_avaliador
         chamadas_do_avaliador.append(1)
         if primeira:
@@ -200,40 +199,16 @@ def test_callback_que_levanta_nao_derruba_o_ciclo(ciclo_rapido):
     assert historicos[0].destino_final is Destino.APROVADO
 
 
-# ---------------------------------------------------------------------------
-# O Judge só mexe no que foi pedido
-# ---------------------------------------------------------------------------
+def test_avaliar_avisa_a_camada_deterministica_ao_comecar() -> None:
+    from suno.avaliador import avaliar
+    from suno.dominio import Conteudo
 
-
-def test_judge_que_cita_celula_nao_pedida_e_ignorado():
-    pedido = (MATRIZ[1], MATRIZ[2])  # carrossel e roteiro do Iniciante
-    # `_problema()` aponta Iniciante × Texto analítico, que não está no pedido.
-    provedor = ProvedorFalso(
-        {
-            "juiz_transversal:0": [_problema()],
-            "juiz_transversal:1": [_problema()],
-            "juiz_transversal:2": [_problema()],
-        }
+    camadas: list[str] = []
+    avaliar(
+        Conteudo(formato=Formato.TEXTO_ANALITICO, texto="Texto curto."),
+        [],
+        Audiencia.INICIANTE,
+        ao_etapa=camadas.append,
     )
 
-    finais, ciclo = rodar_ciclo_transversal(
-        _dossie(), _historicos(pedido), provedor, posicoes=pedido
-    )
-
-    assert ciclo.estado is EstadoAvaliacaoTransversal.REVISAO_HUMANA
-    assert ciclo.correcoes_aplicadas == []
-    assert [(h.audiencia, h.formato) for h in finais] == list(pedido)
-    assert not any(r.startswith("celula:") for r in provedor.rotulos_pedidos())
-
-
-def test_judge_aprova_matriz_parcial():
-    pedido = CINCO
-    provedor = ProvedorFalso({"juiz_transversal:0": [{"estado": "aprovado", "problemas": []}]})
-
-    finais, ciclo = rodar_ciclo_transversal(
-        _dossie(), _historicos(pedido), provedor, posicoes=pedido
-    )
-
-    assert ciclo.estado is EstadoAvaliacaoTransversal.APROVADA
-    assert ciclo.avaliacao_deterministica.total_esperado == len(pedido)
-    assert [(h.audiencia, h.formato) for h in finais] == list(pedido)
+    assert camadas == ["deterministica"]

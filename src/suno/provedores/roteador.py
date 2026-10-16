@@ -1,4 +1,4 @@
-"""Roteador: Gemini -> Groq -> SambaNova. Lê o tipo de 429 antes de decidir entre esperar e
+"""Roteador: Gemini -> Groq. Lê o tipo de 429 antes de decidir entre esperar e
 trocar. O schema viaja no pedido, então a troca não perde saída estruturada. O juiz nunca
 resolve para o provedor do Gerador.
 
@@ -14,6 +14,7 @@ from typing import Callable, Sequence, TypeVar
 
 from pydantic import BaseModel
 
+from suno.configuracoes import carregar as carregar_configuracoes
 from suno.dominio import (
     CotaEsgotada,
     ErroProvedor,
@@ -36,17 +37,6 @@ ESPERA_PADRAO_S = 20.0
 CONFIGURACAO = {
     "gemini": ("GEMINI_API_KEY", "GEMINI_MODELO"),
     "groq": ("GROQ_API_KEY", "GROQ_MODELO"),
-    "sambanova": ("SAMBANOVA_API_KEY", "SAMBANOVA_MODELO"),
-}
-
-# Gemini gera (só ele aguenta a Ata inteira), Groq julga (prompt curto), SambaNova é
-# reserva. O juiz de visão precisa de entrada de imagem, e aí o Gemini volta à frente.
-ORDEM_POR_PAPEL: dict[PapelLLM, tuple[str, ...]] = {
-    PapelLLM.GERADOR: ("gemini", "groq", "sambanova"),
-    PapelLLM.JUIZ: ("groq", "sambanova", "gemini"),
-    PapelLLM.JUIZ_VISAO: ("gemini", "groq", "sambanova"),
-    PapelLLM.DIRETOR_ARTE: ("gemini", "groq", "sambanova"),
-    PapelLLM.ANALISTA_VISUAL: ("gemini", "groq", "sambanova"),
 }
 
 
@@ -158,7 +148,7 @@ class Roteador(ProvedorBase):
 
 
 def provedor_por_nome(nome: str, *, respostas_prontas: Path | None = None) -> Provedor:
-    """'falso' | 'gemini' | 'groq' | 'sambanova' | 'roteador'. Lê chaves e modelos do ambiente.
+    """'falso' | 'gemini' | 'groq' | 'roteador'. Lê chaves e modelos do ambiente.
 
     Quem carrega o ``.env`` é a linha de comando, não esta função: assim o pytest continua
     enxergando um ambiente sem chave nenhuma, mesmo numa máquina que tem ``.env``.
@@ -172,38 +162,70 @@ def provedor_por_nome(nome: str, *, respostas_prontas: Path | None = None) -> Pr
         return _concreto(escolhido)
     raise ErroProvedor(
         "roteador",
-        f"provedor {nome!r} desconhecido: use falso, gemini, groq, sambanova ou roteador",
+        f"provedor {nome!r} desconhecido: use falso, gemini, groq ou roteador",
     )
 
 
 def roteador_para(papel: PapelLLM, *, excluir: Sequence[str] = ()) -> Provedor:
-    """Monta o roteador com os provedores que têm chave, na ordem do papel.
+    """Monta o roteador com os provedores que têm chave, na fila e com os modelos que a aba de
+    configurações define para o papel.
 
     O juiz recebe ``excluir`` com o provedor que gerou a Célula: ele nunca pode resolver
     para o mesmo provedor do Gerador (ADR 0008).
     """
     excluidos = {e.strip().lower() for e in excluir}
+    configuracoes = carregar_configuracoes()
     disponiveis: list[Provedor] = []
-    for nome in ORDEM_POR_PAPEL.get(papel, ORDEM_POR_PAPEL[PapelLLM.GERADOR]):
+    for entrada in configuracoes.fila_do_papel(papel):
+        nome = entrada.provedor
         if nome in excluidos or not os.environ.get(CONFIGURACAO[nome][0]):
             continue
-        disponiveis.append(_concreto(nome))
+        disponiveis.append(_concreto(nome, configuracoes.modelo_de(nome, entrada)))
     if not disponiveis:
         raise ErroProvedor(
             "roteador",
             "nenhuma chave de provedor no ambiente: copie .env.example para .env e preencha "
-            "GEMINI_API_KEY, GROQ_API_KEY ou SAMBANOVA_API_KEY — ou rode com --provedor falso",
+            "GEMINI_API_KEY ou GROQ_API_KEY — ou rode com --provedor falso",
         )
     return Roteador(disponiveis)
 
 
-def _concreto(nome: str) -> Provedor:
+class ProvedorTardio(ProvedorBase):
+    """Monta o roteador do papel na hora de cada chamada, para a aba de configurações valer sem
+    reiniciar o servidor. Reaproveita o roteador (e a memória do que esgotou no dia) enquanto a
+    fila, os modelos e as chaves não mudam."""
+
+    nome = "roteador"
+
+    def __init__(self, papel: PapelLLM) -> None:
+        self._papel = papel
+        self._assinatura: str | None = None
+        self._roteador: Provedor | None = None
+
+    def _atual(self) -> Provedor:
+        configuracoes = carregar_configuracoes()
+        assinatura = configuracoes.model_dump_json() + "|" + "".join(
+            "1" if os.environ.get(CONFIGURACAO[nome][0]) else "0" for nome in CONFIGURACAO
+        )
+        if self._roteador is None or assinatura != self._assinatura:
+            self._roteador = roteador_para(self._papel)
+            self._assinatura = assinatura
+        return self._roteador
+
+    def completar(self, pedido: PedidoLLM) -> RespostaLLM:
+        return self._atual().completar(pedido)
+
+    def completar_estruturado(self, pedido: PedidoLLM, modelo: type[T]) -> T:
+        return self._atual().completar_estruturado(pedido, modelo)
+
+
+def _concreto(nome: str, modelo: str | None = None) -> Provedor:
     """Importa tarde de propósito: quem roda com ``falso`` não paga o custo do httpx."""
     variavel_da_chave, variavel_do_modelo = CONFIGURACAO[nome]
     chave = os.environ.get(variavel_da_chave, "")
     if not chave:
         raise ErroProvedor(nome, f"{variavel_da_chave} ausente: preencha o .env (veja .env.example)")
-    modelo = os.environ.get(variavel_do_modelo, "")
+    modelo = modelo or carregar_configuracoes().modelo_de(nome) or os.environ.get(variavel_do_modelo, "")
     if not modelo:
         raise ErroProvedor(
             nome,
@@ -214,10 +236,6 @@ def _concreto(nome: str) -> Provedor:
         from suno.provedores.gemini import ProvedorGemini
 
         return ProvedorGemini(chave, modelo)
-    if nome == "groq":
-        from suno.provedores.groq import ProvedorGroq
+    from suno.provedores.groq import ProvedorGroq
 
-        return ProvedorGroq(chave, modelo)
-    from suno.provedores.sambanova import ProvedorSambaNova
-
-    return ProvedorSambaNova(chave, modelo)
+    return ProvedorGroq(chave, modelo)

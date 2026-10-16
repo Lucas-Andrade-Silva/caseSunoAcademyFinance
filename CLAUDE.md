@@ -28,9 +28,14 @@ Cada um foi verificado. O palpite natural, aqui, é o errado.
 - **Publicação**: o sistema entrega o Pacote de publicação pronto e um humano publica.
   Instagram, TikTok e Drive são destinos manuais, sem integração de API.
 - **Carrossel**: o visual vem de famílias recriadas dos posts reais da Suno, uma por carrossel,
-  com fotos reais de licença livre e crédito na legenda. Não invente layout nem imagem.
+  com fotos reais da web (busca de imagens, juiz de visão, licença não verificada: MVP) e crédito
+  na legenda. Não invente layout nem imagem.
   → [ADR 0030](docs/adr/0030-familias-visuais-do-carrossel.md),
-  [ADR 0031](docs/adr/0031-fotos-reais-e-licenciadas-nos-slides.md)
+  [ADR 0031](docs/adr/0031-fotos-reais-e-licenciadas-nos-slides.md),
+  [ADR 0032](docs/adr/0032-fotos-da-web-pelo-bing-imagens-sem-verificar-licenca.md),
+  [ADR 0033](docs/adr/0033-busca-de-imagens-propria-do-mercado-e-juiz-so-na-duvida.md).
+  A paleta do editor recolore a família pelo papel de cada cor, sem reescrever o template.
+  → [ADR 0038](docs/adr/0038-paleta-recolore-as-familias-visuais.md)
 
 ## A demo roda sem rede
 
@@ -42,7 +47,7 @@ o pytest lê e o relatório cita.
 ## Os dois módulos
 
 **Gerador** produz, **Avaliador** julga, e entre eles passa só
-`(Conteúdo, Âncora[], Audiência) → Laudo`. O Avaliador roda sem LLM e sem rede: é o que
+`(Conteúdo, Âncora[], Audiência) → Laudo`. As cinco medidas do Avaliador rodam sem LLM e sem rede (o Jev e o checador vêm depois, ADR 0035 e 0036): é o que
 o mantém testável em CI, e vale defender.
 → [ADR 0001](docs/adr/0001-gerador-e-avaliador-como-modulos-separados.md)
 
@@ -54,12 +59,14 @@ e linguagem de Recomendação são conhecimento de domínio, não de pipeline.
 
 ## Modelos dentro do pipeline
 
-Gemini Flash gera, Groq julga, SambaNova é reserva. Tier gratuito, atrás de uma interface
-única de provedor, com tratamento de 429. Chaves em `.env`. O orçamento é R$ 0: nenhuma
-chamada paga entra no pipeline, e isso vale inclusive para a API da Anthropic.
+Gemini Flash gera, Groq julga e é a reserva. Tier gratuito, atrás de uma interface
+única de provedor, com tratamento de 429. Chaves em `.env`. O Jev (Qualidade) está sempre ligado e roda
+pela Netlify, em créditos do plano Free. O orçamento é R$ 0: nenhuma chamada paga entra no pipeline,
+e isso vale inclusive para a API da Anthropic.
 
 Cerebras foi descartada como reserva: encerrou o tier gratuito permanente em 17/08/2026 e
-hoje exige cartão de crédito verificado. → [ADR 0007](docs/adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)
+hoje exige cartão de crédito verificado. O SambaNova saiu pelo mesmo motivo (HTTP 402 em 14/10/2026).
+→ [ADR 0007](docs/adr/0007-roteador-de-provedores-distingue-tipo-de-429.md), [ADR 0037](docs/adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)
 
 ## Quando atrasar, corte nesta ordem
 

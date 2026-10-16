@@ -37,7 +37,8 @@ from suno.gerador.personas import AGENTES_GERADORES
 from suno.provedores.base import Provedor
 
 if TYPE_CHECKING:
-    from suno.comite import Comite
+    from suno.avaliador.fidelidade import VerificadorDeFidelidade
+    from suno.avaliador.qualidade import AvaliadorDeQualidade
 
 TRABALHADORES = len(AGENTES_GERADORES)
 """Um trabalhador por gerador especializado: três."""
@@ -48,7 +49,8 @@ def gerar_matriz(
     ancoras: Ancoras,
     provedor: Provedor,
     *,
-    comite: "Comite | None" = None,
+    qualidade: "AvaliadorDeQualidade | None" = None,
+    fidelidade: "VerificadorDeFidelidade | None" = None,
 ) -> list[HistoricoCelula]:
     """Compatibilidade: monta um dossiê de fonte única e gera a Matriz."""
     dossie = DossieCurado(
@@ -56,14 +58,17 @@ def gerar_matriz(
         ancoras=ancoras,
         selecao=SelecaoCuradoria(modo=ModoSelecao.SEPARADA, itens=[ata.identificador]),
     )
-    return gerar_matriz_do_dossie(dossie, provedor, comite=comite)
+    return gerar_matriz_do_dossie(
+        dossie, provedor, qualidade=qualidade, fidelidade=fidelidade
+    )
 
 
 def gerar_matriz_do_dossie(
     dossie: DossieCurado,
     provedor: Provedor,
     *,
-    comite: "Comite | None" = None,
+    qualidade: "AvaliadorDeQualidade | None" = None,
+    fidelidade: "VerificadorDeFidelidade | None" = None,
     posicoes: Sequence[tuple[Audiencia, Formato]] = MATRIZ,
     ao_andar: Andou | None = None,
 ) -> list[HistoricoCelula]:
@@ -81,7 +86,8 @@ def gerar_matriz_do_dossie(
                     for audiencia, formato in MATRIZ
                     if audiencia is agente.audiencia and (audiencia, formato) in pedidas
                 ],
-                comite=comite,
+                qualidade=qualidade,
+                fidelidade=fidelidade,
                 ao_andar=ao_andar,
             )
             for agente in AGENTES_GERADORES

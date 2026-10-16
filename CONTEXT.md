@@ -31,7 +31,9 @@ medidos só com Atas do Copom.
 
 **Âncora**:
 Uma afirmação factual extraída da Ata — um número, uma data, uma decisão — que toda
-saída derivada dela precisa preservar sem distorcer.
+saída derivada dela precisa preservar sem distorcer. Fora do Copom, uma Ata sem número tem como
+fato central uma Âncora textual conferida contra o texto, e o conteúdo sai qualitativo
+([ADR 0034](adr/0034-ata-sem-numero-gera-conteudo-qualitativo.md)).
 _Avoid_: fato, claim, evidência, ponto-chave
 
 **Audiência**:
@@ -98,25 +100,31 @@ _Avoid_: threshold, corte, nota mínima, meta
 A reescrita de uma Célula reprovada, guiada pelo Laudo que a reprovou.
 _Avoid_: retry, reflection loop, refinamento, iteração
 
-**Comitê**:
-A camada opcional de dois juízes-LLM que julga Tom, Clareza e Coerência sobre o Texto
-analítico e o Carrossel de uma Célula já medida pelas métricas determinísticas. Nasce
-desligado; nunca decide o veredito do Laudo, só anexa informação a ele.
-_Avoid_: painel, comitê de avaliação, ensemble
+**Qualidade**:
+A nota, de 0 a 100%, que o Jev (um classificador da TypeSafe AI que não gera texto) dá a uma Célula
+depois das cinco medidas determinísticas, em quatro dimensões: desenvolvimento, completude (o texto foi
+cortado?), clareza e tom. A Medida vale a menor das quatro. Abaixo do Limiar, a Célula volta ao Gerador
+([ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md)). Sempre ligada: só falta quando não há chave.
+_Avoid_: nota do LLM, score, avaliação subjetiva
+
+**Fidelidade**:
+A conferência de uma Célula contra a Ata inteira por um LLM (Groq, com o Gemini de reserva), depois de tudo o mais ter
+aprovado. O modelo aponta a afirmação que a Ata não sustenta, copiando o trecho da Célula (e o da Ata,
+quando a Ata diz outra coisa); o código confere que as citações existem e descarta as que não.
+Só o que a Ata contradiz ou diz de outro jeito (com o trecho da Ata conferido) reprova a Célula e o
+Ciclo a devolve ao Gerador; "a Ata não diz isso" só avisa
+([ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md)). Explicação de termo e
+analogia escritas para a Audiência não contam. É o Factuality & Grounding Checker do enunciado.
+_Avoid_: grounding, factualidade, veracidade (**Aderência** é só de número)
 
 **Tom**:
-Dimensão subjetiva do Comitê: a Célula soa adequada à Audiência, sem ser condescendente
+Dimensão da Qualidade: a Célula soa adequada à Audiência, sem ser condescendente
 com o Iniciante nem árida demais com o Avançado.
 _Avoid_: estilo
 
 **Clareza**:
-Dimensão subjetiva do Comitê: o texto se lê de primeira, sem exigir reler a frase.
+Dimensão da Qualidade: o texto se lê de primeira, sem exigir reler a frase.
 _Avoid_: legibilidade (reservado ao Flesch-BR), fluência
-
-**Coerência**:
-Dimensão subjetiva do Comitê: o texto lê como um argumento encadeado, não como frases
-curtas e desconexas — o caso que o Flesch-BR sozinho não pega.
-_Avoid_: consistência, coesão
 
 ### Insumos e entregas
 
@@ -147,9 +155,16 @@ um valor de `ComposicaoCarrossel`, prefixado pela família.
 _Avoid_: composição visual solta, modelo, página
 
 **Foto do slide**:
-A foto real, de licença que permite reuso, que um slide mostra. O Gerador só diz o assunto
-(`Slide.imagem`); a foto vem da biblioteca local ou do Wikimedia Commons, com relevância
-verificada, e o crédito vai na legenda.
+A foto real que um slide mostra. O Gerador só diz o assunto (`Slide.imagem`); a foto vem da
+biblioteca local ou da busca de imagens na web (Bing), com relevância verificada por um juiz de
+visão e crédito na legenda. No MVP a licença não é verificada ([ADR 0032](adr/0032-fotos-da-web-pelo-bing-imagens-sem-verificar-licenca.md)).
+
+**Assunto visual**:
+A entrada do catálogo (`src/suno/imagens/assuntos.json`) que ensina a busca de foto a achar o
+assunto de um slide: o nome, as consultas, o que o resultado precisa citar e o que o desclassifica
+(a vitamina B3 não é a B3). Texto aprova ou descarta; o juiz de visão só decide a dúvida
+([ADR 0033](adr/0033-busca-de-imagens-propria-do-mercado-e-juiz-so-na-duvida.md)).
+_Avoid_: léxico (é do Avaliador)
 _Avoid_: imagem gerada, banco de imagens, stock
 
 ### A interface

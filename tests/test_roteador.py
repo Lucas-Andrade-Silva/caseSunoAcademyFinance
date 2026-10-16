@@ -257,18 +257,18 @@ def test_roteador_para_sem_chave_nenhuma_manda_copiar_o_env():
 
 
 def test_roteador_para_monta_so_com_quem_tem_chave_e_na_ordem_do_papel(monkeypatch):
-    for provedor in ("GEMINI", "GROQ", "SAMBANOVA"):
+    for provedor in ("GEMINI", "GROQ"):
         monkeypatch.setenv(f"{provedor}_API_KEY", "chave-de-mentira")
         monkeypatch.setenv(f"{provedor}_MODELO", "modelo-de-mentira")
 
     gerador = roteador_para(PapelLLM.GERADOR)
-    juiz = roteador_para(PapelLLM.JUIZ, excluir=("gemini",))
+    juiz = roteador_para(PapelLLM.CHECADOR, excluir=("gemini",))
 
-    assert [p.nome for p in gerador.provedores] == ["gemini", "groq", "sambanova"]
-    assert [p.nome for p in juiz.provedores] == ["groq", "sambanova"]
+    assert [p.nome for p in gerador.provedores] == ["gemini", "groq"]
+    assert [p.nome for p in juiz.provedores] == ["groq"]
 
 
 def test_roteador_para_ignora_provedor_sem_chave(monkeypatch):
-    monkeypatch.setenv("SAMBANOVA_API_KEY", "chave-de-mentira")
-    monkeypatch.setenv("SAMBANOVA_MODELO", "modelo-de-mentira")
-    assert [p.nome for p in roteador_para(PapelLLM.GERADOR).provedores] == ["sambanova"]
+    monkeypatch.setenv("GROQ_API_KEY", "chave-de-mentira")
+    monkeypatch.setenv("GROQ_MODELO", "modelo-de-mentira")
+    assert [p.nome for p in roteador_para(PapelLLM.GERADOR).provedores] == ["groq"]

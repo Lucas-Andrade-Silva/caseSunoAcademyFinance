@@ -179,7 +179,7 @@ def test_o_ciclo_para_na_segunda_correcao_e_vai_para_a_fila_humana(
     provedor = _provedor(DIFICIL, DIFICIL, DIFICIL)
     historico = _rodar(ata, ancoras_completas, provedor)
     assert [t.rodada for t in historico.tentativas] == [0, 1, 2]
-    assert len(historico.tentativas) == TETO_DE_RODADAS + 1
+    assert len(historico.tentativas) == TETO_DE_RODADAS + 1  # SUNO_RODADAS=2 no conftest
     assert historico.destino_final is Destino.REPROVADO_REVISAO_HUMANA
     # Nunca uma quarta geração: só três pedidos saíram.
     assert provedor.rotulos_pedidos() == [ROTULO.format(rodada=r) for r in (0, 1, 2)]

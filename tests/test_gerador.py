@@ -389,11 +389,13 @@ def test_rodada_de_correcao_carrega_o_valor_medido_e_nao_instrucao_generica(
         Formato.TEXTO_ANALITICO,
         rodada=1,
         correcoes=list(laudo.correcoes),
+        rascunho=dificil.texto,
     )
     usuario = next(m.texto for m in pedido.mensagens if m.autor == "usuario")
     assert "O que precisa mudar" in usuario
     assert "Flesch-BR medido" in usuario
-    assert "difícil demais: quebre as frases longas" in usuario
+    assert "difícil demais" in usuario and "palavras longas" in usuario
+    assert "sílabas por palavra" in usuario  # a dica traz o que foi medido no rascunho
 
 
 def test_correcao_parte_do_rascunho_da_rodada_anterior(ancoras_de_teste: Ancoras):
@@ -462,7 +464,7 @@ class ProvedorLento(ProvedorFalso):
         return super().completar(pedido)
 
 
-def _laudo_aprovado(conteudo, ancoras, audiencia, *, limiares=None, comite=None) -> Laudo:
+def _laudo_aprovado(conteudo, ancoras, audiencia, *, limiares=None, ao_etapa=None) -> Laudo:
     return Laudo(
         audiencia=audiencia,
         formato=conteudo.formato,
@@ -551,3 +553,41 @@ def test_uma_celula_com_erro_inesperado_nao_derruba_as_outras_oito(
     outras = [h for h in historicos if h is not envenenado]
     assert len(outras) == 8
     assert all(h.destino_final is Destino.APROVADO for h in outras)
+
+
+def test_o_prompt_do_intermediario_separa_o_termo_do_dia_a_dia_do_especializado() -> None:
+    from suno.gerador.moldes import INSTRUCAO_DA_AUDIENCIA
+
+    texto = INSTRUCAO_DA_AUDIENCIA[Audiencia.INTERMEDIARIO]
+    assert "dividendos" in texto and "Esses termos entram sem explicação" in texto
+    assert "termos especializados" in texto and "exigem explicação na primeira vez" in texto
+    assert "Não explique o termo do dia a dia" in texto
+
+
+def test_o_prompt_das_audiencias_nao_supoe_ata_do_copom() -> None:
+    """O mesmo molde adapta Fato Relevante da CVM e release: nada de Selic ou decisão de juros fixos."""
+    from suno.gerador.moldes import INSTRUCAO_DA_AUDIENCIA
+
+    for texto in INSTRUCAO_DA_AUDIENCIA.values():
+        assert "Selic" not in texto and "decisão de juros" not in texto
+
+
+def test_o_prompt_do_intermediario_lista_todos_os_termos_especializados_mesmo_os_que_a_ata_nao_traz() -> None:
+    from suno.avaliador.densidade import carregar_lexico
+    from suno.gerador.moldes import _bloco_de_explicacao
+
+    bloco = _bloco_de_explicacao("A Selic ficou em 14% ao ano.", Audiencia.INTERMEDIARIO) or ""
+
+    assert "viés de política monetária" in bloco  # do Léxico, sem estar nesta Ata
+    assert "demais termos especializados" in bloco
+    depois = bloco.split("mesmo que não estejam na Ata: ")[-1].rstrip(".")
+    listados = set(depois.split(", "))
+    assert not {t.termo for t in carregar_lexico() if t.nucleo} & listados  # o do dia a dia fica de fora
+    assert {t.termo for t in carregar_lexico() if not t.nucleo} >= listados
+
+
+def test_o_prompt_do_iniciante_nao_ganha_a_lista_completa() -> None:
+    from suno.gerador.moldes import _bloco_de_explicacao
+
+    bloco = _bloco_de_explicacao("A Selic ficou em 14% ao ano.", Audiencia.INICIANTE) or ""
+    assert "demais termos especializados" not in bloco

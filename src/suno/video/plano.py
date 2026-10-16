@@ -17,10 +17,12 @@ from pathlib import Path
 from typing import Any
 
 from suno.dominio import Audiencia, BlocoFala, Conteudo, Destino, Formato
-from suno.video import design
+from suno.video import atuacao, design
+from suno.provedores.base import Provedor
+from suno.video.atuacao import AtuacaoDaCena, DirecaoDeAtuacao, direcao_em_disco, direcao_padrao
 
 ESQUEMA = "suno.roteiro-de-video"
-VERSAO_DO_ESQUEMA = "1"
+VERSAO_DO_ESQUEMA = "2"
 
 NOME_DO_PLANO = "plano.json"
 NOME_DO_PLANO_LEGIVEL = "plano.md"
@@ -62,10 +64,11 @@ def _sons_da_cena(bloco: BlocoFala) -> list[dict[str, Any]]:
     return sons
 
 
-def _cena_do_plano(ordem: int, bloco: BlocoFala) -> dict[str, Any]:
+def _cena_do_plano(ordem: int, bloco: BlocoFala, atuacao: AtuacaoDaCena) -> dict[str, Any]:
     layout = design.CENAS[bloco.cena]
     partes = [p.strip() for p in bloco.tela.split(SEPARADOR_DE_PARTES.strip()) if p.strip()]
     return {
+        "atuacao": atuacao.model_dump(exclude={"ordem"}),
         "ordem": ordem,
         "inicio_s": bloco.inicio_s,
         "fim_s": bloco.fim_s,
@@ -99,11 +102,20 @@ def _cena_do_plano(ordem: int, bloco: BlocoFala) -> dict[str, Any]:
     }
 
 
-def montar_plano(conteudo: Conteudo, audiencia: Audiencia) -> dict[str, Any]:
-    """O plano de edição completo, serializável em JSON, a partir de um Roteiro."""
+def montar_plano(
+    conteudo: Conteudo, audiencia: Audiencia, direcao: DirecaoDeAtuacao | None = None
+) -> dict[str, Any]:
+    """O plano de edição completo, serializável em JSON, a partir de um Roteiro.
+
+    ``direcao`` é a atuação preenchida por LLM (``atuacao.preencher_direcao``); sem ela, vale o
+    preenchimento padrão da Audiência.
+    """
     if conteudo.formato is not Formato.ROTEIRO or not conteudo.blocos:
         raise ValueError("só um Roteiro com blocos tem plano de edição")
     blocos = conteudo.blocos
+    direcao = direcao or direcao_padrao(conteudo, audiencia)
+    por_ordem = {c.ordem: c for c in direcao.cenas}
+    extras = atuacao.bloco_do_plano(audiencia)
     palavras = sum(design.contar_palavras(b.fala) for b in blocos)
     return {
         "esquema": ESQUEMA,
@@ -129,14 +141,20 @@ def montar_plano(conteudo: Conteudo, audiencia: Audiencia) -> dict[str, Any]:
             "tipo": "apresentador",
             "enquadramento": "busto",
             "fundo": {"tipo": "cor_solida", "cor": design.CORES["fundo"]},
+            "atuacao": extras["atuacao"],
             "voz": {
                 "idioma": "pt-BR",
                 "tom": TOM_DA_VOZ[audiencia],
-                "ritmo_palavras_por_segundo": design.PALAVRAS_POR_SEGUNDO,
+                **extras["voz"],
+                "pronuncia": extras["pronuncia"],
             },
             "sincronia_labial": True,
         },
-        "cenas": [_cena_do_plano(ordem, bloco) for ordem, bloco in enumerate(blocos, start=1)],
+        "legendas": extras["legendas"],
+        "cenas": [
+            _cena_do_plano(ordem, bloco, por_ordem[ordem])
+            for ordem, bloco in enumerate(blocos, start=1)
+        ],
     }
 
 
@@ -172,7 +190,12 @@ def plano_em_markdown(plano: dict[str, Any]) -> str:
     return "\n".join(linhas) + "\n"
 
 
-def plano_do_roteiro(identificador_execucao: str, audiencia: Audiencia, pasta_execucoes: Path) -> Path:
+def plano_do_roteiro(
+    identificador_execucao: str,
+    audiencia: Audiencia,
+    pasta_execucoes: Path,
+    provedor: Provedor | None = None,
+) -> Path:
     """Grava ``plano.json`` e ``plano.md`` ao lado do vídeo e devolve o caminho do JSON.
 
     Levanta ``ValueError`` se a Célula não existe ou não foi aprovada: o plano é o roteiro
@@ -184,9 +207,10 @@ def plano_do_roteiro(identificador_execucao: str, audiencia: Audiencia, pasta_ex
     historico = execucao.historico(audiencia, Formato.ROTEIRO)
     if historico is None or historico.destino_final is not Destino.APROVADO or historico.celula_final is None:
         raise ValueError("só Roteiro aprovado tem plano de edição (ADR 0004)")
-    plano = montar_plano(historico.celula_final.conteudo, audiencia)
+    conteudo = historico.celula_final.conteudo
     pasta = Path(pasta_execucoes) / identificador_execucao / "pacote" / f"{audiencia.value}-roteiro"
     pasta.mkdir(parents=True, exist_ok=True)
+    plano = montar_plano(conteudo, audiencia, direcao_em_disco(pasta, conteudo, audiencia, provedor))
     caminho = pasta / NOME_DO_PLANO
     caminho.write_text(json.dumps(plano, ensure_ascii=False, indent=2), encoding="utf-8")
     (pasta / NOME_DO_PLANO_LEGIVEL).write_text(plano_em_markdown(plano), encoding="utf-8")

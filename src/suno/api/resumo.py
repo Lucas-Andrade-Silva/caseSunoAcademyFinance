@@ -42,7 +42,6 @@ class PosicaoResumo(BaseModel):
     decisao: EstadoDecisao | None
     bloqueada: bool
     sem_conteudo: bool
-    revisao_comite: bool
     etapa: EtapaDaCelula | None = None
     """Só para Saída em geração ou que parou antes de gravar a execução."""
 
@@ -53,11 +52,6 @@ def montar_posicoes(execucao: Execucao) -> list[PosicaoResumo]:
     for historico in execucao.celulas:
         decisao = execucao.decisao_de(historico.audiencia, historico.formato)
         laudo = historico.laudo_final
-        revisao_comite = (
-            laudo is not None
-            and laudo.comite is not None
-            and any(d.estado is EstadoMedida.REVISAO_HUMANA for d in laudo.comite.dimensoes)
-        )
         posicoes.append(
             PosicaoResumo(
                 audiencia=historico.audiencia,
@@ -66,7 +60,6 @@ def montar_posicoes(execucao: Execucao) -> list[PosicaoResumo]:
                 decisao=decisao.estado if decisao is not None else None,
                 bloqueada=celula_bloqueada(historico),
                 sem_conteudo=historico.celula_final is None,
-                revisao_comite=revisao_comite,
             )
         )
     return posicoes
@@ -89,7 +82,6 @@ def montar_posicoes_do_andamento(andamento: Andamento) -> list[PosicaoResumo]:
             decisao=None,
             bloqueada=False,
             sem_conteudo=True,
-            revisao_comite=False,
             etapa=celula.etapa,
         )
         for celula in andamento.celulas
