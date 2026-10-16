@@ -265,7 +265,7 @@ vídeo é critério eliminatório do case e renderização falha de formas criat
 quebrar na véspera, os seis entregáveis continuam de pé e a demo usa um mp4 já renderizado.
 
 Caminho principal é composição determinística em CPU. Avatar falante é alternativa, e é o item 3
-da ordem de corte do CLAUDE.md — o primeiro a virar "vídeo sem rosto" quando o prazo apertar.
+da ordem de corte (ver abaixo) — o primeiro a virar "vídeo sem rosto" quando o prazo apertar.
 
 Nenhum LLM olha o mp4. Duração, proporção e presença de áudio são medidas; o resto é uma pessoa
 assistindo no H5, que para sessenta segundos de vídeo é revisão completa, não amostra.
@@ -379,6 +379,11 @@ Calibração (H2), junto com os Limiares.
 
 ## O que este diagrama não mostra
 
-Prioridade de corte sob atraso e a divisão de dono por módulo estão no CLAUDE.md. Cada ideia de
-inovação que entrou ou ficou de fora já virou ou atualizou um ADR — não há registro de triagem
-separado dos ADRs.
+**Ordem de corte sob atraso:** (1) teste de retenção nas redes, (2) publicação automática, que vira
+humano publicando, (3) avatar falante, que vira vídeo sem rosto. Os seis entregáveis não caem.
+
+**Dono por módulo:** a pessoa com conhecimento de mercado é dona do Avaliador — Léxico, Limiares,
+Calibração e linguagem de Recomendação são conhecimento de domínio, não de pipeline.
+
+Cada ideia de inovação que entrou ou ficou de fora já virou ou atualizou um ADR, resumidos em
+[DECISOES.md](DECISOES.md).

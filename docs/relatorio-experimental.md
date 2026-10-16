@@ -6,6 +6,10 @@
 > [ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md)) e o teto do Ciclo de
 > correção virou configurável (padrão 4). O funcionamento atual está em [FUNCIONAMENTO.md](FUNCIONAMENTO.md);
 > os números abaixo valem para o sistema da data da medição.
+>
+> Os JSON citados em `docs/relatorio/` não ficam mais no repositório. `scripts/relatorio.py --execucao <id>`
+> regera o de uma execução; `canary.json` e `suite.json` foram gravados à mão e estão no histórico do Git
+> (commit `24a5b3b`). A pesquisa de viabilidade citada também saiu do repositório e segue no mesmo histórico.
 
 Todo número citado aqui vem de uma execução real, de um arquivo em disco, ou de um comando
 colado com a saída completa. Onde uma medição não foi feita, este relatório diz que não foi
@@ -39,7 +43,7 @@ não tem `pt` na tabela de idiomas (`LANG_CONFIGS`, conferido no código-fonte d
 silenciosamente nos coeficientes do inglês, e o silabador que usa (`pyphen`) é hifenizador,
 não silabador — subconta sílabas em uma letra nas bordas (`água`→1, `ação`→1). O impacto
 medido pela pesquisa em texto financeiro de 45 palavras / 4 frases foi de **20,7 pontos —
-duas faixas inteiras de interpretação** (`docs/research/viabilidade-tecnica.md §2`).
+duas faixas inteiras de interpretação** (pesquisa de viabilidade, §2).
 
 **Esta medição não foi reproduzida nesta máquina**: nem `textstat` nem `pyphen` estão no
 ambiente (`uv run --offline python -c "import pyphen"` e `"import textstat"` falham os dois

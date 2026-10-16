@@ -38,26 +38,18 @@ desktop.ini
 *.swp
 *.log
 
-# ── Agentes de IA ────────────────────────────────────────────────────────────────
-# Versionados: AGENTS.md, CLAUDE.md, .claude/launch.json, .claude/skills/, .agents/skills/ e
-# skills-lock.json. Ignorado: o que é da máquina ou da sessão de quem roda o agente.
-.claude/settings.local.json
-.claude/worktrees/
-CLAUDE.local.md
+# ── Agentes de IA e arquivos locais do time ──────────────────────────────────────
+# Ficam só na máquina de quem trabalha: configuração e instruções dos agentes, skills, o glossário
+# e o material legado.
+.claude/
+.agents/
 .superpowers/
-
-# Skills do pacote Matt Pocock (.claude/skills/) não adotadas neste projeto: dependem de fluxo de
-# issue-tracker/tickets multi-sessão que este case não usa, ou duplicam skills nativas (research, tdd).
-.claude/skills/ask-matt/
-.claude/skills/implement/
-.claude/skills/improve-codebase-architecture/
-.claude/skills/research/
-.claude/skills/resolving-merge-conflicts/
-.claude/skills/setup-matt-pocock-skills/
-.claude/skills/to-spec/
-.claude/skills/to-tickets/
-.claude/skills/triage/
-.claude/skills/wayfinder/
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+CONTEXT.md
+skills-lock.json
+legacy/
 
 # ── Dados gerados pelo sistema ───────────────────────────────────────────────────
 # Só a demo versionada entra no repositório; qualquer outra execução (scripts/demo, testes manuais,
@@ -79,3 +71,6 @@ data/fontes/*
 # as galerias (_galeria/) e as fotos.
 templates/recriados/familia-*/png/
 templates/recriados/familia-*/comparacao/
+
+# Saída de scripts/relatorio.py: regerável a partir de uma execução gravada.
+docs/relatorio/

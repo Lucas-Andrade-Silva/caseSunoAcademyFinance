@@ -5,7 +5,7 @@ Varre classes, funções, parâmetros, variáveis, campos e nomes de arquivo em 
 
     uv run python scripts/vocabulario.py
 
-Exceções registradas em legacy/docs/plano-de-execucao.md: ``ingestao/pdf.py`` (formato de arquivo,
+Exceções: ``ingestao/pdf.py`` (formato de arquivo,
 não a Ata) e ``docs/relatorio-experimental.md`` (nome mandado pelo enunciado).
 """
 

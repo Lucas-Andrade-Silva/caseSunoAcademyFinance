@@ -78,7 +78,7 @@ aprovação humana e a memória agregada está no ADR 0027.
 
 **NÃO VERIFICADO:** cota de entrada de imagem no tier gratuito do Gemini, e quais modelos de visão
 Groq e SambaNova expõem hoje. Precisa ir para
-[viabilidade-tecnica.md](../research/viabilidade-tecnica.md) antes de qualquer implementação, no
+a pesquisa de viabilidade antes de qualquer implementação, no
 mesmo padrão dos outros provedores.
 
 O **vídeo está deliberadamente fora do juiz de visão**, e a amostragem de quadros foi considerada
