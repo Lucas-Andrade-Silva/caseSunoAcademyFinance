@@ -4,7 +4,7 @@
 
 Aceita (13/10/2026). Altera o conjunto essencial de Âncoras fora do Copom do
 [ADR 0018](0018-origens-e-categoria-da-ata.md) e a recusa antecipada da geração. O
-[ADR 0013](0013-ciclo-de-correcao-com-teto-de-duas-rodadas.md) continua valendo: falha de extração
+[ADR 0013](0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md) continua valendo: falha de extração
 ainda reprova a Célula e vai à revisão humana.
 
 ## Contexto

@@ -37,8 +37,8 @@ Brasil, e este sistema informa, não aconselha. Quem cruza essa linha é reprova
 
 O corretor devolve um boletim com as medidas e o resultado. Reprovado volta para ser reescrito,
 levando na mão o número exato que faltou — "faltaram três pontos para o texto ficar fácil o
-bastante" em vez de "melhore o texto". Isso acontece no máximo duas vezes; a partir daí, insistir
-custa mais do que rende. A versão que continua reprovando não é jogada fora nem publicada: vai
+bastante" em vez de "melhore o texto". Isso acontece um número limitado de vezes (quatro, por padrão,
+ajustável nas configurações); a partir daí, insistir custa mais do que rende. A versão que continua reprovando não é jogada fora nem publicada: vai
 para uma fila que uma pessoa abre e resolve, escrevendo à mão, mudando a régua, ou aceitando que
 aquele assunto não rende naquele formato.
 
@@ -108,7 +108,7 @@ flowchart TD
 
     A --> LAUDO{"Laudo<br/>três destinos"}
 
-    LAUDO -->|"reprovado,<br/>correção possível"| CICLO["Ciclo de correção<br/>máx. 2 rodadas<br/>feedback = valor medido · ADR 0013"]
+    LAUDO -->|"reprovado,<br/>correção possível"| CICLO["Ciclo de correção<br/>teto configurável, padrão 4<br/>feedback = valor medido · ADR 0013"]
     CICLO --> MATRIZ
 
     LAUDO -->|"reprovado 2×<br/>ou falha de extração"| H4
@@ -148,7 +148,7 @@ flowchart TD
 | **H1** | Antes da execução | Qualquer um do time | Qual Ata entra. O fetch no BCB é comando separado; a demo roda sem rede ([ADR 0006](adr/0006-atas-do-copom-como-documento-fonte-principal.md)) |
 | **H2** | Fora de runtime | Dona do Avaliador | Os Limiares, o Léxico e os padrões sintáticos. Deriva de ~30 Células rotuladas pelas duas pessoas, com Kappa reportado. Parametriza o Avaliador; não roda durante a execução |
 | **H3** | — | — | Removido junto com o Comitê, que era quem gerava o desempate ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)) |
-| **H4** | Depois de 2 correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)) |
+| **H4** | Depois do teto de correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)) |
 | **H5** | Antes de publicar | Qualquer um do time | Se o Pacote está apresentável. Aprovação do Laudo é sobre conteúdo; aqui se confere render, corte e legenda, com a lista da avaliação visual em mão ([ADR 0014](adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md)) |
 | **H6** | Publicação | Qualquer um do time | Publica. Não há integração de API com Instagram, TikTok ou Drive, por decisão |
 
@@ -163,8 +163,8 @@ o código garante as nove posições e a ordem. Cada Célula passa pelas regras 
 volta ao seu gerador quando falha em integridade, Flesch-BR, Léxico/Densidade, Aderência ou
 Recomendação. Depois do determinístico vêm duas camadas de LLM, por Célula: a **Qualidade** (o Jev nota
 desenvolvimento, completude, clareza e tom, sempre ligado) e a **Fidelidade** (um LLM confere a Célula contra
-a Ata, opcional). Abaixo do Limiar, ou diante de contradição provada com a Ata, a Célula volta ao Gerador,
-dentro do mesmo teto de duas rodadas. Na correção o Gerador recebe a frase exata de cada problema, raciocina
+a Ata, ligada por padrão). Abaixo do Limiar, ou diante de contradição provada com a Ata, a Célula volta ao Gerador,
+dentro do mesmo teto de rodadas (padrão 4, de 0 a 10). Na correção o Gerador recebe a frase exata de cada problema, raciocina
 (`raciocinio`) e muda o mínimo. Depois das Células, uma conferência **determinística** da Matriz (quantidade,
 unicidade, aprovação e referências) vai para o JSON de auditoria. O Judge transversal foi removido
 ([ADR 0015](adr/0015-papeis-especializados-em-fluxo-deterministico.md),
@@ -235,7 +235,7 @@ verificada por um juiz de visão, e o crédito vai na legenda; no MVP a licença
 Geração de imagem por modelo continua fora do caminho crítico.
 
 A reserva **Pillow + matplotlib** ([ADR 0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md),
-[ADR 0020](adr/0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)) é o que o CI roda:
+[ADR 0020](adr/0020-carrossel-em-templates-html-renderizados-pelo-puppeteer.md)) é o que o `pytest` exercita:
 determinística, sem navegador, com o layout escuro e sem foto.
 
 ### Roteiro
@@ -356,7 +356,8 @@ ela é uma ferramenta de produção de conteúdo, no padrão visual do editor do
   paleta e ícones, a prévia num celular de feed e a exportação em PNG; o vídeo, os estilos de
   narração e o prompt para a ferramenta de avatar. Em todas o Laudo aparece em barras horizontais
   com os Limiares marcados.
-- **Histórico** e **Configurações** (modo Demo ou Real).
+- **Histórico** e **Configurações** (modo Demo ou Real, nome do avatar e o que o sistema liga e
+  desliga: Jev, checador de fidelidade, limite de requisições, rodadas de correção, modelos).
 
 A geração roda em segundo plano na API, um job por vez
 ([ADR 0017](adr/0017-api-dispara-a-geracao-em-segundo-plano.md)); fora do Copom a Saída é "não

@@ -1,5 +1,11 @@
 # O Ciclo de correção tem teto de duas rodadas, e o que sobra vai para revisão humana
 
+> **Atualização (16/10/2026):** o teto deixou de ser fixo. Hoje vem de `rodadas_de_correcao` em
+> `src/suno/configuracoes.py`: padrão 4, de 0 a 10, editável pela aba Configurações ou por
+> `SUNO_RODADAS` no `.env`. `TETO_DE_RODADAS = 2` continua em `src/suno/gerador/ciclo.py` só como
+> registro do valor original. O resto da decisão vale: feedback é o valor medido, e falha de
+> extração vai direto à fila humana.
+
 O Ciclo de correção reescreve a Célula reprovada guiado pelo Laudo. Sem teto, ele é um loop: uma
 Célula que o Gerador não consegue consertar consome cota até a execução morrer, e numa Matriz de
 nove Células basta uma teimosa para travar a demo.
