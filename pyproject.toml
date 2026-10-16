@@ -5,8 +5,7 @@ description = "Adapta uma Ata em nove Células e reprova as que não atingem o L
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-# Toda dependência abaixo está em docs/research/viabilidade-tecnica.md ou foi conferida na
-# documentação oficial antes de entrar (ver legacy/docs/plano-de-execucao.md). Versões fixas de propósito.
+# Toda dependência abaixo foi conferida na documentação oficial antes de entrar. Versões fixas de propósito.
 dependencies = [
     "pydantic==2.13.4",
     "pydantic-evals==2.45.0",          # ADR 0003

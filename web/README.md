@@ -2,8 +2,7 @@
 
 React + Vite + Tailwind sobre FastAPI (ADR 0005), no padrão visual do editor do biosites
 ([ADR 0028](../docs/adr/0028-interface-em-seis-guias-no-padrao-do-biosites.md)): barra lateral
-arredondada, coluna de ajustes à esquerda e área de prévia à direita. Desenho completo em
-`legacy/docs/superpowers/specs/2026-10-12-front-biosites-design.md`.
+arredondada, coluna de ajustes à esquerda e área de prévia à direita.
 
 Seis guias, na ordem da barra:
 

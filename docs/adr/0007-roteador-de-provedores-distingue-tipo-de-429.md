@@ -3,7 +3,7 @@
 > **Atualização (15/10/2026):** o SambaNova também saiu da fila ([ADR 0037](0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)):
 > o teste de 14/10/2026 voltou HTTP 402 `PAYMENT_METHOD_REQUIRED`, e o orçamento é R$ 0. Hoje a fila é Gemini → Groq.
 
-O orçamento é R$ 0 (ver [docs/research/viabilidade-tecnica.md §4](../research/viabilidade-tecnica.md)),
+O orçamento é R$ 0 (pesquisa de viabilidade, §4),
 então o pipeline depende de três contas de tier gratuito — Gemini gera, Groq julga, SambaNova
 Cloud é reserva —, cada uma com uma cota diferente e um jeito diferente de recusar quando estoura. Um
 roteador ingênuo que trata todo 429 do mesmo jeito, ou que reconstrói o cliente do zero ao trocar

@@ -6,7 +6,7 @@ analítico, Carrossel e Roteiro de vídeo). Antes de liberar cada conteúdo, um 
 inteligência artificial confere a legibilidade, os termos técnicos, os números e se o texto
 sugere investimento. O conteúdo que não passa é reescrito ou vai para revisão humana.
 
-Case acadêmico feito por duas pessoas em duas semanas (enunciado em `docs/`), com orçamento
+Case acadêmico feito por duas pessoas em duas semanas, com orçamento
 R$ 0: todo modelo de linguagem usado roda em tier gratuito.
 
 ## O que você precisa
@@ -124,16 +124,13 @@ tests/           suíte pytest
 scripts/         setup, testes, demo, cliente da API, relatório
 data/            Atas, Léxico, canary, Calibração, fotos e a execução de demonstração
 templates/       carrosséis reais da Suno e a bancada que recriou as famílias visuais
-docs/            arquitetura, funcionamento, decisões (ADRs), pesquisa e relatório
-legacy/          planos e prompts já executados, guardados como histórico
+docs/            arquitetura, funcionamento, decisões (ADRs) e relatório experimental
 ```
 
 ## Documentação
 
 - [docs/ARQUITETURA.md](docs/ARQUITETURA.md): como as peças se encaixam e onde um humano decide.
 - [docs/FUNCIONAMENTO.md](docs/FUNCIONAMENTO.md): comandos, configuração, arquivos gerados e API.
-- [docs/adr/](docs/adr/README.md): o porquê de cada decisão estrutural.
-- [docs/research/viabilidade-tecnica.md](docs/research/viabilidade-tecnica.md): cotas, licenças e
-  ferramentas verificadas antes de decidir.
-- [CONTEXT.md](CONTEXT.md): o glossário do projeto.
-- [AGENTS.md](AGENTS.md): instruções para agentes de IA que trabalham no repositório.
+- [docs/DECISOES.md](docs/DECISOES.md): todas as decisões de arquitetura, resumidas; o texto completo
+  de cada uma está em [docs/adr/](docs/adr/).
+- [docs/relatorio-experimental.md](docs/relatorio-experimental.md): métricas, Limiares, custo e latência medidos.
