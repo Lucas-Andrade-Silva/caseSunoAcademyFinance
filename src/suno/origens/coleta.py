@@ -550,7 +550,7 @@ class ColetorDaB3:
 
 
 def coletores_padrao() -> dict[str, Coletor]:
-    """Um coletor por Origem que busca na rede. ``importados`` e ``releases_b3`` não têm."""
+    """Um coletor por Origem que busca na rede. ``importados`` não tem."""
     coletores: list[Coletor] = [
         ColetorDoCopom(),
         ColetorDaCvm("cvm_fatos_relevantes", CategoriaDaAta.COMUNICADO_RELEVANTE, _eh_fato_relevante),

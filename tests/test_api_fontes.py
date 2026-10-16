@@ -62,7 +62,6 @@ def test_a_lista_traz_a_copom_280_com_resumo_e_a_cvm_desligada(tmp_path: Path):
         "bcb_relatorios",
         "bcb_resolucoes",
         "b3_oficios",
-        "releases_b3",
         "importados",
     ]
     assert origens["copom"]["ativa"] is True
@@ -72,8 +71,6 @@ def test_a_lista_traz_a_copom_280_com_resumo_e_a_cvm_desligada(tmp_path: Path):
     assert ata["calibrada"] is True and ata["demo_disponivel"] is True
     assert origens["cvm_fatos_relevantes"]["ativa"] is False
     assert origens["cvm_fatos_relevantes"]["atas"] == []
-    assert origens["releases_b3"]["disponivel"] is False
-    assert origens["releases_b3"]["aviso"] == "em breve"
     assert corpo["atualizacao"]["estado"] == "ocioso"
 
 
@@ -90,13 +87,6 @@ def test_ligar_e_desligar_persiste_no_disco(tmp_path: Path):
 
     desligada = outro.patch("/api/fontes/cvm_fatos_relevantes", json={"ativa": False})
     assert desligada.json()["ativa"] is False
-
-
-def test_origem_indisponivel_responde_409(tmp_path: Path):
-    resposta = _cliente(tmp_path).patch("/api/fontes/releases_b3", json={"ativa": True})
-
-    assert resposta.status_code == 409
-    assert "em breve" in resposta.json()["detail"]
 
 
 def test_origem_desconhecida_responde_404(tmp_path: Path):
@@ -314,12 +304,11 @@ def test_o_catalogo_lista_as_novas_origens(tmp_path: Path):
         "bcb_relatorios",
         "bcb_resolucoes",
         "b3_oficios",
-        "releases_b3",
         "importados",
     ]
 
 
-def test_gerar_de_ata_sem_numero_responde_422_antes_de_gastar_cota(tmp_path: Path, monkeypatch):
+def test_gerar_de_ata_curta_e_sem_numero_responde_422_antes_de_gastar_cota(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "chave-de-teste")
     monkeypatch.setenv("GEMINI_MODELO", "modelo-de-teste")
     executor = ExecutorFalso()
@@ -343,8 +332,38 @@ def test_gerar_de_ata_sem_numero_responde_422_antes_de_gastar_cota(tmp_path: Pat
     )
 
     assert pedido.status_code == 422
-    assert "número com unidade" in pedido.json()["detail"]
+    assert "curto demais" in pedido.json()["detail"]
     assert executor.chamadas == []
+
+
+def test_ata_longa_sem_numero_e_aceita_e_marcada_como_qualitativa(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "chave-de-teste")
+    monkeypatch.setenv("GEMINI_MODELO", "modelo-de-teste")
+    executor = ExecutorFalso()
+    cliente = _cliente(tmp_path, executor=executor)
+    texto = (
+        "São Paulo, 2 de outubro de 2026. A companhia comunicou ao mercado que o conselho de "
+        "administração aprovou a substituição do diretor-presidente após a conclusão do plano de "
+        "sucessão, e que o novo diretor-presidente é um executivo da própria companhia."
+    )
+    ata = cliente.post(
+        "/api/fontes/importar",
+        params={"titulo": "Troca de presidente", "data_referencia": "2026-10-02"},
+        content=texto.encode(),
+        headers={"content-type": "text/plain"},
+    ).json()
+    assert ata["extracao_completa"] is True and ata["qualitativa"] is True
+
+    pedido = cliente.post(
+        "/api/execucoes",
+        json={
+            "ata": ata["identificador"],
+            "modo": "real",
+            "pedido": [{"audiencia": "iniciante", "formato": "carrossel"}],
+        },
+    )
+
+    assert pedido.status_code < 300
 
 
 # ---------------------------------------------------------------------------

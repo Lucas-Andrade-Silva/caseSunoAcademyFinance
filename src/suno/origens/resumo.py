@@ -13,7 +13,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from suno.avaliador.integridade import medir_integridade
-from suno.dominio import Ata, CategoriaDaAta, chaves_essenciais_da
+from suno.dominio import Ata, CategoriaDaAta, Unidade, chaves_essenciais_da
 from suno.gerador.extracao import por_regra_generica
 from suno.ingestao.numeros import NumeroEncontrado, extrair_numeros
 
@@ -40,8 +40,10 @@ class ResumoDaAta(BaseModel):
     calibrada: bool
     demo_disponivel: bool
     extracao_completa: bool
-    """Fora do Copom: a regra fixa achou uma data e um número com unidade. Sem isso, toda Célula
-    reprovaria por falha de extração, então gerar só gastaria cota."""
+    """Dá para gerar? Fora do Copom: a Ata traz um número, ou texto suficiente para o LLM extrair
+    uma afirmação central. Sem nenhum dos dois, toda Célula reprovaria por falha de extração."""
+    qualitativa: bool = False
+    """Fora do Copom: nenhum número no texto. O conteúdo sai sem valor a conferir (ADR 0034)."""
 
 
 def _cortar(texto: str) -> str:
@@ -69,17 +71,31 @@ def contar_ancoras(achados: list[NumeroEncontrado]) -> int:
     return len({(achado.literal, achado.unidade) for achado in achados})
 
 
+TEXTO_MINIMO_SEM_NUMERO = 200
+"""Caracteres que uma Ata sem número precisa ter para o LLM achar uma afirmação central."""
+
+
 def extracao_completa(ata: Ata, achados: list[NumeroEncontrado]) -> bool:
     """A extração vai ter o que o conjunto essencial da categoria exige?
 
     No Copom a regra fixa mais a rotulagem do LLM completam o conjunto, e não dá para prever o
-    que o LLM acha: vale ``True``. Fora do Copom as duas chaves essenciais saem só de regra fixa,
-    então a resposta é exata e sem chamar modelo.
+    que o LLM acha: vale ``True``. Fora do Copom a data sai de regra fixa (do texto ou dos
+    metadados) e o fato central é um número ou, sem número, uma afirmação que só o LLM extrai:
+    com número a resposta é exata; sem número vale o texto ter corpo para uma afirmação.
     """
     if ata.categoria is CategoriaDaAta.COPOM:
         return True
     ancoras = por_regra_generica(ata, achados)
-    return medir_integridade(ancoras, chaves_essenciais_da(ata.categoria)).completa
+    if medir_integridade(ancoras, chaves_essenciais_da(ata.categoria)).completa:
+        return True
+    return len(ata.texto.strip()) >= TEXTO_MINIMO_SEM_NUMERO
+
+
+def sem_numero(ata: Ata, achados: list[NumeroEncontrado]) -> bool:
+    """Fora do Copom, nenhum número (só datas) no texto: o conteúdo será qualitativo."""
+    return ata.categoria is not CategoriaDaAta.COPOM and not any(
+        a.unidade is not Unidade.DATA for a in achados
+    )
 
 
 def resumir_ata(ata: Ata, *, demo_disponivel: bool) -> ResumoDaAta:
@@ -95,4 +111,5 @@ def resumir_ata(ata: Ata, *, demo_disponivel: bool) -> ResumoDaAta:
         calibrada=ata.categoria is CategoriaDaAta.COPOM,
         demo_disponivel=demo_disponivel,
         extracao_completa=extracao_completa(ata, achados),
+        qualitativa=sem_numero(ata, achados),
     )
