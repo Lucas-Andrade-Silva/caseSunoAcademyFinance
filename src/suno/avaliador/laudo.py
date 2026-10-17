@@ -405,6 +405,12 @@ def _onde(conteudo: Conteudo | None, frase: str) -> str:
     return ""
 
 
+def _dentro_de_parentese(texto: str, posicao: int) -> bool:
+    """Há um parêntese aberto e ainda não fechado antes de ``posicao``?"""
+    antes = texto[:posicao]
+    return antes.rfind("(") > antes.rfind(")")
+
+
 def _onde_esta_cada_termo(
     texto: str, conteudo: Conteudo | None, medido: ResultadoDensidade
 ) -> dict[str, str]:
@@ -420,6 +426,13 @@ def _onde_esta_cada_termo(
         frase = frase_em(texto, ocorrencia.posicao)
         local = _onde(conteudo, frase)
         onde[termo] = f"{local}: «{frase}»" if local else f"«{frase}»"
+        if _dentro_de_parentese(texto, ocorrencia.posicao):
+            # Só repetir a frase não bastou: o Gerador manteve "o Copom (o grupo que define os
+            # juros, o preço do dinheiro)" por quatro rodadas (beta teste copom-281, 2026-10-17).
+            onde[termo] += (
+                f" — «{termo}» está dentro da explicação de outro termo; ali, troque-o por "
+                "palavras comuns. Vírgula depois dele não conta como explicação."
+            )
     return onde
 
 

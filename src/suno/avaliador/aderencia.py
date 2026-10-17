@@ -146,7 +146,19 @@ def _ancora_que_cita_o_ano(
     if achado.unidade is not Unidade.DATA or achado.data_iso is not None or achado.ano is None:
         return None
     ano = re.compile(rf"\b{achado.ano}\b")
-    return next((ancora for ancora in numericas if ano.search(ancora.trecho or "")), None)
+    return next(
+        (ancora for ancora in numericas if ano.search(_digitos_colados(ancora.trecho or ""))),
+        None,
+    )
+
+
+def _digitos_colados(trecho: str) -> str:
+    """Desfaz o ano que a extração do PDF partiu: "trimestre de 202 8" vira "de 2028".
+
+    Só cola um algarismo solto ao grupo de três que o antecede, a forma em que o PDF da Ata
+    281 quebrou o ano; "2026 , 2027" e "5,2%, 3,9%" ficam como estão.
+    """
+    return re.sub(r"\b(\d{3}) (\d)\b", r"\1\2", trecho)
 
 
 def _com_unidade(achado: NumeroEncontrado) -> str:

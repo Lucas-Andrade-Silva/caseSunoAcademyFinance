@@ -341,6 +341,8 @@ def medir_densidade(texto: str, exigencia: ExigenciaDeExplicacao) -> ResultadoDe
 
     termos_encontrados: list[TermoEncontrado] = []
     primeira_ocorrencia: dict[str, TermoEncontrado] = {}
+    frase_da_primeira: dict[str, int] = {}
+    explicado_na_primeira_frase: dict[str, bool] = {}
     ordem_de_aparicao: list[str] = []
 
     for inicio, fim, nome_termo, nucleo in ocorrencias_aceitas:
@@ -352,13 +354,20 @@ def medir_densidade(texto: str, exigencia: ExigenciaDeExplicacao) -> ResultadoDe
         termos_encontrados.append(encontrado)
         if nome_termo not in primeira_ocorrencia:
             primeira_ocorrencia[nome_termo] = encontrado
+            frase_da_primeira[nome_termo] = indice_frase
+            explicado_na_primeira_frase[nome_termo] = explicado
             ordem_de_aparicao.append(nome_termo)
+        elif indice_frase == frase_da_primeira[nome_termo] and explicado:
+            # Outra forma do mesmo termo, explicada na mesma frase: "a taxa básica de juros, a
+            # Selic (o termômetro do crédito)" explica a Selic, que é o mesmo termo (beta
+            # teste, Roteiro Iniciante copom-281, 2026-10-17).
+            explicado_na_primeira_frase[nome_termo] = True
 
     sem_explicacao = [
         nome_termo
         for nome_termo in ordem_de_aparicao
         if _exige_explicacao(exigencia, primeira_ocorrencia[nome_termo].nucleo)
-        and not primeira_ocorrencia[nome_termo].explicado
+        and not explicado_na_primeira_frase[nome_termo]
     ]
 
     proporcao = len(termos_encontrados) / total_palavras

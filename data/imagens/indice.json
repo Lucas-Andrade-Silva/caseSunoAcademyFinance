@@ -465,5 +465,107 @@
     "consulta": "sede do Banco do Nordeste",
     "largura": 1920,
     "altura": 1080
+  },
+  {
+    "id": "dia-internacional-das-micro-pequenas-e-medias-empresas-brasi",
+    "arquivo": "dia-internacional-das-micro-pequenas-e-medias-empresas-brasi.jpg",
+    "tags": [
+      "sede de empresa"
+    ],
+    "titulo": "Dia Internacional das Micro, Pequenas e Médias Empresas: Brasil comemora contribuição do setor para a economia nacional - Varejo S.A",
+    "autor": "cndl.org.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://cndl.org.br/varejosa/dia-internacional-das-micro-pequenas-e-medias-empresas-brasil-comemora-contribuicao-do-setor-para-a-economia-nacional/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "sede de empresa",
+    "largura": 1920,
+    "altura": 1280
+  },
+  {
+    "id": "superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e",
+    "arquivo": "superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e.jpg",
+    "tags": [
+      "tribunal de justiça"
+    ],
+    "titulo": "Superior Tribunal de Justiça mantém taxa de juros pactuada e não considera a taxa média do mercado como limite - Notícias | Siqueira Castro",
+    "autor": "siqueiracastro.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.siqueiracastro.com.br/noticias/superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e-nao-considera-a-taxa-media-do-mercado-como-limite/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "tribunal de justiça",
+    "largura": 1024,
+    "altura": 731
+  },
+  {
+    "id": "mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e",
+    "arquivo": "mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e.webp",
+    "tags": [
+      "documentos financeiros"
+    ],
+    "titulo": "Mercado mantém estáveis projeções para inflação, juros, PIB e dólar | Agência Brasil",
+    "autor": "agenciabrasil.ebc.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-08/mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e-dolar",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "documentos financeiros",
+    "largura": 1170,
+    "altura": 700
+  },
+  {
+    "id": "mercado-financeiro-aumenta-previsao-de-crescimento-da-econom",
+    "arquivo": "mercado-financeiro-aumenta-previsao-de-crescimento-da-econom.png",
+    "tags": [
+      "crescimento financeiro"
+    ],
+    "titulo": "Mercado financeiro aumenta previsão de crescimento da economia – SETCESP",
+    "autor": "setcesp.org.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://setcesp.org.br/noticias/mercado-financeiro-crescimento-economia/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "crescimento financeiro",
+    "largura": 1080,
+    "altura": 675
+  },
+  {
+    "id": "intencao-de-consumo-das-familias-cresce-2-6-em-junho-agencia",
+    "arquivo": "intencao-de-consumo-das-familias-cresce-2-6-em-junho-agencia.jpg",
+    "tags": [
+      "loja de varejo"
+    ],
+    "titulo": "Intenção de consumo das famílias cresce 2,6% em junho | Agência Brasil",
+    "autor": "agenciabrasil.ebc.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://agenciabrasil.ebc.com.br/economia/noticia/2023-06/intencao-de-consumo-das-familias-cresce-26-em-junho",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "loja de varejo",
+    "largura": 1170,
+    "altura": 700
+  },
+  {
+    "id": "economia-vendas-computador-grafico-geral-telesintese",
+    "arquivo": "economia-vendas-computador-grafico-geral-telesintese.jpg",
+    "tags": [
+      "computador com gráficos"
+    ],
+    "titulo": "economia-vendas-computador-grafico-geral - TeleSíntese",
+    "autor": "telesintese.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://telesintese.com.br/preco-do-acesso-a-banda-larga-sobe-851-em-agosto-diz-ibge/economia-vendas-computador-grafico-geral-2/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "computador com gráficos",
+    "largura": 936,
+    "altura": 600
   }
 ]

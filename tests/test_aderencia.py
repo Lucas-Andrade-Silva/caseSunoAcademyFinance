@@ -322,3 +322,8 @@ def test_ano_citado_no_trecho_da_ancora_e_sustentado():
 def test_ano_que_nenhum_trecho_cita_continua_reprovando():
     resultado = medir_aderencia("3,9% em 2031", [_PROJECAO])
     assert resultado.numeros_fora_das_ancoras == ["2031"]
+
+
+def test_ano_partido_pela_extracao_do_pdf_ainda_e_achado_no_trecho():
+    partido = _PROJECAO.model_copy(update={"trecho": "para o primeiro trimestre de 202 8, 3,2%"})
+    assert medir_aderencia("3,9% em 2028", [partido]).numeros_fora_das_ancoras == []

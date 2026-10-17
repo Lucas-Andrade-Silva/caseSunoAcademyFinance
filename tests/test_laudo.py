@@ -202,6 +202,18 @@ def test_termo_do_lexico_sem_explicacao_reprova_por_densidade() -> None:
     assert "Iniciante" in correcao.instrucao
 
 
+def test_correcao_avisa_quando_o_termo_esta_dentro_da_explicacao_de_outro() -> None:
+    texto = (
+        "O Copom (o grupo que define os juros, o preço do dinheiro) reduziu a taxa. "
+        "A taxa caiu."
+    )
+    laudo = avaliar(_analitico(texto), _ancoras(), Audiencia.INICIANTE)
+
+    correcao = _correcao(laudo, Metrica.DENSIDADE)
+    assert correcao is not None
+    assert "dentro da explicação de outro termo" in correcao.instrucao
+
+
 def test_o_mesmo_termo_cru_passa_no_avancado_que_nunca_exige_explicacao() -> None:
     laudo = avaliar(_analitico(TEXTO_COM_TERMO_CRU), _ancoras(), Audiencia.AVANCADO)
 
