@@ -1,19 +1,21 @@
-"""Ciclo de correção: no máximo duas rodadas; o feedback é o valor medido. Falha de extração
-nem tenta: vai direto à fila humana (H4).
+"""Ciclo de correção: até o teto de rodadas configurado; o feedback é o valor medido. Falha de
+extração nem tenta: vai direto à fila humana (H4).
 
 ADR 0013.
 
-Três gerações no pior caso — a original mais duas correções — e nunca uma quarta. É o que
-torna o custo por Ata previsível: nove Células × três gerações = 27 chamadas de Gerador no
-teto, e é isso que faz do orçamento de R$ 0 uma afirmação verificável.
+O teto vem de ``configuracoes.rodadas_de_correcao`` (padrão 4, de 0 a 10): no pior caso são a
+geração original mais esse número de correções, e nunca mais. É o que torna o custo por Ata
+previsível: nove Células × (teto + 1) gerações, e é isso que faz do orçamento de R$ 0 uma
+afirmação verificável.
 
-Os três desfechos de uma rodada:
+Os desfechos de uma rodada:
 
 - ``APROVADO`` — o Ciclo para, a Célula está pronta.
 - ``REPROVADO_REVISAO_HUMANA`` — falha de extração. **Não** há nova rodada: reescrever não
   conserta um documento mal lido (ADR 0013).
-- ``REPROVADO_CORRIGIVEL`` — nova rodada com ``laudo.correcoes``, até o teto. Depois do
-  teto, o destino final vira revisão humana com as três tentativas preservadas.
+- ``REPROVADO_CORRIGIVEL`` — nova rodada com as correções pendentes, até o teto. Depois do
+  teto, o destino final vira revisão humana com todas as tentativas preservadas. Também vira
+  revisão humana, antes do teto, o Gerador que devolve o mesmo texto da rodada anterior.
 
 Falha de provedor no meio do Ciclo termina o histórico em revisão humana com o que já
 existia: uma Célula reprovada em mão vale mais que nenhuma, e quem decide é o humano do H4.
@@ -63,8 +65,8 @@ if TYPE_CHECKING:
 _registro = logging.getLogger(__name__)
 
 TETO_DE_RODADAS = 2
-"""O teto antigo (ADR 0013). Hoje o valor vem de ``configuracoes.rodadas_de_correcao`` (padrão 4),
-editável na aba Configurações: o Ciclo regenera e roda o determinístico de novo até passar ou até o teto."""
+"""O teto antigo (ADR 0013), mantido só porque os testes o importam (o ``conftest`` fixa ``SUNO_RODADAS=2``).
+O valor em uso vem de ``configuracoes.rodadas_de_correcao`` (padrão 4), editável na aba Configurações."""
 
 Andou = Callable[[Audiencia, Formato, EtapaDaCelula, int], None]
 """Aviso de andamento de uma Célula: (Audiência, Formato, etapa, rodada). Quem escuta é a API."""

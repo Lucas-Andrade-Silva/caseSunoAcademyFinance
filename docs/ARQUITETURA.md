@@ -94,7 +94,7 @@ flowchart TD
     CAR --> A
     ROT --> A
 
-    H2{{"H2 · Calibração e Léxico<br/>~30 Células rotuladas à mão,<br/>Kappa 0,6–0,8 · define os Limiares"}}
+    H2{{"H2 · Calibração e Léxico<br/>Limiares hoje provisórios (NILC) ·<br/>rotulagem de ~30 Células + Kappa<br/>ainda não feita"}}
     H2 -.->|"parametriza, fora de runtime"| A
 
     subgraph A["Avaliador · sem LLM e sem rede por padrão"]
@@ -111,7 +111,7 @@ flowchart TD
     LAUDO -->|"reprovado,<br/>correção possível"| CICLO["Ciclo de correção<br/>teto configurável, padrão 4<br/>feedback = valor medido · ADR 0013"]
     CICLO --> MATRIZ
 
-    LAUDO -->|"reprovado 2×<br/>ou falha de extração"| H4
+    LAUDO -->|"teto de rodadas, texto repetido,<br/>falha de extração ou de provedor"| H4
     H4{{"H4 · Fila de revisão humana<br/>reescrever à mão · ajustar Limiar ·<br/>ou descartar a Célula"}}
     H4 -->|"reescrita aprovada"| P
 
@@ -146,9 +146,9 @@ flowchart TD
 | | Momento | Quem | O que decide |
 |---|---|---|---|
 | **H1** | Antes da execução | Qualquer um do time | Qual Ata entra. O fetch no BCB é comando separado; a demo roda sem rede ([ADR 0006](DECISOES.md)) |
-| **H2** | Fora de runtime | Dona do Avaliador | Os Limiares, o Léxico e os padrões sintáticos. Deriva de ~30 Células rotuladas pelas duas pessoas, com Kappa reportado. Parametriza o Avaliador; não roda durante a execução |
+| **H2** | Fora de runtime | Dona do Avaliador | Os Limiares, o Léxico e os padrões sintáticos. O plano é derivá-los de ~30 Células rotuladas pelas duas pessoas, com Kappa reportado. **Hoje isso não aconteceu:** os Limiares de Flesch-BR são os provisórios das faixas do NILC (`LIMIARES_PROVISORIOS`), o de Qualidade (0,6) também é provisório, e `data/calibracao/` só tem o formato (`FORMATO.md`) e uma linha de exemplo. O código de Kappa e de matriz de confusão existe (`avaliador/calibracao.py`) e espera o `rotulos.csv`. Parametriza o Avaliador; não roda durante a execução |
 | **H3** | — | — | Removido junto com o Comitê, que era quem gerava o desempate ([ADR 0037](DECISOES.md)) |
-| **H4** | Depois do teto de correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar, ou com a Ata que o extrator não conseguiu ler ([ADR 0013](DECISOES.md)) |
+| **H4** | Depois do teto de correções | Qualquer um do time | O que fazer com a Célula que o Gerador não conseguiu consertar (teto de rodadas esgotado, ou o Gerador devolveu o mesmo texto da rodada anterior), com a Ata que o extrator não conseguiu ler, ou com a Célula que parou por falha de provedor ([ADR 0013](DECISOES.md)) |
 | **H5** | Antes de publicar | Qualquer um do time | Se o Pacote está apresentável. Aprovação do Laudo é sobre conteúdo; aqui se confere render, corte e legenda, com a lista da avaliação visual em mão ([ADR 0014](DECISOES.md)) |
 | **H6** | Publicação | Qualquer um do time | Publica. Não há integração de API com Instagram, TikTok ou Drive, por decisão |
 
@@ -165,7 +165,11 @@ Recomendação. Depois do determinístico vêm duas camadas de LLM, por Célula:
 desenvolvimento, completude, clareza e tom, sempre ligado) e a **Fidelidade** (um LLM confere a Célula contra
 a Ata, ligada por padrão). Abaixo do Limiar, ou diante de contradição provada com a Ata, a Célula volta ao Gerador,
 dentro do mesmo teto de rodadas (padrão 4, de 0 a 10). Na correção o Gerador recebe a frase exata de cada problema, raciocina
-(`raciocinio`) e muda o mínimo. Depois das Células, uma conferência **determinística** da Matriz (quantidade,
+(`raciocinio`) e muda o mínimo. O Ciclo (`gerador/ciclo.py`) também para, e manda a Célula ao H4, quando o Gerador devolve
+**o mesmo texto da rodada anterior** (outra rodada só gastaria cota para reprovar igual) e quando o provedor falha no meio (a
+Célula fica com as tentativas que já existiam e o erro, sem credencial, em `HistoricoCelula.falha`). Uma correção só sai do
+pedido quando a sua própria métrica foi medida e aprovou: assim, uma camada posterior que não chegou a rodar não faz o Gerador
+esquecer a orientação anterior e alternar entre duas reprovações. Depois das Células, uma conferência **determinística** da Matriz (quantidade,
 unicidade, aprovação e referências) vai para o JSON de auditoria. O Judge transversal foi removido
 ([ADR 0015](DECISOES.md),
 [ADR 0035](DECISOES.md),
@@ -318,7 +322,20 @@ Uma única interface por trás da qual vivem Gemini (gera) e Groq (julga e é a 
 resto do pipeline não sabe qual provedor está ativo. Distingue cota por minuto de cota diária
 antes de decidir entre esperar e trocar, e reaplica bindings de saída estruturada ao trocar de
 cliente, para não perder a capacidade de produzir o schema da Célula no meio de uma troca
-silenciosa ([ADR 0007](DECISOES.md)).
+silenciosa ([ADR 0007](DECISOES.md)). Erro transitório (HTTP 5xx, queda de transporte) espera
+5, 15 e 30 s antes de trocar de provedor, e um limitador próprio (`provedores/limitador.py`,
+padrão 8 requisições por minuto somando os provedores) evita o 429 antes de ele acontecer.
+
+A fila é **por papel** (`configuracoes.ORDEM_PADRAO`, editável na aba Configurações):
+
+| Papel | Ordem padrão | Para quê |
+|---|---|---|
+| `gerador` | Gemini → Groq | Curador e geradores de persona; só o Gemini aguenta a Ata inteira |
+| `checador` | Groq → Gemini | Fidelidade à Ata |
+| `video` | Groq → Gemini | Direção de atuação do avatar e prompt do vídeo |
+| `juiz_visao`, `diretor_arte`, `analista_visual` | Gemini → Groq | Os que olham imagem |
+
+O Jev não passa pelo roteador: é uma chamada HTTP própria (`ClienteJev`) a uma Netlify Function.
 
 ## O Avaliador e o Laudo
 
@@ -334,6 +351,42 @@ e o código confere as citações). Compliance e Aderência nunca passam por LLM
 opinião ([ADR 0035](DECISOES.md),
 [ADR 0036](DECISOES.md),
 [ADR 0037](DECISOES.md)).
+
+A ordem é fixa em `avaliador/laudo.py::avaliar`: as cinco medidas determinísticas saem sempre,
+inclusive quando a primeira já reprovou (quem lê o H4 precisa ver o texto inteiro julgado); a
+Qualidade só é consultada se as cinco aprovaram; a Fidelidade só se tudo o mais aprovou, por ser
+a chamada mais cara. A falha de qualquer das duas deixa o Laudo sem a medida, nunca reprova: ausência
+de medida não é nota zero.
+
+### Qualidade (Jev)
+
+O Jev (TypeSafe) é usado como **classificador de sistema único**, não como gerador: uma chamada HTTP
+leva o texto e quatro perguntas `score`, cada uma com uma rubrica de quatro níveis ordenados, e devolve
+uma nota por pergunta, com a confiança. A nota vai de 0 a 1 (o nível ponderado pela probabilidade,
+dividido pelo nível mais alto) e a Medida carrega a **menor**: uma média esconderia qual dimensão
+falhou, e a Correção diz "desenvolvimento 33%" em vez de "melhore o texto". O Jev não sabe qual modelo
+gerou o texto. O Limiar (0,6) é provisório. A chamada passa por uma Netlify Function
+(`netlify-jev/`) que guarda a chave e o endereço, exige um segredo próprio, limita o corpo a 256 KB e
+corta em 20 s; o cliente repete em 429 e 529 com espera crescente.
+
+### Fidelidade (Factuality & Grounding Checker)
+
+Um LLM lê a Ata inteira e a Célula e aponta `sem_suporte`, `distorce` ou `contradiz`, **copiando o trecho
+literal** da Célula e, nos dois últimos, o trecho literal da Ata. O código confere cada citação (texto
+normalizado, no mínimo 15 caracteres); citação que não existe é invenção do juiz e o achado é descartado,
+e a contagem fica registrada. Só `distorce` e `contradiz` reprovam, porque têm prova conferida;
+`sem_suporte` é só a opinião do modelo e apenas avisa (medido em 6 Células reais aprovadas, bloqueá-lo
+reprovaria metade delas, quase sempre por conclusão correta tirada de fato da Ata). O pedido proíbe apontar
+explicação de termo, analogia e conclusão direta dos fatos já conferidos, e manda não apontar na dúvida.
+Temperatura 0, raciocínio baixo, saída estruturada; acima de 350 mil caracteres de Ata a Célula sai sem
+Fidelidade.
+
+### Calibração
+
+`avaliador/calibracao.py` calcula o Kappa de Cohen e a matriz de confusão por Audiência a partir do
+`rotulos.csv` preenchido à mão. Sem esse arquivo, o relatório mostra só a matriz automática, marcada
+`ORIGEM_AUTOMATICA`: ela cruza a Audiência pretendida com a que o Flesch-BR mediria e **não é**
+concordância humana.
 
 O Laudo tem três destinos, não dois: aprovado, reprovado com correção possível, e reprovado para
 revisão humana. O motivo de reprovação é valor enumerado, não texto livre — é o que permite contar
@@ -375,7 +428,31 @@ continuam; o Compliance segue sendo métrica do Laudo, não da tela.
 
 Número de slides do Carrossel e comprimento do Texto analítico por Audiência não estão decididos
 aqui (a duração do Roteiro é escolha da pessoa: ADR 0021). São conhecimento de domínio da dona do Avaliador e saem da
-Calibração (H2), junto com os Limiares.
+Calibração (H2), junto com os Limiares. Enquanto a Calibração não for feita, valem os Limiares provisórios.
+
+## Técnicas de IA, e onde cada uma vive
+
+O projeto não usa LangChain, LangGraph, MCP, RAG, embeddings nem fine-tuning (ADR 0010: a Ata cabe
+inteira no contexto, as nove Células são independentes e não há decisão dinâmica a tomar). O que usa:
+
+| Técnica | Onde |
+|---|---|
+| Saída estruturada com schema Pydantic | Todas as chamadas de geração e de juízo, via `completar_estruturado` |
+| Grounding numérico por citação: regras extraem, o LLM só rotula, o código copia | `gerador/extracao.py`, `gerador/moldes.py` (`{{chave}}` trocada depois da resposta), ADR 0011 |
+| Juiz de LLM com evidência verificada pelo código | `avaliador/fidelidade.py` |
+| Classificador de sistema único com rubrica de níveis (Jev) | `avaliador/qualidade.py`, `netlify-jev/` |
+| Autocorreção com feedback quantitativo e correção cirúrgica | `gerador/ciclo.py` |
+| NLP clássico: POS tagging do spaCy, Léxico, padrão sintático | `avaliador/recomendacao.py` |
+| Legibilidade por fórmula própria, com silabador próprio | `avaliador/flesch_br.py`, `silabas.py` |
+| Extração de números, datas e números por extenso | `ingestao/numeros.py` (`text2num`, `babel`, `dateparser`) |
+| Visão: juiz de folha de contato, relevância de foto, análise de referência | `pacote/visual.py`, `imagens/validacao.py`, `pacote/analise_visual.py` |
+| Direção de arte por LLM validada pelo código, com reserva determinística | `pacote/diretor_de_arte_ia.py` |
+| Roteamento entre provedores com leitura do tipo de erro | `provedores/roteador.py` |
+| Avaliação do próprio sistema, sem LLM no juiz | `evals/` (`pydantic-evals` com avaliadores próprios; `LLMJudge` e `GEval` ficam de fora de propósito) |
+
+A regra que liga as linhas: onde um LLM julga, algo verificável o cerca (citação conferida, número
+copiado da tabela, nota por rubrica de níveis); onde se precisa de veredito repetível (número,
+legibilidade, Recomendação), não há LLM.
 
 ## O que este diagrama não mostra
 

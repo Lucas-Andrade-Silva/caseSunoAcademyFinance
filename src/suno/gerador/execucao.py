@@ -268,13 +268,12 @@ def executar(
     junta as Atas, com as Âncoras prefixadas por parte (``a1_``, ``a2_``…).
 
     ``pedido`` escolhe quais Células gerar (de uma a nove; sem ele, as nove). Com menos de
-    duas, a avaliação da Matriz e o Judge não rodam: coerência entre Células pede ao menos
-    duas. ``nome`` é o rótulo de tela; vazio vira o identificador. ``ao_mudar_fase`` e
+    duas, a avaliação da Matriz não roda: coerência entre Células pede ao menos duas. ``nome`` é o rótulo de tela; vazio vira o identificador. ``ao_mudar_fase`` e
     ``ao_andar`` são os avisos de andamento que a API grava em ``andamento.json`` (ADR 0017).
     ``jev`` é ``None`` por padrão e então a Qualidade (ADR 0035) está ligada, se houver a chave do Jev;
     ``jev=False`` a desliga.
-    ``fidelidade`` liga o checador de fidelidade à Ata (ADR 0036); ``None`` obedece a
-    ``SUNO_FIDELIDADE``, que nasce desligado.
+    ``fidelidade`` liga o checador de fidelidade à Ata (ADR 0036); ``None`` obedece à
+    configuração, em que a Fidelidade nasce ligada (``SUNO_FIDELIDADE=0`` a desliga).
     ``duracao`` é a duração que a pessoa escolheu para o Roteiro (40s a 3m); as outras duas
     formas não a leem.
     """
