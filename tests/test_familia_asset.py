@@ -1,4 +1,4 @@
-"""Família Asset (Suno Asset): capa vermelha e aviso legal, renderizados com texto real do Gerador.
+"""Família Asset (Suno Asset): capa vermelha, miolo vermelho e aviso legal, renderizados com texto real do Gerador.
 
 A família tem marca própria (gestora de fundos): só entra por escolha explícita. O texto jurídico
 do aviso é fixo e é o da Suno Asset para fundos; os demais textos fixos são neutros.
@@ -42,7 +42,7 @@ TEXTO_JURIDICO = (
     "https://www.suno.com.br/asset/fundos/"
 )
 
-LAYOUTS = [ComposicaoCarrossel.ASSET_CAPA, ComposicaoCarrossel.ASSET_AVISO]
+LAYOUTS = [ComposicaoCarrossel.ASSET_CAPA, ComposicaoCarrossel.ASSET_TEXTO, ComposicaoCarrossel.ASSET_AVISO]
 
 
 def _layouts_da_familia() -> dict[ComposicaoCarrossel, familias.LayoutDeFamilia]:
@@ -54,14 +54,15 @@ def _layouts_da_familia() -> dict[ComposicaoCarrossel, familias.LayoutDeFamilia]
 # ---------------------------------------------------------------------------
 
 
-def test_a_familia_asset_so_abre_e_encerra_e_nao_cobre_o_miolo() -> None:
-    """Capa e aviso são as bordas do carrossel. Sem layout de texto, o miolo (ponto, citação)
-    não tem onde cair, e repetir o aviso legal em todo slide seria um defeito, não um layout."""
+def test_a_familia_asset_cobre_todos_os_papeis_sem_repetir_o_aviso_no_miolo() -> None:
+    """Capa e aviso são as bordas; o miolo (ponto, citação) cai no layout de texto, recriado no
+    estilo da capa. Repetir o aviso legal em todo slide seria um defeito, não um layout."""
     layouts = _layouts_da_familia()
     assert set(layouts) == set(LAYOUTS)
     assert layouts[ComposicaoCarrossel.ASSET_CAPA].papeis == {TipoSlide.HOOK}
+    assert layouts[ComposicaoCarrossel.ASSET_TEXTO].papeis == {TipoSlide.PONTO, TipoSlide.CITACAO}
     assert layouts[ComposicaoCarrossel.ASSET_AVISO].papeis == {TipoSlide.CTA}
-    assert set().union(*(l.papeis for l in layouts.values())) == {TipoSlide.HOOK, TipoSlide.CTA}
+    assert set().union(*(l.papeis for l in layouts.values())) == set(TipoSlide)
 
 
 def test_o_manifesto_avisa_que_o_texto_juridico_e_da_gestora_e_pede_compliance() -> None:
@@ -105,6 +106,16 @@ def test_nenhum_texto_fixo_da_capa_promete_nem_traz_numero() -> None:
     texto_do_html = re.sub(r"<style>.*?</style>|<[^>]+>", " ", html, flags=re.S)
     assert "garantid" not in texto_do_html.lower()
     assert "DATACOM" not in html
+
+
+def test_nenhum_texto_fixo_do_miolo_promete_nem_traz_numero() -> None:
+    texto = _layouts_da_familia()[ComposicaoCarrossel.ASSET_TEXTO]
+    for fixo in _textos_fixos(texto):
+        assert "garantid" not in fixo.lower(), fixo
+        assert not re.search(r"\d", fixo), fixo
+    html = (familias.PASTA_DOS_TEMPLATES / texto.arquivo).read_text(encoding="utf-8")
+    html = re.sub(r"<style>.*?</style>|<!--.*?-->", " ", html, flags=re.S)
+    assert "garantid" not in html.lower()
 
 
 def test_o_aviso_so_tem_o_texto_juridico_original_como_texto_fixo() -> None:
@@ -183,6 +194,28 @@ def test_aviso_renderiza_1080x1350_sem_defeito_em_cada_papel(
     tipo: TipoSlide, tmp_path: Path, ancoras  # noqa: F811
 ) -> None:
     _, defeitos = _renderizar(_aviso(tipo), ComposicaoCarrossel.ASSET_AVISO, tmp_path, ancoras, foto=None)
+    assert defeitos == [], defeitos
+
+
+@requer_navegador
+@pytest.mark.parametrize("tipo", [TipoSlide.PONTO, TipoSlide.CITACAO])
+def test_miolo_renderiza_1080x1350_sem_defeito_em_cada_papel(
+    tipo: TipoSlide, tmp_path: Path, ancoras  # noqa: F811
+) -> None:
+    _, defeitos = _renderizar(_aviso(tipo), ComposicaoCarrossel.ASSET_TEXTO, tmp_path, ancoras, foto=None)
+    assert defeitos == [], defeitos
+
+
+@requer_navegador
+def test_miolo_com_texto_longo_encolhe_em_vez_de_estourar(tmp_path: Path, ancoras) -> None:  # noqa: F811
+    longo = Slide(
+        tipo=TipoSlide.PONTO,
+        titulo="Por que a decisão de juros do Banco Central muda o custo do crédito",
+        corpo=" ".join(
+            ["O Comitê avalia o balanço de riscos com cautela e serenidade para decidir os juros."] * 3
+        ),
+    )
+    _, defeitos = _renderizar(longo, ComposicaoCarrossel.ASSET_TEXTO, tmp_path, ancoras, foto=None)
     assert defeitos == [], defeitos
 
 

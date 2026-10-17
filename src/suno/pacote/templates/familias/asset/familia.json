@@ -1,7 +1,7 @@
 {
   "familia": "asset",
   "nome": "Suno Asset",
-  "descricao": "Família da Suno Asset (gestora de fundos): capa vermelha com textura de tecido e botão verde, e slide de aviso legal. Tem marca própria e só entra por escolha explícita; o aviso legal é o da gestora para fundos e exige revisão do compliance antes de acompanhar outro conteúdo.",
+  "descricao": "Família da Suno Asset (gestora de fundos): capa vermelha com textura de tecido e botão verde, miolo vermelho para ponto e citação e slide de aviso legal. Tem marca própria e só entra por escolha explícita; o aviso legal é o da gestora para fundos e exige revisão do compliance antes de acompanhar outro conteúdo.",
   "referencia": "templates/suno/carrossel5",
   "layouts": {
     "asset_capa": {
@@ -64,6 +64,66 @@
           ]
         },
         "origem": "Suno Asset — carrossel real @suno (templates/suno/carrossel5)"
+      }
+    },
+    "asset_texto": {
+      "arquivo": "familias/asset/texto.html",
+      "descricao": "Miolo vermelho da Suno Asset, no estilo da capa: tecido vermelho com moldura arredondada, sobretítulo fixo, título em caixa-alta, corpo centralizado e a última frase num selo verde; serve para ponto e citação.",
+      "papeis": [
+        "ponto",
+        "citacao"
+      ],
+      "fundo": "#9E171C",
+      "pontos_por_papel": {
+        "ponto": 6,
+        "citacao": 6
+      },
+      "slots": {
+        "sobretitulo": {
+          "fonte": "fixo:ANÁLISE DO MERCADO"
+        },
+        "titulo": {
+          "fonte": "titulo",
+          "max_caracteres": 60
+        },
+        "corpo": {
+          "fonte": "corpo_sem_ultima_frase",
+          "max_caracteres": 230
+        },
+        "destaque": {
+          "fonte": "ultima_frase",
+          "obrigatorio": false,
+          "max_caracteres": 80
+        },
+        "rodape": {
+          "fonte": "fixo:Conteúdo informativo"
+        }
+      },
+      "referencia": {
+        "titulo": "Miolo vermelho com selo verde",
+        "tema": "ponto ou citação de um carrossel da Suno Asset",
+        "descricao": "Fundo vermelho de tecido com moldura arredondada fina, título branco em caixa-alta, corpo centralizado e a frase de fecho num selo verde arredondado.",
+        "instrucao_de_design": "Mesmo fundo, moldura, moedas e logo SUNO ( ASSET ) da capa; sem foto; título em sans pesada caixa-alta, corpo regular centralizado e a última frase num selo verde como o botão da capa. Recriado: o post real só tem capa e aviso. Marca da Suno Asset: use só quando a conta for explicitamente a da gestora.",
+        "analise": {
+          "posicao_do_titulo": "centro",
+          "proeminencia_do_titulo": "media",
+          "densidade_textual": "media",
+          "uso_de_imagem": "sem_imagem",
+          "tipo_de_fundo": "vermelho_com_textura_de_tecido",
+          "elementos_visuais": [
+            "moldura_arredondada",
+            "selo_verde",
+            "moedas_decorativas",
+            "logo"
+          ],
+          "estrutura_do_conteudo": [
+            "sobretitulo",
+            "titulo",
+            "corpo",
+            "frase_de_fecho"
+          ]
+        },
+        "origem": "Suno Asset — miolo recriado no estilo do carrossel real @suno (templates/suno/carrossel5)"
       }
     },
     "asset_aviso": {

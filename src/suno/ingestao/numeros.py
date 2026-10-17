@@ -412,7 +412,16 @@ _REGRAS: tuple[_Regra, ...] = (
         re.compile(rf"(?P<numero>{_NUMERO})\s+(?P<escala>{_RE_ESCALA_GRANDE})\b", re.IGNORECASE),
         _simples(Unidade.NUMERO, escalar=True),
     ),
-    (re.compile(r"(?P<numero>\d{1,4})ª"), _simples(Unidade.NUMERO)),
+    # "3ª Vara de Falências" é nome de órgão, não medida: a Aderência reprovava o "3" por quatro
+    # rodadas seguidas (beta teste, Fato Relevante do GPA, 2026-10-17).
+    (
+        re.compile(
+            r"(?P<numero>\d{1,4})ª"
+            r"(?!\s*(?:Vara|Câmara|Turma|Região|Seção|Zona|Promotoria|Delegacia|Junta)\b)",
+            re.IGNORECASE,
+        ),
+        _simples(Unidade.NUMERO),
+    ),
     (re.compile(r"\b(?P<numero>(?:19|20)\d{2})\b"), _regra_ano),
 )
 

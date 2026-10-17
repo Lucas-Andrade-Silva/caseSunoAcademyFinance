@@ -42,6 +42,7 @@ from suno.dominio import (
     EtapaDaCelula,
     Formato,
     HistoricoCelula,
+    Metrica,
     Tentativa,
     chaves_essenciais_da_ata,
 )
@@ -181,6 +182,7 @@ def rodar_ciclo(
     tentativas: list[Tentativa] = []
     provedores_usados: list[str] = []
     correcoes: list[Correcao] | None = None
+    correcoes_pendentes: dict[Metrica, Correcao] = {}
     destino_final = Destino.REPROVADO_REVISAO_HUMANA
     falha: str | None = None
 
@@ -266,7 +268,24 @@ def rodar_ciclo(
             # Falha de extração: reescrever não conserta documento mal lido (ADR 0013).
             destino_final = Destino.REPROVADO_REVISAO_HUMANA
             break
-        correcoes = list(laudo.correcoes)
+        if (
+            len(tentativas) >= 2
+            and tentativas[-2].celula.conteudo.texto_avaliavel()
+            == celula.conteudo.texto_avaliavel()
+        ):
+            # O gerador devolveu o mesmo texto: outra rodada só gasta cota para reprovar igual.
+            destino_final = Destino.REPROVADO_REVISAO_HUMANA
+            break
+        # Uma camada posterior pode reprovar e, na rodada seguinte, nem chegar a rodar porque
+        # outra medida falhou antes. Esquecer a correção anterior cria um vaivém: conserta-se a
+        # Fidelidade, quebra-se a Aderência, depois conserta-se a Aderência e quebra-se de novo a
+        # Fidelidade. Só descartamos uma orientação quando a mesma métrica foi medida e passou.
+        for medida in laudo.medidas:
+            if medida.atingiu is True:
+                correcoes_pendentes.pop(medida.metrica, None)
+        for correcao in laudo.correcoes:
+            correcoes_pendentes[correcao.metrica] = correcao
+        correcoes = list(correcoes_pendentes.values())
         destino_final = Destino.REPROVADO_REVISAO_HUMANA
 
     _avisar(

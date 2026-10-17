@@ -192,5 +192,380 @@
     "consulta": "Greve dos caminhoneiros 2018",
     "largura": 1280,
     "altura": 850
+  },
+  {
+    "id": "2019-em-revisao-cinco-graficos-que-explicam-a-economia-mundi",
+    "arquivo": "2019-em-revisao-cinco-graficos-que-explicam-a-economia-mundi.jpg",
+    "tags": [
+      "gráficos de economia"
+    ],
+    "titulo": "2019 em revisão: Cinco gráficos que explicam a economia mundial | Blog do FMI | Valor Econômico",
+    "autor": "valor.globo.com",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://valor.globo.com/mundo/blog-do-fmi/post/2020/01/2019-em-revisao-cinco-graficos-que-explicam-a-economia-mundial.ghtml",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "gráficos de economia",
+    "largura": 984,
+    "altura": 538
+  },
+  {
+    "id": "stock-picker-entenda-o-que-faz-este-profissional-e-como-alav",
+    "arquivo": "stock-picker-entenda-o-que-faz-este-profissional-e-como-alav.jpg",
+    "tags": [
+      "computadores de análise",
+      "computador com site"
+    ],
+    "titulo": "Stock picker: entenda o que faz este profissional e como alavancar a carreira ocupando esta lacuna no mercado financeiro – Money Times",
+    "autor": "moneytimes.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.moneytimes.com.br/stock-picker-entenda-o-que-faz-este-profissional-e-como-alavancar-a-carreira-ocupando-esta-lacuna-no-mercado-financeiro/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "computadores de análise",
+    "largura": 1280,
+    "altura": 680
+  },
+  {
+    "id": "governo-e-mercado-divergem-em-numeros-da-economia-aponta-not",
+    "arquivo": "governo-e-mercado-divergem-em-numeros-da-economia-aponta-not.jpg",
+    "tags": [
+      "edifício do governo"
+    ],
+    "titulo": "Governo e mercado divergem em números da economia, aponta nota técnica — Senado Notícias",
+    "autor": "www12.senado.leg.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www12.senado.leg.br/noticias/materias/2025/10/02/governo-e-mercado-divergem-em-numeros-da-economia-aponta-nota-tecnica",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "edifício do governo",
+    "largura": 860,
+    "altura": 570
+  },
+  {
+    "id": "mercado-financeiro-reduz-previsao-da-inflacao-para-5-este-an",
+    "arquivo": "mercado-financeiro-reduz-previsao-da-inflacao-para-5-este-an.webp",
+    "tags": [
+      "tabela de projeções"
+    ],
+    "titulo": "Mercado financeiro reduz previsão da inflação para 5% este ano | Agência Brasil",
+    "autor": "agenciabrasil.ebc.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-09/mercado-financeiro-reduz-previsao-da-inflacao-para-5-este-ano",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "tabela de projeções",
+    "largura": 1170,
+    "altura": 700
+  },
+  {
+    "id": "preco-do-petroleo-sobe-no-mercado-global-e-a-petrobras-ainda",
+    "arquivo": "preco-do-petroleo-sobe-no-mercado-global-e-a-petrobras-ainda.jpg",
+    "tags": [
+      "plataforma de petróleo"
+    ],
+    "titulo": "Preço do petróleo sobe no mercado global. E a Petrobras ainda ganha um troco - NeoFeed",
+    "autor": "neofeed.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://neofeed.com.br/economia/preco-do-petroleo-sobe-no-mercado-global-e-a-petrobras-ainda-ganha-um-troco/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "plataforma de petróleo",
+    "largura": 860,
+    "altura": 484
+  },
+  {
+    "id": "petroleo-e-cop30-o-impasse-do-brasil-na-margem-equatorial-ba",
+    "arquivo": "petroleo-e-cop30-o-impasse-do-brasil-na-margem-equatorial-ba.jpg",
+    "tags": [
+      "mapa de bacias sedimentares"
+    ],
+    "titulo": "Petróleo e COP30: O Impasse do Brasil na Margem Equatorial · Baratão Combustíveis",
+    "autor": "usebaratao.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://usebaratao.com.br/petroleo-e-cop30-o-impasse-do-brasil-na-margem-equatorial/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "mapa de bacias sedimentares",
+    "largura": 930,
+    "altura": 576
+  },
+  {
+    "id": "petrobras-leva-19-blocos-de-petroleo-em-leilao-da-anp-que-ar",
+    "arquivo": "petrobras-leva-19-blocos-de-petroleo-em-leilao-da-anp-que-ar.jpg",
+    "tags": [
+      "sede da ANP"
+    ],
+    "titulo": "Petrobras leva 19 blocos de petróleo em leilão da ANP que arrecada R$ 3 bilhões",
+    "autor": "oglobo.globo.com",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://oglobo.globo.com/economia/noticia/2026/10/07/petrobras-leva-19-blocos-e-petroleo-em-leilao-da-anp-que-arrecada-r-3-bilhoes.ghtml",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "sede da ANP",
+    "largura": 888,
+    "altura": 592
+  },
+  {
+    "id": "colheita-de-soja-2022-23-atinge-71-da-area-no-brasil-diz-pat",
+    "arquivo": "colheita-de-soja-2022-23-atinge-71-da-area-no-brasil-diz-pat.jpg",
+    "tags": [
+      "engenheiro em campo"
+    ],
+    "titulo": "Colheita de soja 2022/23 atinge 71% da área no Brasil, diz Pátria AgroNegócios – Money Times",
+    "autor": "moneytimes.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.moneytimes.com.br/colheita-de-soja-2022-23-atinge-71-da-area-no-brasil-diz-patria-agronegocios/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "engenheiro em campo",
+    "largura": 1280,
+    "altura": 680
+  },
+  {
+    "id": "colheita-de-soja-do-brasil-atinge-44-da-area-com-avanco-em-g",
+    "arquivo": "colheita-de-soja-do-brasil-atinge-44-da-area-com-avanco-em-g.jpg",
+    "tags": [
+      "engenheiro em campo"
+    ],
+    "titulo": "Colheita de soja do Brasil atinge 44% da área com avanço em GO e MS, diz AgRural",
+    "autor": "forbes.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://forbes.com.br/forbes-agro/2022/02/colheita-de-soja-do-brasil-atinge-44-da-area-com-avanco-em-go-e-ms-diz-agrural/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "engenheiro em campo",
+    "largura": 1500,
+    "altura": 1000
+  },
+  {
+    "id": "cvm-sob-um-novo-velho-comando-quem-e-otto-lobo-indicado-do-g",
+    "arquivo": "cvm-sob-um-novo-velho-comando-quem-e-otto-lobo-indicado-do-g.jpg",
+    "tags": [
+      "autoridade em exercício do cargo"
+    ],
+    "titulo": "CVM sob um novo-velho comando: quem é Otto Lobo, indicado do governo Lula para a presidência da xerife do mercado de capitais - Seu Dinheiro",
+    "autor": "seudinheiro.com",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.seudinheiro.com/2026/economia/cvm-sob-um-novo-velho-comando-quem-e-otto-lobo-indicado-do-governo-lula-para-a-presidencia-da-xerife-do-mercado-de-capitais-miql/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "autoridade em exercício do cargo",
+    "largura": 1200,
+    "altura": 675
+  },
+  {
+    "id": "o-ceticismo-do-mercado-financeiro-em-relacao-aos-efeitos-da",
+    "arquivo": "o-ceticismo-do-mercado-financeiro-em-relacao-aos-efeitos-da.jpg",
+    "tags": [
+      "mercado de alimentos"
+    ],
+    "titulo": "O ceticismo do mercado financeiro em relação aos efeitos da isenção fiscal sobre os alimentos – Economia – CartaCapital",
+    "autor": "cartacapital.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.cartacapital.com.br/economia/o-ceticismo-do-mercado-financeiro-em-relacao-aos-efeitos-da-isencao-fiscal-sobre-os-alimentos/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "mercado de alimentos",
+    "largura": 1024,
+    "altura": 683
+  },
+  {
+    "id": "rede-economia-super-pax-lanca-carrinho-de-compras-inteligent",
+    "arquivo": "rede-economia-super-pax-lanca-carrinho-de-compras-inteligent.jpg",
+    "tags": [
+      "carrinho de compras"
+    ],
+    "titulo": "Rede Economia Super Pax lança carrinho de compras inteligente - Super Rádio Tupi",
+    "autor": "tupi.fm",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.tupi.fm/rio/rede-economia-super-pax-lanca-carrinho-de-compras-inteligente/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "carrinho de compras",
+    "largura": 1094,
+    "altura": 1600
+  },
+  {
+    "id": "globo-terrestre-politico-giratorio-43cm-altura-atlas-geograf",
+    "arquivo": "globo-terrestre-politico-giratorio-43cm-altura-atlas-geograf.jpg",
+    "tags": [
+      "globo terrestre"
+    ],
+    "titulo": "Globo Terrestre Político Giratório 43cm Altura + Atlas Geográfico + Mapa Mundi",
+    "autor": "magazineluiza.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.magazineluiza.com.br/globo-terrestre-politico-giratorio-43cm-altura-atlas-geografico-mapa-mundi-libreria/p/dk2366ghg9/pa/glbt/?srsltid=AU7gw4U_2-6Mpa0WFrz0JkNkxWPlS6_GAZDbGa9SXu4oRKz3kuP3qCsM",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "globo terrestre",
+    "largura": 800,
+    "altura": 800
+  },
+  {
+    "id": "petrobras-garante-alcance-da-meta-de-producao-de-petroleo-ne",
+    "arquivo": "petrobras-garante-alcance-da-meta-de-producao-de-petroleo-ne.jpg",
+    "tags": [
+      "sede da Petrobras"
+    ],
+    "titulo": "Petrobras garante alcance da meta de produção de petróleo neste ano - Jornal O Globo",
+    "autor": "oglobo.globo.com",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://oglobo.globo.com/economia/petrobras-garante-alcance-da-meta-de-producao-de-petroleo-neste-ano-19687118",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "sede da Petrobras",
+    "largura": 1086,
+    "altura": 652
+  },
+  {
+    "id": "brasil-no-centro-ibge-lanca-mapa-mundi-com-nova-perspectiva",
+    "arquivo": "brasil-no-centro-ibge-lanca-mapa-mundi-com-nova-perspectiva.jpg",
+    "tags": [
+      "mapa do Brasil"
+    ],
+    "titulo": "Brasil no centro: IBGE lança mapa-múndi com nova perspectiva",
+    "autor": "noticias.uol.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://noticias.uol.com.br/ultimas-noticias/agencia-estado/2025/05/09/ibge-lanca-mapa-mundi-invertido-com-o-sul-no-alto-e-o-brasil-no-centro.htm",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "mapa do Brasil",
+    "largura": 1920,
+    "altura": 1440
+  },
+  {
+    "id": "banco-do-nordeste-visa-infinite-e-bom-conheca-pontos-benefic",
+    "arquivo": "banco-do-nordeste-visa-infinite-e-bom-conheca-pontos-benefic.jpg",
+    "tags": [
+      "sede do Banco do Nordeste"
+    ],
+    "titulo": "Banco do Nordeste Visa Infinite é Bom? Conheça Pontos, Benefícios e Isenção de Anuida - ALTA RENDA BLOG",
+    "autor": "altarendablog.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://altarendablog.com.br/2025/02/16/banco-do-nordeste-visa-infinite-e-bom-conheca-pontos-beneficios-e-isencao-de-anuida/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "sede do Banco do Nordeste",
+    "largura": 1920,
+    "altura": 1080
+  },
+  {
+    "id": "dia-internacional-das-micro-pequenas-e-medias-empresas-brasi",
+    "arquivo": "dia-internacional-das-micro-pequenas-e-medias-empresas-brasi.jpg",
+    "tags": [
+      "sede de empresa"
+    ],
+    "titulo": "Dia Internacional das Micro, Pequenas e Médias Empresas: Brasil comemora contribuição do setor para a economia nacional - Varejo S.A",
+    "autor": "cndl.org.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://cndl.org.br/varejosa/dia-internacional-das-micro-pequenas-e-medias-empresas-brasil-comemora-contribuicao-do-setor-para-a-economia-nacional/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "sede de empresa",
+    "largura": 1920,
+    "altura": 1280
+  },
+  {
+    "id": "superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e",
+    "arquivo": "superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e.jpg",
+    "tags": [
+      "tribunal de justiça"
+    ],
+    "titulo": "Superior Tribunal de Justiça mantém taxa de juros pactuada e não considera a taxa média do mercado como limite - Notícias | Siqueira Castro",
+    "autor": "siqueiracastro.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://www.siqueiracastro.com.br/noticias/superior-tribunal-de-justica-mantem-taxa-de-juros-pactuada-e-nao-considera-a-taxa-media-do-mercado-como-limite/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "tribunal de justiça",
+    "largura": 1024,
+    "altura": 731
+  },
+  {
+    "id": "mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e",
+    "arquivo": "mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e.webp",
+    "tags": [
+      "documentos financeiros"
+    ],
+    "titulo": "Mercado mantém estáveis projeções para inflação, juros, PIB e dólar | Agência Brasil",
+    "autor": "agenciabrasil.ebc.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-08/mercado-mantem-estaveis-projecoes-para-inflacao-juros-pib-e-dolar",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "documentos financeiros",
+    "largura": 1170,
+    "altura": 700
+  },
+  {
+    "id": "mercado-financeiro-aumenta-previsao-de-crescimento-da-econom",
+    "arquivo": "mercado-financeiro-aumenta-previsao-de-crescimento-da-econom.png",
+    "tags": [
+      "crescimento financeiro"
+    ],
+    "titulo": "Mercado financeiro aumenta previsão de crescimento da economia – SETCESP",
+    "autor": "setcesp.org.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://setcesp.org.br/noticias/mercado-financeiro-crescimento-economia/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "visao",
+    "consulta": "crescimento financeiro",
+    "largura": 1080,
+    "altura": 675
+  },
+  {
+    "id": "intencao-de-consumo-das-familias-cresce-2-6-em-junho-agencia",
+    "arquivo": "intencao-de-consumo-das-familias-cresce-2-6-em-junho-agencia.jpg",
+    "tags": [
+      "loja de varejo"
+    ],
+    "titulo": "Intenção de consumo das famílias cresce 2,6% em junho | Agência Brasil",
+    "autor": "agenciabrasil.ebc.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://agenciabrasil.ebc.com.br/economia/noticia/2023-06/intencao-de-consumo-das-familias-cresce-26-em-junho",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "loja de varejo",
+    "largura": 1170,
+    "altura": 700
+  },
+  {
+    "id": "economia-vendas-computador-grafico-geral-telesintese",
+    "arquivo": "economia-vendas-computador-grafico-geral-telesintese.jpg",
+    "tags": [
+      "computador com gráficos"
+    ],
+    "titulo": "economia-vendas-computador-grafico-geral - TeleSíntese",
+    "autor": "telesintese.com.br",
+    "licenca": "licença não verificada (MVP)",
+    "url_origem": "https://telesintese.com.br/preco-do-acesso-a-banda-larga-sobe-851-em-agosto-diz-ibge/economia-vendas-computador-grafico-geral-2/",
+    "aprovada": true,
+    "rejeitada": false,
+    "validada_por": "texto",
+    "consulta": "computador com gráficos",
+    "largura": 936,
+    "altura": 600
   }
 ]

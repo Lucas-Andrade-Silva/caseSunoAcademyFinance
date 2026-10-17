@@ -16,11 +16,17 @@ export interface DadosDoCarrossel {
   icones: IdDoIcone[];
   ancoras: AncoraDeQuadro[];
   laudo: Laudo | null;
+  /** Liga o Laudo ao texto salvo; registros antigos precisam de reavaliação. */
+  textoAvaliado?: string;
+}
+
+function textoDosSlides(slides: Slide[]): string {
+  return JSON.stringify(slides.map(({ titulo, corpo }) => ({ titulo, corpo })));
 }
 
 export function dadosParaSalvar(montagem: Montagem, laudo: Laudo | null): DadosDoCarrossel {
   const { slides, composicao, referenciaId, paleta, icones, ancoras } = montagem;
-  return { slides, composicao, referenciaId, paleta, icones, ancoras, laudo };
+  return { slides, composicao, referenciaId, paleta, icones, ancoras, laudo, textoAvaliado: textoDosSlides(slides) };
 }
 
 function ehSlide(valor: unknown): valor is Slide {
@@ -55,6 +61,8 @@ export function lerDadosSalvos(bruto: unknown): DadosDoCarrossel | null {
       ? d.icones.filter((id): id is IdDoIcone => typeof id === "string" && ICONES_VALIDOS.has(id))
       : [],
     ancoras: Array.isArray(d.ancoras) ? d.ancoras.filter(ehAncora) : [],
-    laudo: typeof d.laudo === "object" && d.laudo !== null ? (d.laudo as Laudo) : null,
+    laudo: d.textoAvaliado === textoDosSlides(d.slides) && typeof d.laudo === "object" && d.laudo !== null
+      ? (d.laudo as Laudo) : null,
+    textoAvaliado: typeof d.textoAvaliado === "string" ? d.textoAvaliado : undefined,
   };
 }

@@ -17,10 +17,13 @@ from suno.dominio import (
     Ata,
     Audiencia,
     CotaEsgotada,
+    Correcao,
     Destino,
     ErroProvedor,
     EsgotamentoDeCota,
     Formato,
+    Laudo,
+    Metrica,
     MotivoReprovacao,
     Unidade,
 )
@@ -145,6 +148,11 @@ FACIL = json.dumps(
 
 ROTULO = "celula:iniciante:texto_analitico:{rodada}"
 
+DIFICIL_REESCRITO = DIFICIL.replace('"titulo": "', '"titulo": "Reescrita: ', 1)
+"""Ainda difícil, mas outro texto: o Ciclo só encerra cedo quando a rodada repete a anterior."""
+
+FACIL_REESCRITO = FACIL.replace('"titulo": "', '"titulo": "De novo: ', 1)
+
 
 def _provedor(*por_rodada: str | BaseException) -> ProvedorFalso:
     return ProvedorFalso(
@@ -176,7 +184,7 @@ def test_correcao_que_resolve_aprova_na_rodada_um(ata: Ata, ancoras_completas: A
 def test_o_ciclo_para_na_segunda_correcao_e_vai_para_a_fila_humana(
     ata: Ata, ancoras_completas: Ancoras
 ):
-    provedor = _provedor(DIFICIL, DIFICIL, DIFICIL)
+    provedor = _provedor(DIFICIL, DIFICIL_REESCRITO, DIFICIL)
     historico = _rodar(ata, ancoras_completas, provedor)
     assert [t.rodada for t in historico.tentativas] == [0, 1, 2]
     assert len(historico.tentativas) == TETO_DE_RODADAS + 1  # SUNO_RODADAS=2 no conftest
@@ -254,8 +262,64 @@ def test_o_pedido_da_rodada_um_carrega_a_instrucao_da_correcao(
         assert correcao.instrucao in usuario
 
 
+def test_ciclo_lembra_correcao_de_camada_que_nao_rodou_na_rodada_seguinte(
+    ata: Ata,
+    ancoras_completas: Ancoras,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    correcao_do_juiz = Correcao(
+        metrica=Metrica.FIDELIDADE,
+        valor_medido=0.0,
+        faixa=None,
+        instrucao="Retire a data atribuída à decisão.",
+    )
+    aderencia = Correcao(
+        metrica=Metrica.ADERENCIA,
+        valor_medido=0.5,
+        faixa=None,
+        instrucao="Não use a data sem Âncora.",
+    )
+    laudos = iter(
+        [
+            Laudo(
+                audiencia=Audiencia.INICIANTE,
+                formato=Formato.TEXTO_ANALITICO,
+                medidas=[],
+                destino=Destino.REPROVADO_CORRIGIVEL,
+                motivos=[MotivoReprovacao.FIDELIDADE],
+                correcoes=[correcao_do_juiz],
+            ),
+            Laudo(
+                audiencia=Audiencia.INICIANTE,
+                formato=Formato.TEXTO_ANALITICO,
+                medidas=[],
+                destino=Destino.REPROVADO_CORRIGIVEL,
+                motivos=[MotivoReprovacao.ADERENCIA],
+                correcoes=[aderencia],
+            ),
+            Laudo(
+                audiencia=Audiencia.INICIANTE,
+                formato=Formato.TEXTO_ANALITICO,
+                medidas=[],
+                destino=Destino.APROVADO,
+            ),
+        ]
+    )
+    monkeypatch.setattr("suno.gerador.ciclo.avaliar", lambda *_args, **_kwargs: next(laudos))
+    provedor = _provedor(FACIL, FACIL_REESCRITO, FACIL)
+
+    historico = _rodar(ata, ancoras_completas, provedor)
+
+    assert historico.destino_final is Destino.APROVADO
+    pedido_da_terceira_rodada = next(
+        mensagem.texto for mensagem in provedor.pedidos[2].mensagens if mensagem.autor == "usuario"
+    )
+    assert correcao_do_juiz.instrucao in pedido_da_terceira_rodada
+    assert aderencia.instrucao in pedido_da_terceira_rodada
+
+
 def test_a_rodada_fica_gravada_na_celula(ata: Ata, ancoras_completas: Ancoras):
-    historico = _rodar(ata, ancoras_completas, _provedor(DIFICIL, DIFICIL, DIFICIL))
+    historico = _rodar(ata, ancoras_completas, _provedor(DIFICIL, DIFICIL_REESCRITO, DIFICIL))
     assert [t.celula.rodada for t in historico.tentativas] == [0, 1, 2]
     assert all(t.celula.provedor == "falso" for t in historico.tentativas)
 
@@ -308,3 +372,11 @@ def test_a_falha_nao_leva_chave_de_api_para_o_disco(ata: Ata, ancoras_completas:
 def test_mensagem_sem_segredo_atravessa_intacta(mensagem: str):
     """O limpador não pode mutilar o erro comum, que é o caso de sempre."""
     assert sem_credencial(mensagem) == mensagem
+
+
+def test_rodada_que_repete_o_texto_anterior_encerra_o_ciclo(ata: Ata, ancoras_completas: Ancoras):
+    provedor = _provedor(DIFICIL, DIFICIL, DIFICIL)
+    historico = _rodar(ata, ancoras_completas, provedor)
+    assert [t.rodada for t in historico.tentativas] == [0, 1]
+    assert historico.destino_final is Destino.REPROVADO_REVISAO_HUMANA
+    assert provedor.rotulos_pedidos() == [ROTULO.format(rodada=r) for r in (0, 1)]

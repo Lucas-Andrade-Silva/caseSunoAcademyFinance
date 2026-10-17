@@ -14,7 +14,9 @@ padrão não derruba a execução — ela aparece na fila.
 from __future__ import annotations
 
 import logging
+import os
 import re
+import tempfile
 import threading
 import time
 from collections.abc import Sequence
@@ -298,8 +300,8 @@ def executar(
         curador.preparar_uniao(atas) if unida else curador.preparar(ata), duracao=duracao
     )
     # Com provedor real o Jev não pode ficar de fora em silêncio: sem chave, a execução para.
-    qualidade = _qualidade_de_ambiente(ligado=jev, exigir=provedor != "falso")
-    verificador = _fidelidade_de_ambiente(ata.texto, ligado=fidelidade)
+    qualidade = _qualidade_de_ambiente(ligado=jev, exigir=True) if provedor != "falso" else None
+    verificador = _fidelidade_de_ambiente(ata.texto, ligado=fidelidade) if provedor != "falso" else None
     _avisar_fase(ao_mudar_fase, FaseDaExecucao.GERANDO_CELULAS)
     celulas = gerar_matriz_do_dossie(
         dossie,
@@ -377,7 +379,21 @@ def gravar_execucao(execucao: Execucao, pasta_execucoes: Path) -> Path:
     raiz = Path(pasta_execucoes) / execucao.identificador
     raiz.mkdir(parents=True, exist_ok=True)
     arquivo = raiz / ARQUIVO_DA_EXECUCAO
-    arquivo.write_text(execucao.model_dump_json(indent=2), encoding="utf-8")
+    # O JSON é o estado oficial: uma falha nunca pode deixá-lo pela metade.
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=raiz, suffix=".tmp", delete=False) as aberto:
+        temporario = Path(aberto.name)
+        aberto.write(execucao.model_dump_json(indent=2))
+    try:
+        for tentativa in range(5):
+            try:
+                os.replace(temporario, arquivo)
+                break
+            except PermissionError:
+                if tentativa == 4:
+                    raise
+                time.sleep(0.02 * (tentativa + 1))
+    finally:
+        temporario.unlink(missing_ok=True)
 
     pasta_celulas = raiz / PASTA_DAS_CELULAS
     pasta_celulas.mkdir(exist_ok=True)

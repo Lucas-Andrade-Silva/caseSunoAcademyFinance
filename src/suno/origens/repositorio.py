@@ -26,9 +26,27 @@ SUFIXOS_DE_ATA = (".pdf", ".txt")
 ORIGEM_DAS_ATAS_DO_COPOM = "copom"
 
 
+def _assinatura_da_ata(caminho: Path) -> tuple[tuple[int, int] | None, ...]:
+    """Inclui todos os arquivos lidos, inclusive auxiliares que ainda não existem."""
+    arquivos = [caminho, caminho.with_suffix(".json")]
+    if caminho.suffix == ".pdf":
+        arquivos.append(caminho.with_suffix(".txt"))
+    assinatura: list[tuple[int, int] | None] = []
+    for arquivo in arquivos:
+        try:
+            estado = arquivo.stat()
+        except FileNotFoundError:
+            assinatura.append(None)
+        else:
+            assinatura.append((estado.st_mtime_ns, estado.st_size))
+    return tuple(assinatura)
+
+
 @lru_cache(maxsize=512)
-def _ata_em_cache(caminho: str, modificado_em: int, tamanho: int, origem_da_pasta: str) -> Ata:
-    """Carrega a Ata; o cache cai sozinho quando o arquivo muda (data de modificação e tamanho)."""
+def _ata_em_cache(
+    caminho: str, assinatura: tuple[tuple[int, int] | None, ...], origem_da_pasta: str
+) -> Ata:
+    """Carrega a Ata; alterações no original ou nos auxiliares invalidam o cache."""
     ata = carregar_ata(Path(caminho))
     sem_origem_no_json = not _json_tem_origem(Path(caminho))
     return ata.model_copy(update={"origem": origem_da_pasta}) if sem_origem_no_json else ata
@@ -36,10 +54,10 @@ def _ata_em_cache(caminho: str, modificado_em: int, tamanho: int, origem_da_past
 
 @lru_cache(maxsize=512)
 def _resumo_em_cache(
-    caminho: str, modificado_em: int, tamanho: int, origem_da_pasta: str, demo: bool
+    caminho: str, assinatura: tuple[tuple[int, int] | None, ...], origem_da_pasta: str, demo: bool
 ) -> ResumoDaAta:
     """O resumo custa uma varredura de números no texto inteiro: só refaz se o arquivo mudar."""
-    ata = _ata_em_cache(caminho, modificado_em, tamanho, origem_da_pasta)
+    ata = _ata_em_cache(caminho, assinatura, origem_da_pasta)
     return resumir_ata(ata, demo_disponivel=demo)
 
 
@@ -101,8 +119,7 @@ class RepositorioDeAtas:
             return None
         caminho, origem = achado
         try:
-            estado = caminho.stat()
-            return _ata_em_cache(str(caminho), estado.st_mtime_ns, estado.st_size, origem)
+            return _ata_em_cache(str(caminho), _assinatura_da_ata(caminho), origem)
         except (OSError, ValueError, KeyError, ValidationError) as erro:
             _registro.warning("Ata %r ilegível, fora da lista: %s", identificador, erro)
             return None
@@ -114,8 +131,7 @@ class RepositorioDeAtas:
             return None
         caminho, origem = achado
         demo = (PASTA_RESPOSTAS_PRONTAS / f"{ata.identificador}.json").exists()
-        estado = caminho.stat()
-        return _resumo_em_cache(str(caminho), estado.st_mtime_ns, estado.st_size, origem, demo)
+        return _resumo_em_cache(str(caminho), _assinatura_da_ata(caminho), origem, demo)
 
     def itens_da_origem(self, origem: Origem) -> list[ResumoDaAta]:
         """As Atas da Origem, da mais recente para a mais antiga."""

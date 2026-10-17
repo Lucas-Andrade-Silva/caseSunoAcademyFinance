@@ -511,7 +511,7 @@ def renderizar_video(
     """
     execucao = carregar_execucao(identificador_execucao, pasta_execucoes)
     historico = execucao.historico(audiencia, Formato.ROTEIRO)
-    if historico is None or historico.destino_final is not Destino.APROVADO:
+    if historico is None or not execucao.celula_liberada(audiencia, Formato.ROTEIRO):
         raise ValueError("só Roteiro aprovado vira vídeo (ADR 0004)")
     celula = historico.celula_final
     if celula is None:
@@ -595,6 +595,9 @@ def renderizar_video(
 
         _codificar(ffmpeg, pasta_quadros, trilha_final, caminho_video)
 
+    (pasta_do_pacote / "video.revisao").write_text(
+        execucao.assinatura_da_celula(audiencia, Formato.ROTEIRO) or "", encoding="utf-8"
+    )
     return caminho_video
 
 

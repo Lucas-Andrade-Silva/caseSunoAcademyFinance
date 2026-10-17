@@ -33,6 +33,16 @@ R = TypeVar("R")
 # Espera usada quando o 429 por minuto não sugere tempo nenhum.
 ESPERA_PADRAO_S = 20.0
 
+# Erro transitório (503 "high demand", 5xx, queda de transporte): passa sozinho em segundos, então
+# vale esperar e insistir antes de trocar. Uma tentativa imediata só não bastou: o Roteiro Iniciante
+# do beta teste (copom-281, 2026-10-17) morreu em 503 do Gemini sem chegar a ser gerado.
+ESPERAS_TRANSITORIAS_S: tuple[float, ...] = (5.0, 15.0, 30.0)
+_PISTAS_TRANSITORIAS = ("HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504", "falha de transporte")
+
+
+def erro_transitorio(erro: ErroProvedor) -> bool:
+    return any(pista in erro.mensagem for pista in _PISTAS_TRANSITORIAS)
+
 # Chave e nome de modelo por provedor. Nome de modelo é configuração (ADR 0007).
 CONFIGURACAO = {
     "gemini": ("GEMINI_API_KEY", "GEMINI_MODELO"),
@@ -93,10 +103,18 @@ class Roteador(ProvedorBase):
     # -- a volta ------------------------------------------------------------
 
     def _percorrer(self, pedido: PedidoLLM, converter: Callable[[RespostaLLM, str], R]) -> R:
+        # As nove Células dividem o mesmo roteador em threads: a mensagem de falha de uma chamada
+        # leva só as notas dela, não as das outras Células.
+        notas: list[str] = []
+
+        def anotar(linha: str) -> None:
+            notas.append(linha)
+            self._anotar(linha)
+
         for provedor in self.provedores:
             nome = provedor.nome
             if nome in self.esgotados:
-                self._anotar(f"{nome}: já esgotado no dia, pulando")
+                anotar(f"{nome}: já esgotado no dia, pulando")
                 continue
             esperas = 0
             erros = 0
@@ -107,11 +125,11 @@ class Roteador(ProvedorBase):
                     if erro.esgotamento is EsgotamentoDeCota.POR_MINUTO:
                         if esperas < self.tentativas_por_minuto:
                             espera_s = min(erro.espera_s or ESPERA_PADRAO_S, self.espera_maxima_s)
-                            self._anotar(f"{nome}: 429 por minuto, esperando {espera_s:g} s")
+                            anotar(f"{nome}: 429 por minuto, esperando {espera_s:g} s")
                             self.dormir(espera_s)
                             esperas += 1
                             continue
-                        self._anotar(
+                        anotar(
                             f"{nome}: 429 por minuto {esperas}x sem passar, trocando de provedor"
                         )
                         break
@@ -119,23 +137,29 @@ class Roteador(ProvedorBase):
                     razao = "esgotado no dia" if erro.esgotamento is EsgotamentoDeCota.POR_DIA else (
                         "429 sem pista, tratado como diário"
                     )
-                    self._anotar(f"{nome}: {razao}, trocando para o próximo")
+                    anotar(f"{nome}: {razao}, trocando para o próximo")
                     break
                 except RespostaMalformada as erro:
                     # O formato não bateu; outro provedor pode acertar. Não é cota.
-                    self._anotar(f"{nome}: resposta fora do schema ({erro.mensagem}), trocando")
+                    anotar(f"{nome}: resposta fora do schema ({erro.mensagem}), trocando")
                     break
                 except ErroProvedor as erro:
+                    if erro_transitorio(erro) and erros < len(ESPERAS_TRANSITORIAS_S):
+                        espera_s = ESPERAS_TRANSITORIAS_S[erros]
+                        erros += 1
+                        anotar(f"{nome}: erro transitório ({erro.mensagem}), esperando {espera_s:g} s")
+                        self.dormir(espera_s)
+                        continue
                     if erros == 0:
                         erros += 1
-                        self._anotar(f"{nome}: erro do provedor ({erro.mensagem}), tentando mais uma vez")
+                        anotar(f"{nome}: erro do provedor ({erro.mensagem}), tentando mais uma vez")
                         continue
-                    self._anotar(f"{nome}: erro do provedor de novo ({erro.mensagem}), trocando")
+                    anotar(f"{nome}: erro do provedor de novo ({erro.mensagem}), trocando")
                     break
         raise CotaEsgotada(
             self.nome,
             EsgotamentoDeCota.POR_DIA,
-            mensagem="nenhum provedor respondeu: " + " | ".join(self.historico),
+            mensagem="nenhum provedor respondeu: " + " | ".join(notas),
         )
 
     def _anotar(self, linha: str) -> None:

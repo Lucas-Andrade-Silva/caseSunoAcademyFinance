@@ -170,9 +170,23 @@ def test_duas_montagens_da_mesma_saida_nao_rodam_juntas(tmp_path: Path):
 
     assert segunda.status_code == 202
     assert segunda.json()["estado"] == "rodando"
+    assert cliente.get("/api/execucoes/saida-1/pacotes").json() == []
+    assert cliente.get("/api/execucoes/saida-1/exportar", params={"formato": "zip"}).status_code == 409
     liberar.set()
     assert _montador(cliente).aguardar("saida-1", 10)
     assert chamadas == ["saida-1"]
+
+
+def test_manifesto_incompleto_nao_derruba_a_listagem(tmp_path: Path):
+    executar(COPOM, "falso", tmp_path, pedido=[ROTEIRO], identificador="saida-incompleta")
+    manifesto = tmp_path / "saida-incompleta" / "pacote" / "iniciante-roteiro" / "pacote.json"
+    manifesto.parent.mkdir(parents=True)
+    manifesto.write_text('{"execucao":', encoding="utf-8")
+
+    resposta = _cliente(tmp_path).get("/api/execucoes/saida-incompleta/pacotes")
+
+    assert resposta.status_code == 200
+    assert resposta.json() == []
 
 
 def test_falha_da_montagem_vira_erro_sem_derrubar_a_api(tmp_path: Path):

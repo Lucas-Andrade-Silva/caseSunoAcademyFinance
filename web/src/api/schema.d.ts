@@ -1238,7 +1238,7 @@ export interface components {
          * @description A composição visual escolhida pela direção de arte, separada do papel narrativo.
          * @enum {string}
          */
-        ComposicaoCarrossel: "editorial" | "minimalista" | "infografico" | "comparativo" | "estatistico" | "narrativo" | "explicativo_capa" | "explicativo_texto_imagem" | "explicativo_texto" | "explicativo_texto_ilustracao" | "noticia_capa" | "noticia_foto" | "jornal_capa" | "jornal_item_numerado" | "jornal_texto" | "dados_texto_foto_embaixo" | "dados_texto_duplo_foto" | "dados_foto_no_meio" | "dados_numero_gigante" | "dados_texto_grande" | "dados_cta" | "asset_capa" | "asset_aviso";
+        ComposicaoCarrossel: "editorial" | "minimalista" | "infografico" | "comparativo" | "estatistico" | "narrativo" | "explicativo_capa" | "explicativo_texto_imagem" | "explicativo_texto" | "explicativo_texto_ilustracao" | "noticia_capa" | "noticia_foto" | "jornal_capa" | "jornal_item_numerado" | "jornal_texto" | "dados_texto_foto_embaixo" | "dados_texto_duplo_foto" | "dados_foto_no_meio" | "dados_numero_gigante" | "dados_texto_grande" | "dados_cta" | "asset_capa" | "asset_texto" | "asset_aviso";
         /**
          * ConferenciaVisual
          * @description O resultado da avaliação visual do Pacote. Vai ao H5, nunca ao Laudo.
@@ -2098,6 +2098,8 @@ export interface components {
         PacotePublicacao: {
             /** Execucao */
             execucao: string;
+            /** Assinatura Conteudo */
+            assinatura_conteudo?: string | null;
             audiencia: components["schemas"]["Audiencia"];
             formato: components["schemas"]["Formato"];
             /** Legenda */

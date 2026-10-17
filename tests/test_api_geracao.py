@@ -10,6 +10,7 @@ ADR 0017.
 from __future__ import annotations
 
 from pathlib import Path
+from shutil import copy2
 
 import pytest
 from fastapi.testclient import TestClient
@@ -27,9 +28,15 @@ CORPO = {
 }
 
 
-def _cliente(pasta: Path, executor=None, *, atas: Path = PASTA_ATAS) -> TestClient:
+def _cliente(pasta: Path, executor=None, *, atas: Path | None = None) -> TestClient:
     # As Fontes ficam numa pasta à parte: nenhum teste enxerga o que alguém importou em data/fontes/.
     fontes = pasta.parent / f"{pasta.name}-fontes"
+    if atas is None:
+        # O acervo padrão destes cenários contém somente a Ata com respostas prontas.
+        atas = pasta.parent / f"{pasta.name}-atas"
+        atas.mkdir(parents=True, exist_ok=True)
+        for extensao in (".json", ".txt", ".pdf"):
+            copy2(PASTA_ATAS / f"{ATA}{extensao}", atas / f"{ATA}{extensao}")
     return TestClient(
         criar_app(pasta, pasta_atas=atas, pasta_fontes=fontes, executar_fn=executor)
     )
@@ -353,6 +360,26 @@ def test_ata_sem_respostas_prontas_diz_que_nao_tem_demo(tmp_path: Path):
     atas = _cliente(tmp_path / "execucoes", atas=pasta_atas).get("/api/atas").json()
 
     assert atas[0]["demo_disponivel"] is False
+
+
+def test_acervo_com_copom_281_preserva_demo_somente_para_280(tmp_path: Path):
+    pasta_atas = tmp_path / "atas"
+    pasta_atas.mkdir()
+    mais_recente = "copom-281-2026-09-16"
+    for identificador in (ATA, mais_recente):
+        for extensao in (".json", ".txt", ".pdf"):
+            copy2(PASTA_ATAS / f"{identificador}{extensao}", pasta_atas / f"{identificador}{extensao}")
+    cliente = _cliente(tmp_path / "execucoes", ExecutorFalso(), atas=pasta_atas)
+
+    atas = cliente.get("/api/atas").json()
+
+    assert {a["identificador"]: a["demo_disponivel"] for a in atas} == {
+        ATA: True,
+        mais_recente: False,
+    }
+    resposta = cliente.post("/api/execucoes", json={**CORPO, "ata": mais_recente})
+    assert resposta.status_code == 422
+    assert "respostas prontas" in resposta.json()["detail"]
 
 
 def test_o_modo_real_so_esta_disponivel_com_chave_e_modelo(tmp_path: Path, monkeypatch):

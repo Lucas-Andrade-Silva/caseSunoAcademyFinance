@@ -1,9 +1,9 @@
 # Relatório experimental — Suno Content (Entregável 6)
 
 > **Medições de 19/09/2026, não refeitas.** Depois delas o sistema mudou: o comitê de juízes-LLM e
-> o SambaNova saíram ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)),
-> entraram a Qualidade pelo Jev e a Fidelidade à Ata ([ADR 0035](adr/0035-qualidade-pelo-jev-depois-do-deterministico.md),
-> [ADR 0036](adr/0036-fidelidade-a-ata-por-llm-que-cita-e-o-codigo-confere.md)) e o teto do Ciclo de
+> o SambaNova saíram ([ADR 0037](DECISOES.md)),
+> entraram a Qualidade pelo Jev e a Fidelidade à Ata ([ADR 0035](DECISOES.md),
+> [ADR 0036](DECISOES.md)) e o teto do Ciclo de
 > correção virou configurável (padrão 4). O funcionamento atual está em [FUNCIONAMENTO.md](FUNCIONAMENTO.md);
 > os números abaixo valem para o sistema da data da medição.
 >
@@ -21,7 +21,7 @@ e é dele que saem as tabelas de custo, rodadas e matriz de confusão abaixo.
 
 O Avaliador (`src/suno/avaliador/`) recebe `(Conteúdo, Âncora[], Audiência)` de uma Célula e
 devolve um Laudo, sem LLM e sem rede — é o que o mantém testável em CI
-([ADR 0001](adr/0001-gerador-e-avaliador-como-modulos-separados.md)). Cinco medidas:
+([ADR 0001](DECISOES.md)). Cinco medidas:
 
 ### Flesch-BR
 
@@ -36,7 +36,7 @@ Flesch-BR = 248,835 − 1,015 × (palavras / frases) − 84,6 × (sílabas / pal
 Flesch-Kincaid é uma fórmula diferente — nível de escolaridade (*grade level*), não
 facilidade de leitura: `0,39×(palavras/frases) + 11,8×(sílabas/palavras) − 15,59`. O nome
 correto para o que o case pede é **Índice de Flesch, adaptado ao português por Martins et
-al.** ([ADR 0002](adr/0002-flesch-br-implementado-no-projeto.md)).
+al.** ([ADR 0002](DECISOES.md)).
 
 `textstat`, a biblioteca sugerida pelo enunciado, calcula português errado e não avisa: ela
 não tem `pt` na tabela de idiomas (`LANG_CONFIGS`, conferido no código-fonte do pacote), cai
@@ -81,7 +81,7 @@ para o Intermediário, `nunca` para o Avançado.
 
 `src/suno/avaliador/aderencia.py` confere cada número presente na Célula contra a tabela de
 Âncoras numéricas por **igualdade exata de valor e unidade** — sem LLM, sem julgamento
-([ADR 0011](adr/0011-ancoras-numericas-sao-citadas-nunca-reescritas.md)). O extrator de
+([ADR 0011](DECISOES.md)). O extrator de
 números (`src/suno/ingestao/numeros.py`) tem uma fronteira documentada, e é onde alguém vai
 supor cobertura que não existe: decimal solto sem unidade não entra (evitaria confundir
 numeração de parágrafo com Âncora); moeda estrangeira (`US$`) não entra, só `R$`; número
@@ -92,7 +92,7 @@ como armadilha crítica).
 ### Recomendação e o canary
 
 Duas camadas determinísticas somam
-([ADR 0012](adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md)):
+([ADR 0012](DECISOES.md)):
 um **Léxico** organizado por `pode`/`não pode` e cinco **padrões sintáticos** sobre POS
 tagging do `pt_core_news_sm` (spaCy) — sujeito dirigido + modal de obrigação, conveniência
 impessoal, imperativo sobre patrimônio, voz editorial com ação, favorecimento de quem age.
@@ -131,14 +131,14 @@ nenhum rótulo humano** (seção 2).
 `src/suno/avaliador/integridade.py` mede a fração de chaves essenciais de Âncora presente.
 Ata sem `selic_decidida`, `placar_votacao` ou `data_reuniao` reprova com o motivo próprio
 `falha_de_extracao`, que **não** aciona o Ciclo de correção — reescrever não conserta um
-documento mal lido ([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)).
+documento mal lido ([ADR 0013](DECISOES.md)).
 Vai direto para a fila de revisão humana (H4).
 
 ### O comitê de juízes-LLM — desligado na demo
 
-> Removido depois desta medição ([ADR 0037](adr/0037-judge-transversal-removido-jev-sempre-ligado-sem-sambanova.md)): `src/suno/comite/`, `tests/test_comite.py` e `--comite` não existem mais.
+> Removido depois desta medição ([ADR 0037](DECISOES.md)): `src/suno/comite/`, `tests/test_comite.py` e `--comite` não existem mais.
 
-O comitê (`src/suno/comite/`, [ADR 0008](adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md))
+O comitê (`src/suno/comite/`, [ADR 0008](DECISOES.md))
 julga tom, clareza e coerência com dois juízes-LLM em provedores diferentes, só em Texto
 analítico e Carrossel. Está implementado e testado (`tests/test_comite.py`), mas **fica
 desligado por padrão e na demo**: ligado, os três provedores gratuitos (Gemini gera, e dois
@@ -174,7 +174,7 @@ só duas linhas de exemplo (`pessoa=exemplo`) e um teste
 (`tests/test_calibracao.py::test_csv_de_exemplo_nao_e_calibracao`) recusa rótulo de verdade
 nesse arquivo por engano. O Kappa de Cohen entre duas pessoas sai de
 `kappa_do_arquivo(caminho, pessoa_a, pessoa_b)`, e o alvo é **0,6–0,8**
-([ADR 0002](adr/0002-flesch-br-implementado-no-projeto.md)) — abaixo disso os Limiares não
+([ADR 0002](DECISOES.md)) — abaixo disso os Limiares não
 estão sustentados por rótulo, acima de 0,8 em ~30 Células é sinal de rotulagem conjunta, não
 de juízes bons. Como não há CSV preenchido, **nenhum Kappa é reportado neste relatório**:
 `kappa_cohen` devolve `nan` (não `0.0`) quando não há base, por decisão do próprio código —
@@ -243,7 +243,7 @@ Limiares, em uma única rodada de correção.
 mais as duas do teto) mediram Flesch-BR **90,77 → 91,09 → 89,58** — todas muito acima do
 teto de 50 do Intermediário (fácil demais, não difícil demais), sem melhora entre rodadas.
 Esgotado o teto de duas correções
-([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md)),
+([ADR 0013](DECISOES.md)),
 a Célula foi para a fila H4 com o motivo `flesch_br` e o histórico das três tentativas —
 `execucao.pendencias[0]` no `execucao.json`. Nenhuma Célula da demo reprovou por Aderência,
 Recomendação ou falha de extração: o preenchimento de número por Âncora (nunca reescrito
@@ -266,7 +266,7 @@ usa), de `data/execucoes/demo-copom-280/execucao.json`, campo `custo`:
 13 chamadas = 1 extração de Âncoras + 9 gerações originais + 3 correções do Ciclo (2 na
 Célula `intermediário × roteiro`, 1 na Célula `iniciante × texto_analitico`). O pior caso
 teórico do desenho é 1 + 9×3 = 28 chamadas por Ata
-([ADR 0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md));
+([ADR 0013](DECISOES.md));
 esta execução usou menos da metade disso porque a maioria das Células aprovou de primeira.
 
 **Execução com `--provedor roteador` (LLM real): não medida nesta máquina.** Não há `.env`
@@ -283,7 +283,7 @@ A saída de `cmd_executar` já imprime `custo: chamadas=N tokens=N segundos=N.N`
 registra qual provedor respondeu cada chamada em `execucao.json` (`custo.por_provedor`) —
 inclusive quantos 429 foram vistos e absorvidos por troca de provedor, porque o roteador
 só troca depois de interpretar o tipo de 429
-([ADR 0007](adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)). Nenhum número desse
+([ADR 0007](DECISOES.md)). Nenhum número desse
 cenário é inventado aqui.
 
 ## 5. Suíte
@@ -311,7 +311,7 @@ guarda também uma medição anterior da mesma sessão (774 passed, antes da Eta
 mantida ali como registro de como a contagem cresceu, não como o número que vale.
 
 A suíte de `pydantic-evals` roda dentro do pytest, com casos em YAML
-([ADR 0003](adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md)):
+([ADR 0003](DECISOES.md)):
 
 ```
 $ uv run --offline pytest -q tests/test_evals.py tests/test_calibracao.py
@@ -373,20 +373,20 @@ $ uv run --offline python scripts/vocabulario.py
 
 | ADR | Decisão | Cumprida em |
 |---|---|---|
-| [0001](adr/0001-gerador-e-avaliador-como-modulos-separados.md) | Gerador e Avaliador, módulos separados por `(Conteúdo, Âncora[], Audiência) → Laudo` | `src/suno/gerador/`, `src/suno/avaliador/` |
-| [0002](adr/0002-flesch-br-implementado-no-projeto.md) | Flesch-BR reimplementado; `textstat` rejeitada | `src/suno/avaliador/silabas.py`, `flesch_br.py` |
-| [0003](adr/0003-pydantic-evals-no-lugar-de-deepeval-e-ragas.md) | `pydantic-evals`, não DeepEval/Ragas | `evals/` |
-| [0004](adr/0004-renderizacao-de-video-fora-do-grafo.md) | Vídeo fora do grafo, consome Roteiro aprovado | `src/suno/video/` |
-| [0005](adr/0005-interface-em-react-vite-sobre-fastapi.md) | React + Vite + Tailwind sobre FastAPI | `src/suno/api/`, `web/` |
-| [0006](adr/0006-atas-do-copom-como-documento-fonte-principal.md) | Atas do Copom, demo versionada sem rede | `data/atas/`, `src/suno/ingestao/` |
-| [0007](adr/0007-roteador-de-provedores-distingue-tipo-de-429.md) | Roteador único, distingue 429 por minuto/dia | `src/suno/provedores/roteador.py` |
-| [0008](adr/0008-comite-de-juizes-llm-como-camada-opcional-do-avaliador.md) | Comitê de 2 juízes-LLM, opcional, desligado na demo | `src/suno/comite/` |
-| [0009](adr/0009-imagens-do-pacote-de-publicacao-sao-geradas-nunca-raspadas.md) | Imagens geradas (matplotlib+Pillow), nunca raspadas | `src/suno/pacote/carrossel.py` |
-| [0010](adr/0010-gerador-nao-e-agente-com-tools-nem-usa-mcp.md) | Gerador não é agente; sem tools, sem MCP | `src/suno/gerador/` (sequência fixa) |
-| [0011](adr/0011-ancoras-numericas-sao-citadas-nunca-reescritas.md) | Âncoras numéricas citadas, nunca reescritas | `src/suno/ingestao/numeros.py`, `gerador/moldes.py` |
-| [0012](adr/0012-recomendacao-detectada-por-padrao-sintatico-nao-por-lista-de-palavras.md) | Recomendação por Léxico + padrão sintático | `src/suno/avaliador/recomendacao.py` |
-| [0013](adr/0013-teto-de-duas-rodadas-no-ciclo-de-correcao-e-fila-de-revisao-humana.md) | Teto de 2 rodadas; falha de extração vai direto a H4 | `src/suno/gerador/ciclo.py` |
-| [0014](adr/0014-o-pacote-de-publicacao-tem-avaliacao-visual-propria.md) | Avaliação visual do Pacote, não reprova a Célula | `src/suno/pacote/visual.py` |
+| [0001](DECISOES.md) | Gerador e Avaliador, módulos separados por `(Conteúdo, Âncora[], Audiência) → Laudo` | `src/suno/gerador/`, `src/suno/avaliador/` |
+| [0002](DECISOES.md) | Flesch-BR reimplementado; `textstat` rejeitada | `src/suno/avaliador/silabas.py`, `flesch_br.py` |
+| [0003](DECISOES.md) | `pydantic-evals`, não DeepEval/Ragas | `evals/` |
+| [0004](DECISOES.md) | Vídeo fora do grafo, consome Roteiro aprovado | `src/suno/video/` |
+| [0005](DECISOES.md) | React + Vite + Tailwind sobre FastAPI | `src/suno/api/`, `web/` |
+| [0006](DECISOES.md) | Atas do Copom, demo versionada sem rede | `data/atas/`, `src/suno/ingestao/` |
+| [0007](DECISOES.md) | Roteador único, distingue 429 por minuto/dia | `src/suno/provedores/roteador.py` |
+| [0008](DECISOES.md) | Comitê de 2 juízes-LLM, opcional, desligado na demo | `src/suno/comite/` |
+| [0009](DECISOES.md) | Imagens geradas (matplotlib+Pillow), nunca raspadas | `src/suno/pacote/carrossel.py` |
+| [0010](DECISOES.md) | Gerador não é agente; sem tools, sem MCP | `src/suno/gerador/` (sequência fixa) |
+| [0011](DECISOES.md) | Âncoras numéricas citadas, nunca reescritas | `src/suno/ingestao/numeros.py`, `gerador/moldes.py` |
+| [0012](DECISOES.md) | Recomendação por Léxico + padrão sintático | `src/suno/avaliador/recomendacao.py` |
+| [0013](DECISOES.md) | Teto de 2 rodadas; falha de extração vai direto a H4 | `src/suno/gerador/ciclo.py` |
+| [0014](DECISOES.md) | Avaliação visual do Pacote, não reprova a Célula | `src/suno/pacote/visual.py` |
 
 ## 7. Reprodutibilidade
 
@@ -418,7 +418,7 @@ automatiza:
    `--provedor falso`: preencher `.env` com `GEMINI_API_KEY`/`GROQ_API_KEY`/`SAMBANOVA_API_KEY`
    antes, e testar a chamada uma vez fora do horário da apresentação — cota de tier
    gratuito é instável e pode já estar zerada (seção 4 e
-   [ADR 0007](adr/0007-roteador-de-provedores-distingue-tipo-de-429.md)).
+   [ADR 0007](DECISOES.md)).
 2. **`cd web && npm install && npm run build`** para a API servir a interface construída
    em `/`. Verificado nesta máquina em 19/09/2026: `npx tsc --noEmit` sem erro,
    `npm run build` grava `web/dist/index.html`, e `uv run --offline python -m suno.cli
@@ -432,7 +432,7 @@ automatiza:
    versionada (`demo-copom-280`) já cobre isso e não depende de rede nem de geração ao
    vivo, que é o caminho recomendado para a demo.
 4. **Vídeo pré-renderizado**: o vídeo do Roteiro é gerado fora do grafo
-   ([ADR 0004](adr/0004-renderizacao-de-video-fora-do-grafo.md)) e deve ser renderizado
+   ([ADR 0004](DECISOES.md)) e deve ser renderizado
    antes da apresentação, não ao vivo — renderização de vídeo falha de formas demoradas.
    Verificado nesta máquina em 19/09/2026:
 

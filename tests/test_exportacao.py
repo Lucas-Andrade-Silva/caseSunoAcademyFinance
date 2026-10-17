@@ -7,7 +7,7 @@ import json
 import zipfile
 from pathlib import Path
 
-from suno.dominio import Audiencia, Destino, EstadoDecisao, Formato
+from suno.dominio import Audiencia, Destino, EstadoDecisao, Formato, PacotePublicacao
 from suno.exportacao import FormatoExportacao, exportar
 from suno.gerador.execucao import gravar_execucao
 from suno.revisao import decidir
@@ -63,7 +63,9 @@ def test_zip_leva_o_json_as_celulas_e_o_pacote(tmp_path: Path) -> None:
     execucao = _execucao_gravada(tmp_path)
     pasta_do_pacote = tmp_path / IDENTIFICADOR / "pacote" / "iniciante-texto_analitico"
     pasta_do_pacote.mkdir(parents=True)
-    (pasta_do_pacote / "pacote.json").write_text("{}", encoding="utf-8")
+    pacote = PacotePublicacao(execucao=IDENTIFICADOR, audiencia=Audiencia.INICIANTE,
+                             formato=TEXTO, legenda="Texto de teste")
+    (pasta_do_pacote / "pacote.json").write_text(pacote.model_dump_json(), encoding="utf-8")
 
     conteudo, media_type, nome_do_arquivo = exportar(
         execucao, tmp_path / IDENTIFICADOR, FormatoExportacao.ZIP

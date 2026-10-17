@@ -213,3 +213,23 @@ def test_iniciante_continua_explicando_o_termo_cotidiano() -> None:
     iniciante = medir_densidade("A atividade econômica segue firme.", ExigenciaDeExplicacao.SEMPRE)
 
     assert iniciante.sem_explicacao == ["atividade econômica"]
+
+
+def test_termo_composto_explicado_no_plural_conta_como_explicado():
+    texto = "Os preços de ativos financeiros (bens que guardam valor) sobem e descem."
+    assert "ativo financeiro" not in medir_densidade(texto, ExigenciaDeExplicacao.SEMPRE).sem_explicacao
+
+
+def test_termo_composto_no_plural_sem_explicacao_continua_cobrado():
+    texto = "Os ativos financeiros caíram."
+    assert "ativo financeiro" in medir_densidade(texto, ExigenciaDeExplicacao.SEMPRE).sem_explicacao
+
+
+def test_variante_explicada_na_mesma_frase_explica_o_termo():
+    texto = "O grupo reduziu a taxa básica de juros, a Selic (o termômetro do crédito), ontem."
+    assert "Selic" not in medir_densidade(texto, ExigenciaDeExplicacao.SEMPRE).sem_explicacao
+
+
+def test_variante_explicada_em_outra_frase_nao_conta():
+    texto = "A taxa básica de juros caiu. A Selic (o termômetro do crédito) é do banco."
+    assert "Selic" in medir_densidade(texto, ExigenciaDeExplicacao.SEMPRE).sem_explicacao

@@ -591,3 +591,17 @@ def test_o_prompt_do_iniciante_nao_ganha_a_lista_completa() -> None:
 
     bloco = _bloco_de_explicacao("A Selic ficou em 14% ao ano.", Audiencia.INICIANTE) or ""
     assert "demais termos especializados" not in bloco
+
+
+def test_titulo_que_ja_vem_com_cerquilha_nao_dobra_o_cabecalho():
+    from suno.gerador.moldes import RespostaTextoAnalitico, montar_markdown
+
+    texto = montar_markdown(
+        RespostaTextoAnalitico(
+            titulo="# A decisão do Copom",
+            o_que_foi_decidido="a",
+            por_que="b",
+            o_que_observar_adiante="c",
+        )
+    )
+    assert texto.startswith("# A decisão do Copom\n")

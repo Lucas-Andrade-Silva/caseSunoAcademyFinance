@@ -134,6 +134,33 @@ def _casa(achado: NumeroEncontrado, ancora: AncoraNumerica) -> bool:
     return achado.literal.strip() == ancora.valor_literal.strip()
 
 
+def _ancora_que_cita_o_ano(
+    achado: NumeroEncontrado, numericas: Sequence[AncoraNumerica]
+) -> AncoraNumerica | None:
+    """Ano solto que o trecho de alguma Âncora cita: "3,9% em 2027" é a projeção para 2027.
+
+    Sem isto, o ano de horizonte de uma projeção reprovava a Célula, porque só casava com
+    Âncora de data (beta teste, Roteiro Avançado copom-281, 2026-10-17). Vale só para ano solto:
+    um dia ou mês continua exigindo a Âncora de data.
+    """
+    if achado.unidade is not Unidade.DATA or achado.data_iso is not None or achado.ano is None:
+        return None
+    ano = re.compile(rf"\b{achado.ano}\b")
+    return next(
+        (ancora for ancora in numericas if ano.search(_digitos_colados(ancora.trecho or ""))),
+        None,
+    )
+
+
+def _digitos_colados(trecho: str) -> str:
+    """Desfaz o ano que a extração do PDF partiu: "trimestre de 202 8" vira "de 2028".
+
+    Só cola um algarismo solto ao grupo de três que o antecede, a forma em que o PDF da Ata
+    281 quebrou o ano; "2026 , 2027" e "5,2%, 3,9%" ficam como estão.
+    """
+    return re.sub(r"\b(\d{3}) (\d)\b", r"\1\2", trecho)
+
+
 def _com_unidade(achado: NumeroEncontrado) -> str:
     """Como o número aparece para um humano: ``"15%"``, ``"0,75 p.p."``, ``"CDI+2%"``.
 
@@ -183,6 +210,8 @@ def medir_aderencia(texto: str, ancoras: Sequence[Ancora]) -> ResultadoAderencia
     citadas: list[str] = []
     for achado in achados:
         casada = next((ancora for ancora in numericas if _casa(achado, ancora)), None)
+        if casada is None:
+            casada = _ancora_que_cita_o_ano(achado, numericas)
         if casada is None:
             fora.append(achado.literal)
             fora_legivel.append(_com_unidade(achado))

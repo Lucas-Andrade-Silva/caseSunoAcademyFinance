@@ -188,7 +188,7 @@ def test_referencia_de_familia_serve_a_miniatura_do_layout_sem_imagem_enviada(tm
 
 
 def test_api_diz_os_papeis_que_cada_familia_cobre(tmp_path: Path) -> None:
-    """A guia usa isto para não oferecer uma família que não monta o carrossel (a Asset)."""
+    """A guia usa isto para não oferecer uma família que não monta o carrossel."""
     cliente = TestClient(
         criar_app(
             tmp_path / "execucoes",
@@ -202,6 +202,6 @@ def test_api_diz_os_papeis_que_cada_familia_cobre(tmp_path: Path) -> None:
 
     assert resposta.status_code == 200
     papeis = {item["familia"]: set(item["papeis"]) for item in resposta.json()}
-    assert papeis["asset"] == {"hook", "cta"}
+    assert papeis["asset"] == {"hook", "ponto", "citacao", "cta"}
     assert papeis["dados"] == {"hook", "ponto", "citacao", "cta"}
     assert "suno_escuro" not in papeis

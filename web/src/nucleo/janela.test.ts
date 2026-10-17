@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { dentroDaJanela, diasDesde, recentes } from "./janela";
+import { dentroDaJanela, diasDesde, recentes, noticiasDoModo } from "./janela";
 
 const HOJE = new Date(2026, 9, 12, 15, 30); // 12/10/2026, à tarde
+
+describe("noticiasDoModo", () => {
+  const atas = [
+    { id: "demo", data_referencia: "2026-08-05", demo_disponivel: true },
+    { id: "recente", data_referencia: "2026-10-10", demo_disponivel: false },
+  ];
+  it("mantém a demonstração disponível com as datas originais", () => {
+    expect(noticiasDoModo(atas, "demo", HOJE)).toEqual([atas[0]]);
+    expect(atas[0].data_referencia).toBe("2026-08-05");
+  });
+  it("preserva a janela de notícias no modo Real", () => {
+    expect(noticiasDoModo(atas, "real", HOJE)).toEqual([atas[1]]);
+  });
+});
 
 describe("diasDesde", () => {
   it("conta dias corridos, sem olhar a hora", () => {

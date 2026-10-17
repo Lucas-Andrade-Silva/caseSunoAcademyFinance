@@ -287,7 +287,10 @@ DICA_POR_METRICA: dict[Metrica, str] = {
     ),
     Metrica.FIDELIDADE: (
         "Reescreva só esses trechos para dizer o que a Ata diz, ou apague-os. Não acrescente "
-        "informação que a Ata não traz: explicação de termo e analogia continuam valendo."
+        "informação que a Ata não traz: explicação de termo e analogia continuam valendo. "
+        "O trecho da Ata citado pelo Avaliador é prova da divergência, não é uma nova Âncora: "
+        "não copie dele número ou data que não apareça como `{{chave}}` na lista de Âncoras. "
+        "Se a correção depender desse número, retire o número e preserve apenas o fato qualitativo."
     ),
     Metrica.QUALIDADE: (
         "Melhore só as dimensões listadas: explique o porquê de cada fato e feche o texto com uma "
@@ -495,9 +498,12 @@ def montar_pedido(
             "ou em dígitos que não seja uma chave desta lista."
         ),
     ]
-    if sem_numero_a_citar(ancoras) and ancoras.textuais:
+    if ancoras.textuais:
+        # Com número também: a afirmação fixa o sentido do fato (cortou, não manteve). Sem ela
+        # o gerador inverteu a decisão do Copom em duas Células (beta teste, 2026-10-17).
         partes_do_usuario.append(
-            "Afirmações centrais da Ata (o que o conteúdo pode dizer):\n"
+            "Afirmações centrais da Ata (o que o conteúdo pode dizer; nunca as contradiga, "
+            "e os números delas continuam entrando só por `{{chave}}`):\n"
             f"{_lista_de_afirmacoes(ancoras)}"
         )
     if rodada > 0 and correcoes:
@@ -562,8 +568,10 @@ def _preencher_varios(textos: list[str], ancoras: Ancoras) -> tuple[list[str], l
 
 def montar_markdown(resposta_estruturada: RespostaTextoAnalitico) -> str:
     """As três partes viram Markdown. Separado de ``montar_conteudo`` para o teste ler."""
+    # O modelo às vezes já escreve "# " no título e o Markdown saía "# # Título".
+    titulo = resposta_estruturada.titulo.lstrip("#").strip()
     return (
-        f"# {resposta_estruturada.titulo}\n\n"
+        f"# {titulo}\n\n"
         f"## O que foi decidido\n\n{resposta_estruturada.o_que_foi_decidido}\n\n"
         f"## Por quê\n\n{resposta_estruturada.por_que}\n\n"
         f"## O que observar adiante\n\n{resposta_estruturada.o_que_observar_adiante}\n"

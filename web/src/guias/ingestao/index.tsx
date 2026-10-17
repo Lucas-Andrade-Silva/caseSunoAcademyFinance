@@ -1,5 +1,5 @@
 // A guia Ingestão. À esquerda, uma linha por origem de notícias e o botão branco de importar
-// documento. À direita, as notícias da origem escolhida (só as dos últimos 30 dias); abrir uma
+// documento. À direita, as notícias da origem escolhida (30 dias no Real, acervo no Demo); abrir uma
 // mostra o texto já estruturado. A pessoa marca até 3 e o botão ATUALIZAR as guarda para gerar
 // conteúdo. A seleção guardada some quando a aba fecha.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -23,8 +23,9 @@ import Linha from "../../interface/Linha";
 import TextoDaAta from "../../interface/TextoDaAta";
 import Vazio from "../../interface/Vazio";
 import { seloDaAta } from "../../lib/fontes";
+import { usarConfiguracoes } from "../../nucleo/configuracoes";
 import { usarDados } from "../../nucleo/dados";
-import { JANELA_EM_DIAS, recentes } from "../../nucleo/janela";
+import { JANELA_EM_DIAS, noticiasDoModo } from "../../nucleo/janela";
 import { CHAVES } from "../../nucleo/precarga";
 import { MAXIMO_DE_NOTICIAS, usarSelecao } from "../../nucleo/selecao";
 import { formatarDataCurta, formatarDataDoDia } from "../../texto/rotulos";
@@ -91,6 +92,7 @@ function DetalheDaNoticia({
 }
 
 export default function GuiaIngestao() {
+  const { modo } = usarConfiguracoes();
   const { dados, erro, recarregar } = usarDados(CHAVES.origens, listarOrigens);
   // O andamento da busca vem de uma rota leve: `/api/fontes` é lenta enquanto o servidor lê PDFs
   // grandes, e a tela ficaria parada em "Baixando 0 de N" esperando por ela.
@@ -116,12 +118,18 @@ export default function GuiaIngestao() {
   const origem = origens.find((o) => o.id === origemAberta) ?? null;
   const cheia = rascunho.length >= MAXIMO_DE_NOTICIAS;
 
-  const atasDaOrigem = useMemo(() => (origem ? recentes(origem.atas) : []), [origem]);
-  const todasAsAtas = useMemo(() => origens.flatMap((o) => o.atas), [origens]);
+  const atasDaOrigem = useMemo(() => (origem ? noticiasDoModo(origem.atas, modo) : []), [origem, modo]);
+  const todasAsAtas = useMemo(() => noticiasDoModo(origens.flatMap((o) => o.atas), modo), [origens, modo]);
   const ataEscolhida = todasAsAtas.find((a) => a.identificador === ataAberta) ?? null;
   const marcadas = rascunho
     .map((id) => todasAsAtas.find((a) => a.identificador === id))
     .filter((a): a is ResumoDaAta => a !== undefined);
+  const noticiasSemOrigem = modo === "demo" ? todasAsAtas : marcadas;
+
+  useEffect(() => {
+    definirAtaAberta(null);
+    definirConfirmado(false);
+  }, [modo]);
 
   useEffect(() => {
     if (!confirmado) return;
@@ -220,6 +228,10 @@ export default function GuiaIngestao() {
         </button>
       </div>
 
+      <p className="mt-3 text-[14px] leading-snug text-etiqueta">
+        {modo === "demo" ? "Acervo de demonstração · datas originais" : `Notícias dos últimos ${JANELA_EM_DIAS} dias`}
+      </p>
+
       {atualizacao?.estado === "erro" && (
         <p role="alert" className="mt-3 text-[14px] leading-snug text-coral-claro">
           {atualizacao.mensagem}
@@ -311,6 +323,11 @@ export default function GuiaIngestao() {
             </li>
           ))}
         </ul>
+      ) : modo === "demo" ? (
+        <Vazio
+          titulo="Esta origem não tem Atas de demonstração."
+          detalhe="Escolha uma origem com respostas prontas no acervo. As datas originais são preservadas."
+        />
       ) : !origem.ativa && origem.disponivel ? (
         <Vazio
           titulo="Esta origem está desligada."
@@ -330,14 +347,15 @@ export default function GuiaIngestao() {
           }
         />
       );
-  } else if (marcadas.length > 0) {
+  } else if (noticiasSemOrigem.length > 0) {
     corpo = (
       <ul className="surge grid gap-3 xl:grid-cols-2">
-        {marcadas.map((ata) => (
+        {noticiasSemOrigem.map((ata) => (
           <li key={ata.identificador}>
             <CartaoDeNoticia
               ata={ata}
-              marcada
+              marcada={rascunho.includes(ata.identificador)}
+              bolinhaDesabilitada={cheia && !rascunho.includes(ata.identificador)}
               onMarcar={() => alternar(ata.identificador)}
               onAbrir={() => {
                 const dona = origens.find((o) => o.atas.some((a) => a.identificador === ata.identificador));
@@ -350,7 +368,9 @@ export default function GuiaIngestao() {
       </ul>
     );
   } else {
-    corpo = <Vazio titulo="Escolha uma origem." />;
+    corpo = <Vazio titulo={modo === "demo"
+      ? dados === undefined && !erro ? "Carregando o acervo de demonstração…" : "O acervo de demonstração está vazio."
+      : "Escolha uma origem."} />;
   }
 
   const direita = (
@@ -373,7 +393,7 @@ export default function GuiaIngestao() {
         }
       />
       <CorpoDaPrevia>{corpo}</CorpoDaPrevia>
-      {origem && frequenciaDaOrigem(origem.id) && (
+      {modo === "real" && origem && frequenciaDaOrigem(origem.id) && (
         <p className="shrink-0 px-5 pb-5 text-right text-[13px] leading-snug text-etiqueta lg:px-[50px]">
           {frequenciaDaOrigem(origem.id)}
         </p>

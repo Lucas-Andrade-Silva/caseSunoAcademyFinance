@@ -11,7 +11,7 @@ import { rotuloDosJeitos } from "./jeitos";
 import { lerDadosDoVideo } from "./salvo";
 
 export default function PreviaSalva({ salvo }: { salvo: Salvo }) {
-  const dados = lerDadosDoVideo(salvo.dados);
+  const dados = lerDadosDoVideo(salvo.dados, salvo.audiencia);
   if (!dados) return <Vazio tom="coral" titulo="Não consegui ler este salvo." />;
 
   const detalhes = [rotuloAudiencia(salvo.audiencia), salvo.resumo, rotuloDosJeitos(dados.clima, dados.ritmo)];
@@ -21,7 +21,9 @@ export default function PreviaSalva({ salvo }: { salvo: Salvo }) {
       <p className="mt-2 text-[14px] text-etiqueta">{detalhes.filter(Boolean).join(" · ")}</p>
 
       <div className="mt-8 flex flex-col gap-6">
-        <CartaoDoPrompt texto={dados.instrucao} />
+        {dados.laudo?.destino === "aprovado"
+          ? <CartaoDoPrompt texto={dados.instrucao} />
+          : <Vazio titulo="Rascunho: reabra e reavalie antes de copiar o prompt." />}
         <Barras barras={dados.barras} />
       </div>
 

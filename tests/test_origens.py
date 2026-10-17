@@ -5,6 +5,7 @@ curadoria. Tudo determinístico, sem LLM, sem cota e sem rede.
 from __future__ import annotations
 
 import json
+import os
 from datetime import date
 from pathlib import Path
 
@@ -60,8 +61,10 @@ def test_o_catalogo_padrao_tem_as_quatro_origens(tmp_path: Path):
     assert origens["importados"].categoria is CategoriaDaAta.IMPORTADA
 
 
-def test_o_catalogo_versionado_e_o_padrao():
-    assert carregar_catalogo(FONTES) == carregar_catalogo(Path("nao-existe"))
+def test_o_catalogo_versionado_e_o_padrao(tmp_path: Path):
+    # O estado da interface na máquina não pertence ao catálogo versionado.
+    (tmp_path / "catalogo.json").write_bytes((FONTES / "catalogo.json").read_bytes())
+    assert carregar_catalogo(tmp_path) == carregar_catalogo(tmp_path / "nao-existe")
 
 
 def test_ligar_e_desligar_persiste_em_arquivo_de_preferencias(tmp_path: Path):
@@ -92,6 +95,63 @@ def test_preferencia_ilegivel_cai_no_padrao(tmp_path: Path):
 # ---------------------------------------------------------------------------
 # Repositório e resumo
 # ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("campo", "valor", "esperado"),
+    [
+        ("titulo", "Título corrigido da companhia", "Título corrigido da companhia"),
+        ("data_referencia", "2026-10-17", date(2026, 10, 17)),
+    ],
+)
+def test_cache_atualiza_ata_e_resumo_quando_metadados_mudam(
+    tmp_path: Path, campo: str, valor: str, esperado: str | date
+):
+    pasta = tmp_path / "cvm_fatos_relevantes"
+    _comunicado(pasta, "corrigida", "A companhia aprovou uma operação de R$ 2 bilhões.")
+    repositorio = RepositorioDeAtas(tmp_path / "atas", tmp_path)
+    antes = repositorio.carregar("corrigida")
+    resumo_antes = repositorio.resumir("corrigida")
+    assert antes is not None and resumo_antes is not None
+    assert getattr(antes, campo) != esperado
+    estado_do_texto = (pasta / "corrigida.txt").stat()
+    metadados = pasta / "corrigida.json"
+    estado = metadados.stat()
+    dados = json.loads(metadados.read_text(encoding="utf-8"))
+    dados[campo] = valor
+    metadados.write_text(json.dumps(dados), encoding="utf-8")
+    os.utime(metadados, ns=(estado.st_atime_ns, estado.st_mtime_ns + 1_000_000_000))
+
+    depois = repositorio.carregar("corrigida")
+    resumo_depois = repositorio.resumir("corrigida")
+
+    assert depois is not None and resumo_depois is not None
+    assert getattr(depois, campo) == esperado
+    assert getattr(resumo_depois, campo) == esperado
+    assert (pasta / "corrigida.txt").stat().st_mtime_ns == estado_do_texto.st_mtime_ns
+
+
+def test_cache_do_arquivo_atualiza_quando_txt_auxiliar_muda(tmp_path: Path):
+    pasta = tmp_path / "cvm_fatos_relevantes"
+    _comunicado(pasta, "paginada", "A companhia aprovou uma operação de R$ 2 bilhões.")
+    arquivo_original = pasta / "paginada.pdf"
+    arquivo_original.write_bytes((ATAS / f"{ATA_DO_COPOM}.pdf").read_bytes())
+    estado_do_original = arquivo_original.stat()
+    repositorio = RepositorioDeAtas(tmp_path / "atas", tmp_path)
+    antes = repositorio.carregar("paginada")
+    resumo_antes = repositorio.resumir("paginada")
+    assert antes is not None and resumo_antes is not None
+    texto_corrigido = "A companhia anunciou uma operação de R$ 30 milhões e manteve a administração."
+    (pasta / "paginada.txt").write_text(texto_corrigido, encoding="utf-8")
+
+    depois = repositorio.carregar("paginada")
+    resumo_depois = repositorio.resumir("paginada")
+
+    assert depois is not None and resumo_depois is not None
+    assert depois.texto == texto_corrigido != antes.texto
+    assert resumo_depois.resumo == texto_corrigido != resumo_antes.resumo
+    assert depois.arquivo == arquivo_original
+    assert arquivo_original.stat().st_mtime_ns == estado_do_original.st_mtime_ns
 
 
 def test_o_resumo_da_ata_do_copom_traz_a_frase_da_decisao():
