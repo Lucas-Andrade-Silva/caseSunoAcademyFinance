@@ -272,3 +272,46 @@ def test_roteador_para_ignora_provedor_sem_chave(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "chave-de-mentira")
     monkeypatch.setenv("GROQ_MODELO", "modelo-de-mentira")
     assert [p.nome for p in roteador_para(PapelLLM.GERADOR).provedores] == ["groq"]
+
+
+# -- erro transitório: espera crescente antes de trocar ----------------------
+
+
+_SOBRECARGA = 'HTTP 503: {"error": {"status": "UNAVAILABLE"}}'
+
+
+def test_503_espera_em_recuo_e_insiste_no_mesmo_provedor():
+    gemini = _falso(
+        "gemini",
+        [ErroProvedor("gemini", _SOBRECARGA), ErroProvedor("gemini", _SOBRECARGA), "veio do gemini"],
+    )
+    groq = _falso("groq", ["veio do groq"])
+    espera = EsperaAnotada()
+    roteador = Roteador([gemini, groq], dormir=espera.anotar)
+
+    assert roteador.completar(_pedido()).texto == "veio do gemini"
+    assert espera.esperas == [5.0, 15.0]
+    assert groq.pedidos == []
+
+
+def test_503_que_nao_passa_troca_de_provedor_depois_do_recuo():
+    gemini = _falso("gemini", [ErroProvedor("gemini", _SOBRECARGA)] * 4)
+    groq = _falso("groq", ["veio do groq"])
+    espera = EsperaAnotada()
+    roteador = Roteador([gemini, groq], dormir=espera.anotar)
+
+    assert roteador.completar(_pedido()).texto == "veio do groq"
+    assert espera.esperas == [5.0, 15.0, 30.0]
+
+
+def test_a_mensagem_de_falha_traz_so_as_notas_da_propria_chamada():
+    gemini = _falso("gemini", [ErroProvedor("gemini", "HTTP 400: ruim")] * 4)
+    roteador = Roteador([gemini], dormir=_nao_dormir)
+
+    with pytest.raises(ErroProvedor) as primeira:
+        roteador.completar(_pedido())
+    with pytest.raises(ErroProvedor) as segunda:
+        roteador.completar(_pedido())
+
+    assert primeira.value.mensagem.count("HTTP 400") == 2
+    assert segunda.value.mensagem.count("HTTP 400") == 2

@@ -36,3 +36,10 @@ export function recentes<T extends { data_referencia: string }>(
     .filter((ata) => dentroDaJanela(ata.data_referencia, hoje))
     .sort((a, b) => b.data_referencia.localeCompare(a.data_referencia));
 }
+
+/** O acervo Demo conserva as datas originais e não depende da janela de notícias. */
+export function noticiasDoModo<T extends { data_referencia: string; demo_disponivel: boolean }>(
+  atas: readonly T[], modo: "demo" | "real", hoje: Date = new Date(),
+): T[] {
+  return modo === "demo" ? atas.filter((ata) => ata.demo_disponivel) : recentes(atas, hoje);
+}

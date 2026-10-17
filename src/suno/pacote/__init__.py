@@ -20,7 +20,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
+import tempfile
 from pathlib import Path
 
 from suno.dominio import (
@@ -80,7 +82,7 @@ def _ler_execucao(identificador: str, pasta_execucoes: Path) -> Execucao:
     return carregar_execucao(identificador, pasta_execucoes)
 
 
-def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audiencia: Audiencia) -> Path | None:
+def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audiencia: Audiencia, execucao: Execucao) -> Path | None:
     """O mp4 só entra no Pacote se alguém já rodou ``suno.cli video`` (ADR 0004)."""
     candidatos = (
         pasta_do_pacote / NOME_DO_VIDEO,
@@ -89,6 +91,14 @@ def _video_ja_renderizado(pasta_do_pacote: Path, pasta_da_execucao: Path, audien
     )
     for candidato in candidatos:
         if candidato.exists():
+            revisao = candidato.with_suffix(".revisao")
+            if revisao.exists():
+                if revisao.read_text(encoding="utf-8") != execucao.assinatura_da_celula(audiencia, Formato.ROTEIRO):
+                    continue
+            else:
+                historico = execucao.historico(audiencia, Formato.ROTEIRO)
+                if historico and historico.laudo_final and candidato.stat().st_mtime < historico.laudo_final.avaliado_em.timestamp():
+                    continue
             return candidato
     return None
 
@@ -132,6 +142,8 @@ def _montar_uma(
     provedor_fotos: Provedor | None = None,
 ) -> PacotePublicacao:
     pasta_do_pacote.mkdir(parents=True, exist_ok=True)
+    # Uma remontagem só volta a oferecer um manifesto depois de concluir todos os arquivos.
+    (pasta_do_pacote / NOME_DO_REGISTRO).unlink(missing_ok=True)
 
     fotos: dict[int, FotoDoSlide] = {}
     imagens: list[ImagemSlide] = []
@@ -243,7 +255,7 @@ def _montar_uma(
             (pasta_do_pacote / NOME_DO_PLANO_LEGIVEL).write_text(
                 plano_em_markdown(plano), encoding="utf-8"
             )
-        video = _video_ja_renderizado(pasta_do_pacote, pasta_da_execucao, celula.audiencia)
+        video = _video_ja_renderizado(pasta_do_pacote, pasta_da_execucao, celula.audiencia, execucao)
         if video is not None:
             conferencia = ConferenciaVisual(
                 medicoes=_medir_video_se_disponivel(video, celula.conteudo.duracao_alvo_s)
@@ -256,6 +268,7 @@ def _montar_uma(
     )
     pacote = PacotePublicacao(
         execucao=execucao.identificador,
+        assinatura_conteudo=execucao.assinatura_da_celula(celula.audiencia, celula.formato),
         audiencia=celula.audiencia,
         formato=celula.formato,
         legenda=legenda,
@@ -278,9 +291,14 @@ def _montar_uma(
         conferencia=conferencia,
         direcao_de_arte=direcao_de_arte,
     )
-    (pasta_do_pacote / NOME_DO_REGISTRO).write_text(
-        pacote.model_dump_json(indent=2), encoding="utf-8"
-    )
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=pasta_do_pacote,
+                                     suffix=".tmp", delete=False) as aberto:
+        temporario = Path(aberto.name)
+        aberto.write(pacote.model_dump_json(indent=2))
+    try:
+        os.replace(temporario, pasta_do_pacote / NOME_DO_REGISTRO)
+    finally:
+        temporario.unlink(missing_ok=True)
     return pacote
 
 
@@ -330,7 +348,11 @@ def montar_pacote(
             raise ValueError(
                 "a referência visual escolhida não pertence à composição da Saída"
             )
-    if provedor_direcao is None:
+    if execucao.provedor_gerador == "falso":
+        # A Demo não descobre serviços do ambiente nem busca fotos na rede.
+        # Provedores explicitamente injetados continuam disponíveis nos testes.
+        buscar_fotos = False
+    if provedor_direcao is None and execucao.provedor_gerador != "falso":
         try:
             from suno.provedores.roteador import provedor_por_nome, roteador_para
 
@@ -341,7 +363,7 @@ def montar_pacote(
             )
         except ErroProvedor as erro:
             _REGISTRO.warning("Diretor de Arte IA indisponível; usando regras: %s", erro)
-    if provedor_visao is None:
+    if provedor_visao is None and execucao.provedor_gerador != "falso":
         try:
             from suno.provedores.roteador import roteador_para
 

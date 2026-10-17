@@ -1,6 +1,6 @@
 // Os quadros do carrossel, um por linha: o texto escrito (papel, título, corpo, destaque, dado) e como
 // deve ser a imagem daquele quadro. A linha fecha e abre; a primeira já vem aberta.
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Slide } from "../../dados/cliente";
 import Botao from "../../interface/Botao";
 import CampoDeTexto from "../../interface/CampoDeTexto";
@@ -17,6 +17,7 @@ const COR_DO_PAPEL: Record<PapelDoQuadro, CorDoQuadrado> = {
   citacao: "roxo",
   cta: "amarelo",
 };
+const SEM_PROBLEMAS: ReadonlySet<number> = new Set();
 
 function Dado({ nome, children }: { nome: string; children: ReactNode }) {
   return (
@@ -38,12 +39,14 @@ function LinhaDoQuadro({
   quadro,
   ancoras,
   aberta,
+  destacada,
   aoAlternar,
   aoEditar,
 }: {
   quadro: QuadroMontado;
   ancoras: readonly AncoraDeQuadro[];
   aberta: boolean;
+  destacada: boolean;
   aoAlternar: () => void;
   aoEditar: (campos: Partial<CamposEditaveis>) => void;
 }) {
@@ -51,8 +54,14 @@ function LinhaDoQuadro({
   const { slide, composicao, indice, total, grafico, icones } = quadro;
   const papel = papelDoQuadro(slide);
   const idDoCorpo = `quadro-${indice}`;
+  useEffect(() => {
+    if (destacada) definirEditando(true);
+  }, [destacada]);
   return (
-    <li className="rounded-lg bg-superficie">
+    <li
+      id={`quadro-corrigivel-${indice}`}
+      className={`scroll-mt-6 rounded-lg bg-superficie ${destacada ? "ring-2 ring-coral/70" : ""}`}
+    >
       <button
         type="button"
         onClick={aoAlternar}
@@ -112,12 +121,19 @@ export default function Quadros({
   quadros,
   ancoras,
   aoEditar,
+  indicesComProblema = SEM_PROBLEMAS,
 }: {
   quadros: readonly QuadroMontado[];
   ancoras: readonly AncoraDeQuadro[];
   aoEditar: (indice: number, campos: Partial<CamposEditaveis>) => void;
+  indicesComProblema?: ReadonlySet<number>;
 }) {
   const [abertas, definirAbertas] = useState<ReadonlySet<number>>(() => new Set([0]));
+
+  useEffect(() => {
+    if (indicesComProblema.size === 0) return;
+    definirAbertas((atuais) => new Set([...atuais, ...indicesComProblema]));
+  }, [indicesComProblema]);
 
   function alternar(indice: number) {
     definirAbertas((atuais) => {
@@ -137,6 +153,7 @@ export default function Quadros({
           quadro={quadro}
           ancoras={ancoras}
           aberta={abertas.has(quadro.indice)}
+          destacada={indicesComProblema.has(quadro.indice)}
           aoAlternar={() => alternar(quadro.indice)}
           aoEditar={(campos) => aoEditar(quadro.indice, campos)}
         />

@@ -38,6 +38,7 @@ from suno.dominio import (
     FilaHumana,
     Formato,
     HistoricoCelula,
+    ImagemSlide,
     Laudo,
     Medida,
     Metrica,
@@ -179,7 +180,7 @@ def pacote_construido() -> PacotePublicacao:
         formato=Formato.CARROSSEL,
         legenda="A Selic caiu para 14,00% a.a.\n\nConteúdo informativo. Não é recomendação.",
         hashtags=["#copom", "#selic"],
-        imagens=[],
+        imagens=[ImagemSlide(indice=0, caminho=Path("slide-01.png"), largura=1080, altura=1350)],
         conferencia=ConferenciaVisual(),
         aprovado_por_humano=False,
     )
@@ -651,7 +652,10 @@ def test_baixar_pacote_devolve_zip_com_slides_e_legenda(
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta / "slide-01.png").write_bytes(b"png")
     (pasta / "legenda.txt").write_text("legenda #tag", encoding="utf-8")
-    (pasta / "pacote.json").write_text("{}", encoding="utf-8")
+    pacote = PacotePublicacao(execucao=IDENTIFICADOR, audiencia=Audiencia.INICIANTE,
+                             formato=Formato.CARROSSEL, legenda="legenda #tag",
+                             imagens=[ImagemSlide(indice=0, caminho=pasta / "slide-01.png", largura=1080, altura=1350)])
+    (pasta / "pacote.json").write_text(pacote.model_dump_json(), encoding="utf-8")
 
     resposta = cliente.get(f"/api/execucoes/{IDENTIFICADOR}/pacotes/iniciante/carrossel/baixar")
 

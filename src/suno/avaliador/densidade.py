@@ -137,10 +137,10 @@ def _padrao_forma(forma: str) -> str:
     "ação" dentro de "reação" ou "aplicação".
     """
     palavras = forma.split()
-    if len(palavras) == 1:
-        nucleo_regex = _padrao_palavra(palavras[0])
-    else:
-        nucleo_regex = r"\s+".join(re.escape(p) for p in palavras)
+    # Composto também flexiona: "ativos financeiros" é "ativo financeiro" no plural. Casando só
+    # o singular, a explicação escrita no plural não contava e a Célula reprovava em loop (beta
+    # teste, Carrossel Iniciante copom-281, 2026-10-17).
+    nucleo_regex = r"\s+".join(_padrao_palavra(p) for p in palavras)
     return rf"\b{nucleo_regex}\b"
 
 

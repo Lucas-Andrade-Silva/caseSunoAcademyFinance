@@ -1,7 +1,7 @@
 // O que a guia Vídeo guarda no Histórico e como lê de volta. O `localStorage` pode ter qualquer
 // coisa (versão antiga, edição à mão), então a leitura confere cada campo e completa os da Direção
 // de cena que faltarem, em vez de confiar no formato. Lógica pura (Vitest cobre).
-import type { BlocoFala } from "../../dados/cliente";
+import type { Audiencia, BlocoFala, Laudo } from "../../dados/cliente";
 import type { BarraDoLaudo } from "../../nucleo/laudo";
 import { ehClima, ehRitmo, type ClimaDoNarrador, type RitmoDoNarrador } from "./jeitos";
 import { montarPrompt } from "./instrucao";
@@ -14,6 +14,8 @@ export interface DadosDoVideo {
   instrucao: string;
   /** O Laudo da Célula em barras, para a prévia mostrar a avaliação de quando foi salvo. */
   barras: BarraDoLaudo[];
+  laudo?: Laudo | null;
+  textoAvaliado?: string;
 }
 
 function ehObjeto(valor: unknown): valor is Record<string, unknown> {
@@ -63,12 +65,19 @@ function lerLista<T>(valor: unknown, ler: (elemento: unknown) => T | null): T[] 
 }
 
 /** Os dados de um salvo de vídeo, ou `null` quando não há roteiro para mostrar. */
-export function lerDadosDoVideo(valor: unknown): DadosDoVideo | null {
+export function lerDadosDoVideo(valor: unknown, audiencia?: Audiencia): DadosDoVideo | null {
   if (!ehObjeto(valor)) return null;
   const blocos = lerLista(valor.blocos, lerBloco);
   if (blocos.length === 0) return null;
   const clima = ehClima(valor.clima) ? valor.clima : null;
   const ritmo = ehRitmo(valor.ritmo) ? valor.ritmo : null;
+  const laudo = ehObjeto(valor.laudo)
+    && valor.laudo.formato === "roteiro"
+    && (audiencia === undefined || valor.laudo.audiencia === audiencia)
+    && Array.isArray(valor.laudo.medidas)
+    && Array.isArray(valor.laudo.motivos)
+    && valor.textoAvaliado === JSON.stringify(blocos.map(({ fala, tela }) => ({ fala, tela })))
+      ? valor.laudo as unknown as Laudo : null;
   return {
     blocos,
     clima,
@@ -78,5 +87,7 @@ export function lerDadosDoVideo(valor: unknown): DadosDoVideo | null {
         ? valor.instrucao
         : montarPrompt({ blocos, clima, ritmo }),
     barras: lerLista(valor.barras, lerBarra),
+    laudo,
+    textoAvaliado: typeof valor.textoAvaliado === "string" ? valor.textoAvaliado : undefined,
   };
 }

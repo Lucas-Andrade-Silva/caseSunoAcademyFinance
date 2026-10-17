@@ -2,3 +2,4 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 uv run --offline pytest -q @args
+exit $LASTEXITCODE

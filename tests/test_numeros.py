@@ -176,6 +176,11 @@ def test_ordinal_feminino_da_reuniao(texto: str) -> None:
     assert (achado.literal, achado.valor, achado.unidade) == ("280", 280.0, Unidade.NUMERO)
 
 
+@pytest.mark.parametrize("texto", ["3ª Vara de Falências", "2ª Turma do STJ", "4ª Região"])
+def test_ordinal_que_nomeia_orgao_nao_e_numero(texto: str) -> None:
+    assert extrair_numeros(texto) == []
+
+
 # -- A fronteira ---------------------------------------------------------------
 
 

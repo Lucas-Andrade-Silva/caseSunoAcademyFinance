@@ -7,8 +7,10 @@ O que entra é validado pelos bytes, não pela extensão nem pelo Content-Type: 
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
+from threading import Barrier
 
 import pytest
 
@@ -85,6 +87,28 @@ def test_dois_com_o_mesmo_titulo_nao_se_sobrescrevem(tmp_path: Path):
     assert "R$ 1,5 bilhão" in carregar_ata(
         tmp_path / "importados" / f"{primeira.identificador}.txt"
     ).texto
+
+
+def test_importacoes_concorrentes_preservam_cada_ata(tmp_path: Path):
+    quantidade = 8
+    pasta = tmp_path / "importados"
+    pasta.mkdir()
+    inicio = Barrier(quantidade)
+    textos = [f"Comunicado {indice}: operação de R$ {indice + 1} milhões." for indice in range(quantidade)]
+
+    def enviar(texto: str):
+        inicio.wait(timeout=10)
+        return _importar(tmp_path, conteudo=texto.encode("utf-8"))
+
+    with ThreadPoolExecutor(max_workers=quantidade) as trabalhadores:
+        atas = list(trabalhadores.map(enviar, textos))
+
+    assert len({ata.identificador for ata in atas}) == quantidade
+    assert len(list(pasta.glob("*.txt"))) == quantidade
+    assert len(list(pasta.glob("*.json"))) == quantidade
+    for ata, texto in zip(atas, textos, strict=True):
+        assert ata.texto == texto
+        assert carregar_ata(pasta / f"{ata.identificador}.txt").texto == texto
 
 
 def test_sem_data_vale_hoje(tmp_path: Path):

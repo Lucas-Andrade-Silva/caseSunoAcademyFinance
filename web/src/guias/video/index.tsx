@@ -26,6 +26,7 @@ function roteirosDaSessao(sessao: Sessao): Partial<Record<Audiencia, RoteiroDaAu
       blocos: celula.conteudo.blocos ?? [],
       barras: barrasDoLaudo(celula.laudo),
       bloqueado: celulaBloqueada(celula.laudo),
+      laudo: celula.laudo,
     };
   }
   return roteiros;
@@ -38,7 +39,7 @@ export default function GuiaVideo() {
 
   useEffect(() => {
     if (paraAbrir?.especie !== "video") return;
-    const dados = lerDadosDoVideo(paraAbrir.dados);
+    const dados = lerDadosDoVideo(paraAbrir.dados, paraAbrir.audiencia);
     definirAberto(dados ? { salvo: paraAbrir, dados } : null);
     definirIlegivel(dados === null);
     consumirAbertura();
@@ -52,7 +53,7 @@ export default function GuiaVideo() {
         nome={salvo.titulo}
         execucaoId={salvo.execucaoId}
         audiencias={[salvo.audiencia]}
-        roteiros={{ [salvo.audiencia]: { blocos: dados.blocos, barras: dados.barras, bloqueado: false } }}
+        roteiros={{ [salvo.audiencia]: { blocos: dados.blocos, barras: dados.barras, bloqueado: false, laudo: dados.laudo } }}
         reaberto={{ clima: dados.clima, ritmo: dados.ritmo, onFechar: () => definirAberto(null) }}
       />
     );

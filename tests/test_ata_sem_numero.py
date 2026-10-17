@@ -171,7 +171,9 @@ def test_o_prompt_do_gerador_manda_escrever_sem_inventar_numero_e_lista_as_afirm
     assert "O conselho trocou o presidente." in pedido.mensagens[1].texto
 
 
-def test_com_numero_o_prompt_nao_muda():
+def test_com_numero_o_prompt_nao_pede_conteudo_qualitativo_mas_lista_as_afirmacoes():
+    # As afirmações fixam o sentido do fato: sem elas o gerador escreveu "o Copom mantém os
+    # juros" sobre uma Ata que cortou a Selic (beta teste copom-281, 2026-10-17).
     valor = AncoraNumerica(
         chave="numero_principal",
         rotulo="valor",
@@ -183,7 +185,7 @@ def test_com_numero_o_prompt_nao_muda():
     assert not sem_numero_a_citar(ancoras)
     pedido = montar_pedido(TEXTO, ancoras, Audiencia.INICIANTE, Formato.TEXTO_ANALITICO)
     assert INSTRUCAO_SEM_NUMERO not in pedido.mensagens[0].texto
-    assert "Afirmações centrais" not in pedido.mensagens[1].texto
+    assert "O conselho trocou o presidente." in pedido.mensagens[1].texto
 
 
 def test_conteudo_sem_numero_nao_reprova_por_extracao_nem_por_aderencia():

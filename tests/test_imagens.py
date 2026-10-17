@@ -652,12 +652,16 @@ def test_bloco_de_creditos_sem_repeticao_e_na_ordem_de_entrada():
 
 def test_indice_semeado_carrega_e_todo_arquivo_existe():
     biblioteca = BibliotecaDeImagens(PASTA_SEMEADA)
-    entradas = biblioteca.listar()
-    assert {e.id for e in entradas} >= {
+    # IDs do índice versionado: a biblioteca também recebe fotos locais validadas
+    # por texto/visão, que não prometem a curadoria humana destas nove sementes.
+    sementes = {
         "bcb-sede", "galipolo", "bolsa-sp", "dinheiro", "analise",
         "contas-luz", "fila-combustivel", "mercado-imobiliario", "pregao",
     }
-    for e in entradas:
+    entradas = {e.id: e for e in biblioteca.listar()}
+    assert entradas.keys() >= sementes
+    for identificador in sorted(sementes):
+        e = entradas[identificador]
         assert (PASTA_SEMEADA / e.arquivo).is_file(), e.id
         assert e.aprovada and e.validada_por == "humano", e.id
         assert e.licenca.strip() and e.url_origem.startswith("https://"), e.id

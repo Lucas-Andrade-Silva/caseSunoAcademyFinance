@@ -160,6 +160,24 @@ def test_a_correcao_manda_raciocinar_e_mudar_so_as_frases_listadas() -> None:
     assert "O texto da rodada anterior." in bloco  # o rascunho continua indo
 
 
+def test_trecho_do_juiz_nao_vira_numero_sem_ancora() -> None:
+    correcao = Correcao(
+        metrica=Metrica.FIDELIDADE,
+        valor_medido=0.0,
+        faixa=None,
+        instrucao=(
+            "A Célula diz «confirmada em 07 de outubro», mas a Ata diz "
+            "«confirmou em 25 de agosto»."
+        ),
+    )
+
+    bloco = _bloco_de_correcoes([correcao], "A decisão foi confirmada em 07 de outubro.")
+
+    assert "não é uma nova Âncora" in bloco
+    assert "não copie dele número ou data" in bloco
+    assert "preserve apenas o fato qualitativo" in bloco
+
+
 # --- 4. o Ciclo aceita a resposta com raciocinio e não gasta chamada a mais ------------------
 
 TEXTO_DA_ATA = """Data: 4 e 5 de agosto de 2026

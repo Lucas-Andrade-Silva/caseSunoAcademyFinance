@@ -2,7 +2,7 @@
 // servidor gerou. Escolher uma linha mostra a prévia à direita; "Abrir" leva o conteúdo de volta
 // para a guia dele.
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { listarExecucoes, type ExecucaoResumo, type Formato } from "../../dados/cliente";
 import Botao from "../../interface/Botao";
 import { CorpoDaPrevia, Divisao, Ilha, Titulo, TituloDeSecao, TopoDaPrevia } from "../../interface/Divisao";
@@ -11,7 +11,7 @@ import Linha, { type CorDoQuadrado } from "../../interface/Linha";
 import { Pilulas } from "../../interface/Pilulas";
 import Vazio from "../../interface/Vazio";
 import { usarDados } from "../../nucleo/dados";
-import { guiaDoFormato } from "../../nucleo/guias";
+import { guiaDoCaminho, guiaDoFormato } from "../../nucleo/guias";
 import { usarHistorico, type EspecieSalva, type Salvo } from "../../nucleo/historico";
 import { CHAVES } from "../../nucleo/precarga";
 import { usarSessoes } from "../../nucleo/sessao";
@@ -54,12 +54,18 @@ export default function GuiaHistorico() {
   const { salvos, remover, pedirAbertura } = usarHistorico();
   const sessoes = usarSessoes();
   const navegar = useNavigate();
-  const { dados: execucoes } = usarDados(CHAVES.execucoes, listarExecucoes, {
+  const { pathname } = useLocation();
+  const naTela = guiaDoCaminho(pathname)?.id === "historico";
+  const { dados: execucoes, recarregar } = usarDados(CHAVES.execucoes, listarExecucoes, {
     atualizarACada: (lista) => (lista.some((e) => e.status === "na_fila" || e.status === "gerando") ? 3000 : null),
   });
   const [filtro, definirFiltro] = useState<Filtro>("todos");
   const [escolha, definirEscolha] = useState<Escolha>(null);
   const [confirmandoRemocao, definirConfirmandoRemocao] = useState(false);
+
+  useEffect(() => {
+    if (naTela) void recarregar();
+  }, [naTela, recarregar]);
 
   useEffect(() => {
     if (!confirmandoRemocao) return;

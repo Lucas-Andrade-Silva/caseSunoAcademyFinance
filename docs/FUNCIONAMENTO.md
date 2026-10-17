@@ -64,13 +64,19 @@ Cada rodada gera a Célula e a avalia em camadas, cada uma só se a anterior apr
 1. **Determinístico**, nesta ordem: integridade da extração, Flesch-BR, Densidade, Aderência e
    Recomendação.
 2. **Qualidade (Jev)**: obrigatória com provedor real (sem chave, a execução falha); no `falso`,
-   fica de fora sem chave.
-3. **Fidelidade à Ata** (LLM): ligada por padrão.
+   fica sempre de fora para a Demo permanecer offline.
+3. **Fidelidade à Ata** (LLM): ligada por padrão no modo Real e sempre fora no `falso`.
 
 Reprovada, a Célula volta ao seu gerador com as correções medidas e o texto anterior, até o teto de
 rodadas (padrão 4, de 0 a 10). Ela para quando aprova, quando reprova por falha de extração (que
 vai direto à revisão humana, H4) ou quando o teto acaba. Erro de provedor também manda a Célula
 para H4, com o motivo registrado.
+
+Uma correção permanece no pedido enquanto a sua própria métrica não for medida e aprovada. Isso
+evita alternar entre duas reprovações quando uma camada posterior, como Fidelidade, não chega a
+rodar na rodada seguinte. O trecho da Ata citado pela Fidelidade é evidência da divergência, mas
+seus números só podem entrar na Célula quando também existem como Âncoras; caso contrário, o
+Gerador remove o número e preserva apenas o fato qualitativo.
 
 ### 4. Depois da geração
 
@@ -78,9 +84,11 @@ para H4, com o motivo registrado.
   monta PNGs, legenda e conferência visual das Células aprovadas. Quando há chave, o Diretor de
   Arte e o juiz de visão (folha de contato) rodam sozinhos pelo roteador; falha deles não impede o
   Pacote. Com `SERPER_API_KEY`, `servir` liga a busca de fotos na web (`--sem-fotos-da-web`
-  desliga).
+  desliga). A Demo não descobre esses serviços no ambiente: permanece offline mesmo que a máquina
+  tenha chaves configuradas.
 - **Editar texto** (`PUT .../celulas/{aud}/{formato}/texto`): o servidor grava o texto novo e
-  reavalia sem LLM.
+  reavalia sem LLM. A edição invalida decisão anterior e derivados daquela Célula; Pacote, plano,
+  vídeo, prévia e ZIP só voltam a ser entregues se corresponderem à revisão liberada.
 - **Plano do vídeo** (`GET .../celulas/{aud}/roteiro/plano`): só para Roteiro aprovado (senão 409).
 - **Vídeo mp4**: só pela CLI (`suno.cli video`), nunca pela API.
 
@@ -91,7 +99,8 @@ fontes, execuções, saúde, referências e famílias visuais.
 
 **Modo Demo ou Real.** Fica no navegador (`localStorage`, chave `suno.configuracoes`). Sem escolha
 salva, é Real se `GET /api/saude` diz que há provedor real disponível. Demo envia `modo: demo`
-(provedor falso), Real envia `modo: real` (roteador).
+(provedor falso), Real envia `modo: real` (roteador). Na Ingestão, Demo mostra o acervo marcado
+como `demo_disponivel` com suas datas originais; a janela de 30 dias vale para o modo Real.
 
 **Como uma geração é pedida.** Cada guia de conteúdo pede **um Formato** para as Audiências
 marcadas: `POST /api/execucoes`, depois `GET .../andamento` a cada 1,5 s. Em `concluida`, lê
@@ -102,16 +111,17 @@ em curso fica em `sessionStorage` e é retomada se a página recarregar. A inter
 | Guia | No servidor | Só no navegador |
 |---|---|---|
 | **Ingestão** | `GET /api/fontes`, ligar/desligar origem, atualizar em duas etapas (consultar, depois baixar um período), cancelar, importar documento, ler Ata | Seleção de até 3 notícias (`sessionStorage`) |
-| **Texto analítico** | Só a geração | Editor (TipTap), quatro formatos de apresentação (e-mail, newsletter, site, artigo); as edições **não** voltam ao servidor |
-| **Carrossel** | Geração; salvar texto (reavalia); prévias em HTML; Âncoras; render e zip das famílias visuais pelo servidor | Escolha de composição e paleta (`localStorage`); render e zip do layout escuro (`html-to-image` + `fflate`) |
-| **Vídeo** | Geração; salvar falas e telas (reavalia); plano de atuação | Prompt para a ferramenta de avatar, montado no navegador e copiado |
-| **Histórico** | Últimas 30 gerações (`GET /api/execucoes`, atualizada a cada 3 s enquanto alguma roda) | Até 60 conteúdos salvos (`localStorage`) |
+| **Texto analítico** | Geração; salvar texto (reavalia sem LLM) | Editor (TipTap), Laudo aberto na reprovação com o trecho apontado e ação para editar; quatro apresentações; versão não avaliada é salva como Rascunho |
+| **Carrossel** | Geração; salvar texto (reavalia); prévias em HTML; Âncoras; render e zip das famílias visuais pelo servidor | A reprovação abre e marca o quadro e o campo afetados; gerar, salvar e exportar só liberam após a reavaliação aprovar |
+| **Vídeo** | Geração; salvar falas e telas (reavalia); plano de atuação | A reprovação abre e marca a cena afetada; prompt e salvo ficam bloqueados até o Laudo aprovar a versão exibida |
+| **Histórico** | Últimas 30 gerações (`GET /api/execucoes`, renovada ao criar, concluir ou falhar e a cada 3 s enquanto alguma roda) | Até 60 conteúdos salvos (`localStorage`) |
 | **Configurações** | `GET/PUT/DELETE /api/configuracoes`: Jev, URL e Limiar do Jev, Fidelidade, rodadas, requisições por minuto, modelos e fila de provedor por papel; chaves aparecem só como presentes ou ausentes | Modo Demo/Real e nome exibido |
 
 **O render do Carrossel tem dois caminhos.** O layout escuro antigo é desenhado e exportado no
 navegador. Qualquer família visual (notícia, explicativo, jornal, dados, asset) é renderizada pelo
 servidor: a interface chama `pacotes/montar`, acompanha a montagem (até 240 s) e baixa o zip de
-`GET .../pacotes/{aud}/carrossel/baixar`.
+`GET .../pacotes/{aud}/carrossel/baixar`. O manifesto identifica a revisão do conteúdo; durante
+uma montagem a listagem fica vazia e os ZIPs são recusados, evitando arquivos parciais ou antigos.
 
 **O que a API tem e a interface não usa:** decisão humana por Célula, aprovação do Pacote (H5),
 filas humanas, resumo, renomear, apagar e exportar execução, sugestões de curadoria, cadastro e

@@ -79,7 +79,7 @@ from suno.dominio import (
     ReferenciaVisual,
     TipoSlide,
 )
-from suno.exportacao import FormatoExportacao, exportar
+from suno.exportacao import FormatoExportacao, arquivo_do_pacote_atual, exportar
 from suno.gerador.execucao import (
     PASTA_RESPOSTAS_PRONTAS,
     carregar_execucao,
@@ -372,10 +372,16 @@ def _pacotes_da_execucao(pasta_execucoes: Path, identificador: str) -> list[Paco
     if not raiz.exists():
         return []
     pacotes = []
+    execucao = carregar_execucao(identificador, pasta_execucoes)
     for pasta in sorted(raiz.iterdir()):
         arquivo = pasta / NOME_DO_REGISTRO_DO_PACOTE
         if arquivo.exists():
-            pacotes.append(PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8")))
+            try:
+                pacote = PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8"))
+            except (ValueError, FileNotFoundError):
+                continue
+            if pacote.corresponde_a(execucao):
+                pacotes.append(pacote)
     return pacotes
 
 
@@ -967,6 +973,28 @@ def criar_app(
         if not existia:
             raise HTTPException(404, f"execução {identificador!r} não encontrada")
 
+    def _pacote_atual(identificador: str, audiencia: Audiencia, formato: Formato) -> PacotePublicacao:
+        execucao = _execucao_ou_404(identificador)
+        arquivo = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato) / NOME_DO_REGISTRO_DO_PACOTE
+        if not arquivo.is_file():
+            raise HTTPException(404, "Pacote não encontrado: monte novamente após editar")
+        if not execucao.celula_liberada(audiencia, formato):
+            raise HTTPException(409, "esta Célula não está liberada para publicação")
+        if montador.estado(identificador).estado == "rodando":
+            raise HTTPException(409, "o Pacote ainda está sendo montado")
+        try:
+            pacote = PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8"))
+        except ValueError:
+            raise HTTPException(409, "registro do Pacote inválido: monte novamente") from None
+        if not pacote.corresponde_a(execucao):
+            raise HTTPException(409, "o Pacote é de outra revisão: monte novamente")
+        return pacote
+
+    def _invalidar_derivados(identificador: str, audiencia: Audiencia, formato: Formato) -> None:
+        pasta = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato)
+        for nome in ("pacote.json", "video.mp4", "video.revisao", "plano.json", "plano.md", "atuacao.json"):
+            (pasta / nome).unlink(missing_ok=True)
+
     @app.post("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/decisao")
     def registrar_decisao(
         identificador: str, audiencia: Audiencia, formato: Formato, corpo: PedidoDeDecisao
@@ -989,6 +1017,8 @@ def criar_app(
             except DecisaoInvalida as erro:
                 raise HTTPException(422, str(erro)) from None
             gravar_execucao(execucao, pasta_execucoes)
+            if decisao.estado is EstadoDecisao.REPROVADA:
+                _invalidar_derivados(identificador, audiencia, formato)
             return decisao
 
     @app.put("/api/execucoes/{identificador}/celulas/{audiencia}/{formato}/texto")
@@ -1009,10 +1039,13 @@ def criar_app(
             except (DecisaoInvalida, EdicaoInvalida) as erro:
                 raise HTTPException(422, str(erro)) from None
             gravar_execucao(execucao, pasta_execucoes)
+            _invalidar_derivados(identificador, audiencia, formato)
             return historico
 
     @app.get("/api/execucoes/{identificador}/exportar")
     def exportar_execucao(identificador: str, formato: FormatoExportacao) -> Response:
+        if formato is FormatoExportacao.ZIP and montador.estado(identificador).estado == "rodando":
+            raise HTTPException(409, "o Pacote ainda está sendo montado")
         execucao = _execucao_ou_404(identificador)
         conteudo, media_type, nome_do_arquivo = exportar(
             execucao, pasta_execucoes / identificador, formato
@@ -1059,17 +1092,18 @@ def criar_app(
         """O plano de edição do Roteiro aprovado: cenas, ícones, transições, efeitos e sons, em
         JSON para colar num gerador de avatar e em Markdown para conferir. Roteiro que não foi
         aprovado não tem plano (ADR 0004)."""
-        historico = _execucao_ou_404(identificador).historico(audiencia, Formato.ROTEIRO)
+        execucao = _execucao_ou_404(identificador)
+        historico = execucao.historico(audiencia, Formato.ROTEIRO)
         if historico is None:
             raise HTTPException(404, "Roteiro não encontrado nesta execução")
         celula = historico.celula_final
-        if historico.destino_final is not Destino.APROVADO or celula is None:
+        if not execucao.celula_liberada(audiencia, Formato.ROTEIRO) or celula is None:
             raise HTTPException(409, "só Roteiro aprovado tem plano de edição")
         direcao = direcao_em_disco(
             _pasta_do_pacote(pasta_execucoes, identificador, audiencia, Formato.ROTEIRO),
             celula.conteudo,
             audiencia,
-            provedor_atuacao,
+            provedor_atuacao if execucao.provedor_gerador != "falso" else None,
         )
         plano = montar_plano(celula.conteudo, audiencia, direcao)
         return PlanoDeEdicao(plano=plano, markdown=plano_em_markdown(plano))
@@ -1125,6 +1159,8 @@ def criar_app(
     @app.get("/api/execucoes/{identificador}/pacotes")
     def listar_pacotes(identificador: str) -> list[PacotePublicacao]:
         _execucao_ou_404(identificador)  # 404 cedo se a execução nem existe
+        if montador.estado(identificador).estado == "rodando":
+            return []
         return _pacotes_da_execucao(pasta_execucoes, identificador)
 
     @app.get(
@@ -1135,11 +1171,13 @@ def criar_app(
         identificador: str, audiencia: Audiencia, slide: int, paleta: str | None = None
     ) -> HTMLResponse:
         """O slide montado, recolorido com outra paleta sem montar o Pacote de novo."""
-        _execucao_ou_404(identificador)
+        pacote = _pacote_atual(identificador, audiencia, Formato.CARROSSEL)
         pasta = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, Formato.CARROSSEL)
         arquivo = pasta / f"slide-{slide:02d}.html"
         if not arquivo.is_file():
             raise HTTPException(404, "este slide não tem prévia: monte o carrossel de novo")
+        if not arquivo_do_pacote_atual(pacote, arquivo):
+            raise HTTPException(409, "slide de outra revisão: monte novamente")
         html = recolorir(arquivo.read_text(encoding="utf-8"), _paleta_da_rota(paleta))
         permitidas = [PASTA_DAS_FONTES, PASTA_PADRAO_DAS_FOTOS, pasta_execucoes / identificador]
         return HTMLResponse(embutir_arquivos(html, permitidas=permitidas))
@@ -1154,6 +1192,17 @@ def criar_app(
             raise HTTPException(400, "caminho sai da pasta da execução")
         if not alvo.is_file():
             raise HTTPException(404, f"arquivo {caminho!r} não encontrado")
+        partes = alvo.relative_to(raiz).parts
+        if partes and partes[0] == NOME_DA_PASTA_DO_PACOTE:
+            if len(partes) < 3:
+                raise HTTPException(404, "arquivo do Pacote não encontrado")
+            try:
+                audiencia, formato = partes[1].split("-", 1)
+                pacote = _pacote_atual(identificador, Audiencia(audiencia), Formato(formato))
+                if not arquivo_do_pacote_atual(pacote, alvo):
+                    raise HTTPException(409, "arquivo de outra revisão: monte novamente")
+            except ValueError:
+                raise HTTPException(404, "posição do Pacote inválida") from None
         return FileResponse(alvo)
 
     @app.get("/api/execucoes/{identificador}/filas")
@@ -1180,14 +1229,15 @@ def criar_app(
     @app.get("/api/execucoes/{identificador}/pacotes/{audiencia}/{formato}/baixar")
     def baixar_pacote(identificador: str, audiencia: Audiencia, formato: Formato) -> Response:
         """O Pacote pronto para publicar, num .zip: slides, legenda (com hashtags) e vídeo."""
-        _execucao_ou_404(identificador)
+        pacote = _pacote_atual(identificador, audiencia, formato)
         pasta = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato)
         arquivos = sorted(
             caminho
             for caminho in pasta.glob("*")
             if caminho.is_file()
+            and arquivo_do_pacote_atual(pacote, caminho)
             and (
-                caminho.name == "legenda.txt"
+                caminho.name in {"legenda.txt", "texto.md", "plano.json", "plano.md"}
                 or (caminho.name.startswith("slide-") and caminho.suffix == ".png")
                 or caminho.suffix == ".mp4"
             )
@@ -1213,11 +1263,10 @@ def criar_app(
         corpo: AprovacaoDoPacote | None = None,
     ) -> PacotePublicacao:
         with trava_de_escrita:
-            _execucao_ou_404(identificador)
+            pacote = _pacote_atual(identificador, audiencia, formato)
             arquivo = _pasta_do_pacote(pasta_execucoes, identificador, audiencia, formato) / NOME_DO_REGISTRO_DO_PACOTE
             if not arquivo.exists():
                 raise HTTPException(404, "Pacote não encontrado")
-            pacote = PacotePublicacao.model_validate_json(arquivo.read_text(encoding="utf-8"))
             feedback = FeedbackVisualHumano(
                 revisor=((corpo.revisor or "").strip() or None) if corpo else None,
                 observacao=((corpo.observacao or "").strip() or None) if corpo else None,

@@ -36,13 +36,20 @@ def _slug(titulo: str) -> str:
     return limpo[:PEDACOS_DO_IDENTIFICADOR].strip("-") or "documento"
 
 
-def _identificador_livre(pasta: Path, titulo: str, data: date) -> str:
+def _reservar_identificador(pasta: Path, titulo: str, data: date) -> str:
+    """Reserva o nome criando o JSON exclusivamente, inclusive entre processos."""
     base = f"{_slug(titulo)}-{data:%Y%m%d}"
     candidato, numero = base, 1
-    while any((pasta / f"{candidato}{sufixo}").exists() for sufixo in (".pdf", ".txt", ".json")):
+    while True:
+        if not any((pasta / f"{candidato}{sufixo}").exists() for sufixo in (".pdf", ".txt", ".json")):
+            try:
+                (pasta / f"{candidato}.json").touch(exist_ok=False)
+            except FileExistsError:
+                pass  # outra importação reservou depois da consulta
+            else:
+                return candidato
         numero += 1
         candidato = f"{base}-{numero}"
-    return candidato
 
 
 def _texto_utf8(conteudo: bytes) -> str:
@@ -83,7 +90,7 @@ def importar(
     pasta = Path(pasta_fontes) / ORIGEM_DOS_IMPORTADOS
     criou_a_pasta = not pasta.exists()
     pasta.mkdir(parents=True, exist_ok=True)
-    identificador = _identificador_livre(pasta, rotulo, data)
+    identificador = _reservar_identificador(pasta, rotulo, data)
     metadados = {
         "identificador": identificador,
         "titulo": rotulo,
@@ -93,23 +100,23 @@ def importar(
         "idioma": "pt",
         "importada_em": datetime.now(timezone.utc).isoformat(),
     }
-    escritos: list[Path] = []
+    # A reserva pertence a esta importação. Inclui os auxiliares antes de gravar:
+    # uma falha entre o TXT e o JSON também precisa remover o arquivo parcial.
+    # Libera o nome por último, depois de remover os parciais.
+    escritos = [pasta / f"{identificador}{sufixo}" for sufixo in (".pdf", ".txt", ".json")]
     try:
         if paginado:
             caminho = pasta / f"{identificador}.pdf"
             caminho.write_bytes(conteudo)
-            escritos.append(caminho)
             try:
                 caminho_txt, caminho_json = gravar_ao_lado(caminho, metadados)
             except Exception:  # noqa: BLE001 - pypdf levanta tipos variados para PDF quebrado
                 raise ArquivoRecusado("o PDF está ilegível") from None
-            escritos += [caminho_txt, caminho_json]
             if not caminho_txt.read_text(encoding="utf-8").strip():
                 raise ArquivoRecusado("o PDF não tem texto (parece escaneado)")
         else:
             caminho = pasta / f"{identificador}.txt"
             caminho.write_text(texto or "", encoding="utf-8")
-            escritos.append(caminho)
             caminho_json = caminho.with_suffix(".json")
             completos = {
                 **metadados,
@@ -119,7 +126,6 @@ def importar(
             caminho_json.write_text(
                 json.dumps(completos, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
-            escritos.append(caminho_json)
         return carregar_ata(caminho)
     except BaseException:
         for arquivo in escritos:

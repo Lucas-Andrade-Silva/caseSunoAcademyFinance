@@ -18,6 +18,7 @@ import {
 } from "../../dados/cliente";
 import Barras from "../../interface/Barras";
 import Botao from "../../interface/Botao";
+import PainelDeCorrecoes from "../../interface/PainelDeCorrecoes";
 import { CorpoDaPrevia, Divisao, Rotulo, TituloDaGuia, TituloDeSecao, TopoDaPrevia } from "../../interface/Divisao";
 import { IconeBaixar, IconeGirando, IconeMarca, IconeSalvar } from "../../interface/Icones";
 import { Pilulas } from "../../interface/Pilulas";
@@ -25,6 +26,7 @@ import Vazio from "../../interface/Vazio";
 import { urlDoZipDoPacote } from "../../dados/cliente";
 import { buscar, usarDados } from "../../nucleo/dados";
 import { usarHistorico } from "../../nucleo/historico";
+import { indicesComCorrecao, localizarCorrecoes, type CampoCorrigivel } from "../../nucleo/correcoes";
 import { barrasDoLaudo } from "../../nucleo/laudo";
 import { CHAVES } from "../../nucleo/precarga";
 import { pluralizar, rotuloAudiencia } from "../../texto/rotulos";
@@ -140,6 +142,9 @@ export default function Editor({
   const { dados: papeisDasFamilias } = usarDados(CHAVES.familias, listarFamiliasVisuais);
 
   const [audiencia, definirAudiencia] = useState<Audiencia>(restaurado?.audiencia ?? origens[0].audiencia);
+  const audienciaAtual = useRef(audiencia);
+  const revisoes = useRef<Partial<Record<Audiencia, number>>>({});
+  const salvamentoEmCurso = useRef(false);
   const origem = origens.find((o) => o.audiencia === audiencia) ?? origens[0];
 
   const [composicao, definirComposicao] = useState<Composicao>(
@@ -187,28 +192,66 @@ export default function Editor({
   const [textoSalvo, definirTextoSalvo] = useState<Partial<Record<Audiencia, boolean>>>({});
   const [salvandoTexto, definirSalvandoTexto] = useState(false);
   const [erroDoTexto, definirErroDoTexto] = useState<string | null>(null);
-  const laudo = laudosNovos[origem.audiencia] ?? origem.laudo;
+  const ultimoLaudo = laudosNovos[origem.audiencia] ?? origem.laudo;
+  const laudo = textoEditado && !textoSalvo[origem.audiencia] ? null : ultimoLaudo;
+  const camposCorrigiveis = useMemo<CampoCorrigivel[]>(
+    () => slides.flatMap((slide, indice) => [
+      { indice, local: `Quadro ${indice + 1} · título`, texto: slide.titulo },
+      { indice, local: `Quadro ${indice + 1} · corpo`, texto: slide.corpo },
+    ]),
+    [slides],
+  );
+  const correcoes = useMemo(
+    () => localizarCorrecoes(ultimoLaudo, camposCorrigiveis),
+    [ultimoLaudo, camposCorrigiveis],
+  );
+  const quadrosComProblema = useMemo(() => indicesComCorrecao(correcoes), [correcoes]);
+  const aprovada = laudo?.destino === "aprovado"
+    && laudo.audiencia === origem.audiencia && laudo.formato === "carrossel"
+    && Array.isArray(laudo.motivos) && laudo.motivos.length === 0;
+  const revisaoDaExportacao = useRef(0);
+
+  function mudarAudiencia(nova: Audiencia) {
+    audienciaAtual.current = nova;
+    definirAudiencia(nova);
+    definirParaExportar(null);
+    definirErroDoTexto(null);
+    definirErroDoServidor(null);
+    definirHistoricoGuardado(false);
+  }
 
   async function salvarTexto() {
-    if (execucaoId === null) return;
+    if (execucaoId === null || salvamentoEmCurso.current) return;
+    const alvo = origem.audiencia;
+    const revisao = revisoes.current[alvo] ?? 0;
+    salvamentoEmCurso.current = true;
     definirSalvandoTexto(true);
     definirErroDoTexto(null);
     try {
       const novo = await editarTextoDaCelula(execucaoId, origem.audiencia, "carrossel", {
         slides: slides.map(({ titulo, corpo }) => ({ titulo, corpo })),
       });
-      definirLaudosNovos((atuais) => ({ ...atuais, [origem.audiencia]: novo }));
-      definirTextoSalvo((atuais) => ({ ...atuais, [origem.audiencia]: true }));
-      definirVista("avaliacao");
+      if ((revisoes.current[alvo] ?? 0) !== revisao) return;
+      definirLaudosNovos((atuais) => ({ ...atuais, [alvo]: novo }));
+      definirTextoSalvo((atuais) => ({ ...atuais, [alvo]: true }));
+      if (audienciaAtual.current === alvo) definirVista("avaliacao");
     } catch (erro) {
-      definirErroDoTexto(erro instanceof Error ? erro.message : "Não consegui salvar o texto.");
+      if (audienciaAtual.current === alvo && (revisoes.current[alvo] ?? 0) === revisao) {
+        definirErroDoTexto(erro instanceof Error ? erro.message : "Não consegui salvar o texto.");
+      }
     } finally {
+      salvamentoEmCurso.current = false;
       definirSalvandoTexto(false);
     }
   }
 
   function editarQuadro(indice: number, campos: Partial<CamposEditaveis>) {
+    revisoes.current[origem.audiencia] = (revisoes.current[origem.audiencia] ?? 0) + 1;
     definirTextoSalvo((atuais) => ({ ...atuais, [origem.audiencia]: false }));
+    definirGerados((atuais) => ({ ...atuais, [origem.audiencia]: undefined }));
+    definirNoServidor((atuais) => ({ ...atuais, [origem.audiencia]: undefined }));
+    definirParaExportar(null);
+    definirHistoricoGuardado(false);
     definirEditados((atuais) => {
       const base = atuais[origem.audiencia] ?? origem.slides;
       const lista = base.map((slide, i) => {
@@ -241,7 +284,7 @@ export default function Editor({
   // o salvo e o exportado. Numa família ele não existe no navegador; quem desenha é o servidor.
   const guardado = gerados[audiencia];
   const gerado: Montagem | null =
-    sunoEscuro && guardado
+    aprovada && sunoEscuro && guardado
       ? {
           audiencia,
           slides,
@@ -269,13 +312,17 @@ export default function Editor({
   useEffect(() => {
     if (!paraExportar) return;
     let cancelado = false;
+    const revisao = revisaoDaExportacao.current;
     void (async () => {
       try {
         await garantirFontes();
         await esperarMontagem();
         const nos = Array.from(recipiente.current?.querySelectorAll<HTMLElement>("[data-quadro]") ?? []);
         const imagens = await fotografarQuadros(nos);
-        if (!cancelado) baixarArquivo(zipDosQuadros(imagens), nomeDoZip(paraExportar.audiencia));
+        if (!cancelado && audienciaAtual.current === paraExportar.audiencia
+          && (revisoes.current[paraExportar.audiencia] ?? 0) === revisao) {
+          baixarArquivo(zipDosQuadros(imagens), nomeDoZip(paraExportar.audiencia));
+        }
       } catch {
         if (!cancelado) definirErroDaExportacao("Não consegui montar o zip. Tente de novo.");
       } finally {
@@ -331,12 +378,14 @@ export default function Editor({
   const exemploDeFamilia = !sunoEscuro && exemplo !== null;
 
   async function gerarNoServidor(referencia: NonNullable<typeof exemplo>) {
+    if (!aprovada || salvandoTexto) return;
     if (execucaoId === null) {
       definirErroDoServidor("Este exemplo só vale numa geração nova: abra uma Saída gerada para montá-lo.");
       return;
     }
     definirGerando(true);
     definirErroDoServidor(null);
+    const revisao = revisoes.current[audiencia] ?? 0;
     try {
       const urls = await montarNoServidor(
         execucaoId,
@@ -344,6 +393,7 @@ export default function Editor({
         referencia.identificador,
         paletaParaServidor(paleta),
       );
+      if ((revisoes.current[audiencia] ?? 0) !== revisao) return;
       definirNoServidor((atuais) => ({
         ...atuais,
         [audiencia]: {
@@ -354,28 +404,33 @@ export default function Editor({
         },
       }));
       definirRodada((atual) => atual + 1);
-      definirVista("previa");
+      if (audienciaAtual.current === audiencia) definirVista("previa");
     } catch (erro) {
-      definirErroDoServidor(
-        erro instanceof Error ? erro.message : "Não consegui montar o carrossel no servidor.",
-      );
+      if (audienciaAtual.current === audiencia && (revisoes.current[audiencia] ?? 0) === revisao) {
+        definirErroDoServidor(
+          erro instanceof Error ? erro.message : "Não consegui montar o carrossel no servidor.",
+        );
+      }
     } finally {
       definirGerando(false);
     }
   }
 
   async function gerar() {
+    if (!aprovada || salvandoTexto || gerando) return;
     if (exemplo !== null && exemploDeFamilia) {
       await gerarNoServidor(exemplo);
       return;
     }
     definirErroDoServidor(null);
     definirGerando(true);
+    const revisao = revisoes.current[audiencia] ?? 0;
     try {
       const lista =
         idRemoto !== null && ancorasDoServidor === undefined
           ? ((await buscar(chaveDasAncoras, buscarAncoras)) ?? [])
           : ancoras;
+      if ((revisoes.current[audiencia] ?? 0) !== revisao) return;
       definirGerados((atuais) => ({
         ...atuais,
         [audiencia]: {
@@ -389,37 +444,45 @@ export default function Editor({
         },
       }));
       definirRodada((atual) => atual + 1);
-      definirVista("previa");
+      if (audienciaAtual.current === audiencia) definirVista("previa");
     } finally {
       definirGerando(false);
     }
   }
 
   function salvarNoHistorico() {
-    if (!gerado) return;
+    if (!aprovada || salvandoTexto || !salvavel) return;
     salvar({
       especie: "carrossel",
       titulo,
-      resumo: `${pluralizar(gerado.slides.length, "quadro", "quadros")} · ${rotuloDaComposicao(gerado.composicao)}`,
-      audiencia: gerado.audiencia,
+      resumo: `${pluralizar(salvavel.slides.length, "quadro", "quadros")} · ${rotuloDaComposicao(salvavel.composicao)}`,
+      audiencia: salvavel.audiencia,
       execucaoId,
-      dados: dadosParaSalvar(gerado, laudo),
+      dados: dadosParaSalvar(salvavel, laudo),
     });
     definirHistoricoGuardado(true);
   }
 
   function exportar() {
-    if (!gerado) return;
+    if (!aprovada || salvandoTexto || !gerado) return;
+    revisaoDaExportacao.current = revisoes.current[audiencia] ?? 0;
     definirErroDaExportacao(null);
     definirParaExportar(gerado);
   }
 
   // O render do servidor só vale enquanto o layout escolhido é o mesmo com que ele foi montado.
   const montadoAgora = noServidor[audiencia];
-  const doServidor = montadoAgora && montadoAgora.referenciaId === referenciaId ? montadoAgora : null;
+  const doServidor = aprovada && montadoAgora && montadoAgora.referenciaId === referenciaId ? montadoAgora : null;
   // A prévia recolore na hora, mas o zip é dos PNGs: com outra paleta, só depois de gerar de novo.
   const paletaDoRender = doServidor !== null && doServidor.paletaId === paleta.id;
   const servidorNaTela = !sunoEscuro && vista === "previa" && doServidor !== null && paletaDoRender;
+  // Numa família, o que se salva é o que o servidor montou: os quadros e a referência dele, que ao
+  // reabrir escolhem a mesma família.
+  const salvavel: Montagem | null =
+    gerado ??
+    (doServidor && paletaDoRender
+      ? { audiencia, slides, composicao, referenciaId, paleta, icones, ancoras }
+      : null);
   const indisponivel = opcaoDaFamilia?.indisponivel ?? null;
   const designAtual: Design = { composicao, referencia: referenciaId };
   const designJaGuardado = mesmoDesign(design, designAtual);
@@ -445,7 +508,7 @@ export default function Editor({
         <Pilulas<Audiencia>
           rotuloAcessivel="Audiência"
           valor={audiencia}
-          onMudar={definirAudiencia}
+          onMudar={mudarAudiencia}
           opcoes={AUDIENCIAS.filter((a) => origens.some((o) => o.audiencia === a)).map((a) => ({
             valor: a,
             rotulo: rotuloAudiencia(a),
@@ -458,15 +521,30 @@ export default function Editor({
           <TituloDeSecao>Quadros</TituloDeSecao>
         </div>
         <div className="mt-6">
-          <Quadros key={origem.audiencia} quadros={quadros} ancoras={ancoras} aoEditar={editarQuadro} />
-          {textoEditado && (
+          <PainelDeCorrecoes
+            pontos={correcoes}
+            aoEditar={() => document.getElementById("carrossel-quadros")?.scrollIntoView({ behavior: "smooth" })}
+            aoSelecionar={(indice) => document.getElementById(`quadro-corrigivel-${indice}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+          />
+          <div className={correcoes.length > 0 ? "mt-4" : ""}>
+            <Quadros
+              key={origem.audiencia}
+              quadros={quadros}
+              ancoras={ancoras}
+              aoEditar={editarQuadro}
+              indicesComProblema={quadrosComProblema}
+            />
+          </div>
+          {(textoEditado || laudo === null) && (
             <div className="mt-4">
               <p className="text-[13px] text-etiqueta">
                 {textoSalvo[origem.audiencia]
-                  ? "Texto salvo e reavaliado: veja o Laudo em Avaliação. Toque em Gerar carrossel para a prévia."
-                  : "Texto editado. Toque em Gerar carrossel para ver a prévia; salve para reavaliar no Laudo e valer nos exemplos do servidor."}
+                  ? aprovada
+                    ? "Texto aprovado: toque em Gerar carrossel para a prévia."
+                    : "Texto reavaliado e reprovado: veja o Laudo em Avaliação e corrija os pontos indicados."
+                  : "Salve o texto e reavalie antes de gerar, salvar no histórico ou exportar o carrossel."}
               </p>
-              {execucaoId !== null && !textoSalvo[origem.audiencia] && (
+              {execucaoId !== null && (!textoSalvo[origem.audiencia] || laudo === null) && (
                 <div className="mt-3">
                   <Botao
                     variante="claro"
@@ -558,11 +636,20 @@ export default function Editor({
           <Botao
             variante="claro"
             tamanho="grande"
-            disabled={gerando || quadros.length === 0 || indisponivel !== null}
+            disabled={!aprovada || salvandoTexto || gerando || quadros.length === 0 || indisponivel !== null}
             onClick={() => void gerar()}
           >
             {gerando ? (exemploDeFamilia ? "Montando no servidor…" : "Gerando…") : "Gerar carrossel"}
           </Botao>
+          {!aprovada && (
+            <p role="status" className="mt-3 text-[14px] text-coral-claro">
+              {laudo === null
+                ? execucaoId === null
+                  ? "Este salvo não tem Laudo válido. Abra uma nova Saída para avaliar o conteúdo."
+                  : "O texto atual precisa ser reavaliado e aprovado."
+                : "O Laudo reprovou esta Célula. Corrija o texto e reavalie para liberar o carrossel."}
+            </p>
+          )}
           {indisponivel && (
             <p role="alert" className="mt-3 text-[14px] text-coral-claro">
               A Família {opcaoDaFamilia?.rotulo} não monta este carrossel ({indisponivel.toLowerCase()}).
@@ -674,7 +761,7 @@ export default function Editor({
         )}
         <Botao
           variante="escuro"
-          disabled={!gerado}
+          disabled={!aprovada || salvandoTexto || !salvavel}
           icone={historicoGuardado ? <IconeMarca size={18} strokeWidth={2.5} /> : <IconeSalvar size={18} />}
           onClick={salvarNoHistorico}
         >
@@ -682,13 +769,17 @@ export default function Editor({
         </Botao>
         <Botao
           variante="claro"
-          disabled={(!gerado && !servidorNaTela) || paraExportar !== null}
+          disabled={!aprovada || salvandoTexto || (!gerado && !servidorNaTela) || paraExportar !== null}
           icone={
             paraExportar ? <IconeGirando size={18} className="animate-spin" /> : <IconeBaixar size={18} />
           }
           onClick={
             servidorNaTela && execucaoId !== null
-              ? () => window.location.assign(urlDoZipDoPacote(execucaoId, audiencia, "carrossel"))
+              ? () => {
+                  if (aprovada && !salvandoTexto) {
+                    window.location.assign(urlDoZipDoPacote(execucaoId, audiencia, "carrossel"));
+                  }
+                }
               : exportar
           }
         >

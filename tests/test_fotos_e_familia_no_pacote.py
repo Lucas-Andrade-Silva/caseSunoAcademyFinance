@@ -247,13 +247,17 @@ def test_assunto_sem_foto_gera_o_slide_sem_foto_e_sem_credito(
 
 
 @pytest.mark.skipif(not carrossel_html.disponivel(), reason="Node/Puppeteer não instalado")
-def test_familia_que_nao_cobre_os_papeis_do_carrossel_e_recusada_com_mensagem_clara(
+def test_familia_asset_pedida_monta_o_miolo_no_layout_de_texto(
     execucao_em_disco: Path, monkeypatch  # noqa: F811
 ) -> None:
     monkeypatch.setenv("SUNO_RENDER", "puppeteer")
 
-    with pytest.raises(ValueError, match="asset não tem layout para os papéis: .*ponto"):
-        montar_pacote(IDENTIFICADOR, execucao_em_disco, familia_visual=FamiliaVisual.ASSET)
+    pacotes = montar_pacote(IDENTIFICADOR, execucao_em_disco, familia_visual=FamiliaVisual.ASSET)
+
+    pacote = next(p for p in pacotes if p.formato is Formato.CARROSSEL)
+    # O carrossel da execução de teste só tem slides de miolo: todos caem no layout de texto.
+    assert [e.composicao.value for e in pacote.direcao_de_arte.escolhas] == ["asset_texto"] * 3
+    assert pacote.conferencia.defeitos == []
 
 
 def test_com_a_reserva_pillow_o_pacote_sai_sem_foto_e_sem_familia(execucao_em_disco: Path) -> None:  # noqa: F811

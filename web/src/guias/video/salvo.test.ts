@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BlocoFala } from "../../dados/cliente";
+import type { BlocoFala, Laudo } from "../../dados/cliente";
 import type { BarraDoLaudo } from "../../nucleo/laudo";
 import { montarPrompt } from "./instrucao";
 import { rotuloDosJeitos } from "./jeitos";
@@ -29,8 +29,17 @@ const BARRA: BarraDoLaudo = {
 };
 
 function dados(parcial: Partial<DadosDoVideo> = {}): DadosDoVideo {
-  return { blocos: [BLOCO], clima: "serio", ritmo: "devagar", instrucao: "o prompt", barras: [BARRA], ...parcial };
+  return { blocos: [BLOCO], clima: "serio", ritmo: "devagar", instrucao: "o prompt", barras: [BARRA], laudo: null, ...parcial };
 }
+
+const LAUDO: Laudo = {
+  audiencia: "iniciante",
+  formato: "roteiro",
+  destino: "aprovado",
+  medidas: [],
+  motivos: [],
+};
+const TEXTO_AVALIADO = '[{"fala":"O juro caiu.","tela":"O JURO CAIU"}]';
 
 describe("lerDadosDoVideo", () => {
   it("devolve o que foi guardado, depois de passar pelo JSON do navegador", () => {
@@ -82,6 +91,45 @@ describe("lerDadosDoVideo", () => {
     expect(lido?.barras).toEqual([BARRA]);
     expect(lerDadosDoVideo({ ...dados(), barras: "nada" })?.barras).toEqual([]);
   });
+
+  it("preserva o Laudo quando o texto avaliado corresponde ao salvo", () => {
+    const guardado = JSON.parse(JSON.stringify(dados({ laudo: LAUDO, textoAvaliado: TEXTO_AVALIADO })));
+    expect(lerDadosDoVideo(guardado)?.laudo).toEqual(LAUDO);
+  });
+
+  it("um salvo legado sem texto avaliado continua legível, mas sem aprovação", () => {
+    const lido = lerDadosDoVideo(dados({ laudo: LAUDO }));
+    expect(lido?.blocos).toEqual([BLOCO]);
+    expect(lido?.laudo).toBeNull();
+  });
+
+  it.each(["fala", "tela"] as const)("alterar %s invalida o Laudo guardado", (campo) => {
+    const lido = lerDadosDoVideo(dados({
+      laudo: LAUDO,
+      textoAvaliado: TEXTO_AVALIADO,
+      blocos: [{ ...BLOCO, [campo]: "Compre ações agora." }],
+    }));
+    expect(lido?.blocos[0][campo]).toBe("Compre ações agora.");
+    expect(lido?.laudo).toBeNull();
+  });
+
+  it("uma assinatura diferente não empresta aprovação ao mesmo roteiro", () => {
+    expect(lerDadosDoVideo(dados({ laudo: LAUDO, textoAvaliado: `${TEXTO_AVALIADO} ` }))?.laudo).toBeNull();
+  });
+
+  it("não empresta o Laudo de outra audiência ao roteiro salvo", () => {
+    expect(lerDadosDoVideo(dados({ laudo: LAUDO, textoAvaliado: TEXTO_AVALIADO }), "avancado")?.laudo).toBeNull();
+  });
+
+  it.each(["reprovado_corrigivel", "reprovado_revisao_humana"] as const)(
+    "preserva o destino %s ao reabrir a versão avaliada",
+    (destino) => {
+      const reprovado: Laudo = { ...LAUDO, destino, motivos: ["recomendacao"] };
+      const lido = lerDadosDoVideo(dados({ laudo: reprovado, textoAvaliado: TEXTO_AVALIADO }));
+      expect(lido?.laudo).toEqual(reprovado);
+      expect(lido?.laudo?.destino).not.toBe("aprovado");
+    },
+  );
 });
 
 describe("rotuloDosJeitos", () => {

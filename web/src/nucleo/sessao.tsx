@@ -18,6 +18,7 @@ import {
   AUDIENCIAS,
   FORMATOS,
   criarSaida,
+  listarExecucoes,
   mensagemDeFalha,
   obterAndamento,
   obterExecucao,
@@ -31,8 +32,10 @@ import {
 import { rotuloFormato } from "../texto/rotulos";
 import { apagar, gravar, ler } from "./armazenamento";
 import { usarConfiguracoes } from "./configuracoes";
+import { buscar } from "./dados";
 import { guiaDoCaminho } from "./guias";
 import { corpoDaSaida, motivoDeRecusa, type ExtrasDaGeracao } from "./pedido";
+import { CHAVES } from "./precarga";
 import { usarSelecao } from "./selecao";
 
 export type FaseDaSessao = "vazia" | "enviando" | "gerando" | "pronta" | "falhou";
@@ -82,6 +85,16 @@ type Estados = Record<Formato, EstadoDaSessao>;
 
 const INTERVALO_MS = 1500;
 const chaveDoFormato = (formato: Formato) => `suno.sessao.${formato}`;
+
+/** A lista pode já estar em voo desde antes da criação ou conclusão. Nesse caso, renova uma vez. */
+async function atualizarHistorico(execucaoId: string, concluida = false): Promise<void> {
+  const lista = await buscar(CHAVES.execucoes, listarExecucoes);
+  if (!lista) return;
+  const execucao = lista.find((item) => item.identificador === execucaoId);
+  if (!execucao || (concluida && (execucao.status === "na_fila" || execucao.status === "gerando"))) {
+    await buscar(CHAVES.execucoes, listarExecucoes);
+  }
+}
 
 /** O que a aba tinha antes de recarregar: a Saída de cada guia, para retomar em `enviando`. */
 function estadoInicial(): Estados {
@@ -135,6 +148,7 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
   estadosRef.current = estados;
   const ativaRef = useRef(ativa);
   ativaRef.current = ativa;
+  const consultasEmVoo = useRef(new Set<string>());
 
   const mudar = useCallback((formato: Formato, parte: Partial<EstadoDaSessao>) => {
     definirEstados((atuais) => ({ ...atuais, [formato]: { ...atuais[formato], ...parte } }));
@@ -170,7 +184,12 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
           naoVista: avisar && ativaRef.current !== formato,
         });
       } catch (falha: unknown) {
-        mudar(formato, { fase: "falhou", erro: mensagemDeFalha(falha) });
+        mudar(formato, {
+          fase: avisar ? "gerando" : "falhou",
+          erro: avisar
+            ? `Não consegui carregar o resultado. Vou tentar novamente. ${mensagemDeFalha(falha)}`
+            : mensagemDeFalha(falha),
+        });
       }
     },
     [mudar],
@@ -180,12 +199,16 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
     async (formato: Formato) => {
       const id = estadosRef.current[formato].execucaoId;
       if (!id) return;
+      const chave = `${formato}:${id}`;
+      if (consultasEmVoo.current.has(chave)) return;
+      consultasEmVoo.current.add(chave);
       try {
         const andamento = await obterAndamento(id);
         if (estadosRef.current[formato].execucaoId !== id) return;
         if (andamento.estado === "concluida") {
-          mudar(formato, { andamento });
+          mudar(formato, { andamento, erro: null });
           await carregarCelulas(formato, id, true);
+          void atualizarHistorico(id, true);
         } else if (andamento.estado === "falhou" || andamento.estado === "interrompida") {
           mudar(formato, {
             andamento,
@@ -196,11 +219,17 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
                 ? "A geração foi interrompida (o servidor reiniciou ou a cota acabou)."
                 : "A geração falhou."),
           });
+          void atualizarHistorico(id, true);
         } else {
-          mudar(formato, { andamento });
+          mudar(formato, { andamento, erro: null });
         }
-      } catch {
-        /* erro de rede passageiro: a próxima volta tenta de novo */
+      } catch (falha: unknown) {
+        if (estadosRef.current[formato].execucaoId !== id) return;
+        mudar(formato, {
+          erro: `Não consegui acompanhar a geração. Vou tentar novamente. ${mensagemDeFalha(falha)}`,
+        });
+      } finally {
+        consultasEmVoo.current.delete(chave);
       }
     },
     [carregarCelulas, mudar],
@@ -236,17 +265,24 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
 
   const retomar = useCallback(
     async (formato: Formato, execucaoId: string) => {
+      const chave = `${formato}:${execucaoId}`;
+      if (consultasEmVoo.current.has(chave)) return;
+      consultasEmVoo.current.add(chave);
       mudar(formato, { ...VAZIO, fase: "enviando", execucaoId });
       try {
-        const andamento = await obterAndamento(execucaoId);
-        if (andamento.estado === "na_fila" || andamento.estado === "gerando") {
-          mudar(formato, { fase: "gerando", andamento });
-          return;
+        try {
+          const andamento = await obterAndamento(execucaoId);
+          if (andamento.estado === "na_fila" || andamento.estado === "gerando") {
+            mudar(formato, { fase: "gerando", andamento });
+            return;
+          }
+        } catch {
+          /* Saída antiga, sem `andamento.json`: vale o que está gravado */
         }
-      } catch {
-        /* Saída antiga, sem `andamento.json`: vale o que está gravado */
+        await carregarCelulas(formato, execucaoId);
+      } finally {
+        consultasEmVoo.current.delete(chave);
       }
-      await carregarCelulas(formato, execucaoId);
     },
     [carregarCelulas, mudar],
   );
@@ -283,6 +319,7 @@ export function ProvedorDeSessoes({ children }: { children: ReactNode }) {
           andamento,
           audiencias: [...audiencias],
         });
+        void atualizarHistorico(andamento.identificador);
       } catch (falha: unknown) {
         mudar(formato, { fase: "falhou", erro: mensagemDeFalha(falha) });
       }

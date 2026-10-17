@@ -56,13 +56,11 @@ export default function FluxoDaGuia({ formato, rotuloGerando, extras, children }
     );
   }
 
-  // Retomando uma Saída depois de recarregar: não há o que mostrar até o servidor responder.
-  if (sessao.fase === "enviando" && sessao.execucaoId) return null;
-
   if (sessao.fase === "enviando" || sessao.fase === "gerando") {
     return (
-      <div className="flex min-h-full items-center justify-center px-5 lg:pl-[var(--area-da-rail)]">
+      <div className="flex min-h-full flex-col items-center justify-center gap-5 px-5 lg:pl-[var(--area-da-rail)]">
         <Gerando rotulo={rotuloGerando} andamento={sessao.andamento} audiencias={sessao.audiencias} />
+        {sessao.erro && <p role="alert" className="max-w-lg text-center text-coral-claro">{sessao.erro} A consulta será repetida automaticamente.</p>}
       </div>
     );
   }

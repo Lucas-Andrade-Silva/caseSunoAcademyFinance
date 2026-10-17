@@ -16,6 +16,8 @@ Ninguém renomeia modelo daqui sem atualizar o CONTEXT.md e avisar o coordenador
 
 from __future__ import annotations
 
+import hashlib
+
 from datetime import date, datetime, timezone
 from enum import StrEnum
 from pathlib import Path
@@ -350,6 +352,7 @@ class ComposicaoCarrossel(StrEnum):
     DADOS_CTA = "dados_cta"
     # Família Asset (carrossel5): só por escolha explícita (marca Suno Asset).
     ASSET_CAPA = "asset_capa"
+    ASSET_TEXTO = "asset_texto"
     ASSET_AVISO = "asset_aviso"
 
 
@@ -1063,15 +1066,21 @@ class Execucao(BaseModel):
     def celula_liberada(self, audiencia: Audiencia, formato: Formato) -> bool:
         """A Célula pode gerar Pacote: o Laudo aprovou, ou um revisor humano a aprovou (H4)."""
         historico = self.historico(audiencia, formato)
-        if historico is not None and historico.destino_final is Destino.APROVADO:
-            return True
+        if historico is None or historico.celula_final is None or historico.laudo_final is None:
+            return False
+        if MotivoReprovacao.RECOMENDACAO in historico.laudo_final.motivos:
+            return False
         decisao = self.decisao_de(audiencia, formato)
-        return (
-            historico is not None
-            and historico.celula_final is not None
-            and decisao is not None
-            and decisao.estado is EstadoDecisao.APROVADA
-        )
+        if decisao is not None:
+            return decisao.estado is EstadoDecisao.APROVADA
+        return historico.destino_final is Destino.APROVADO
+
+    def assinatura_da_celula(self, audiencia: Audiencia, formato: Formato) -> str | None:
+        """Vincula os derivados ao conteúdo e à avaliação da revisão atual."""
+        historico = self.historico(audiencia, formato)
+        if historico is None or not historico.tentativas:
+            return None
+        return hashlib.sha256(historico.tentativas[-1].model_dump_json().encode("utf-8")).hexdigest()
 
     def matriz_liberada(self) -> bool:
         """A conferência da Matriz passou, ou só a reprovação de Células a segurava e um revisor
@@ -1264,6 +1273,7 @@ class PacotePublicacao(BaseModel):
     """O conjunto pronto para um humano publicar, só de Célula aprovada."""
 
     execucao: str
+    assinatura_conteudo: str | None = None
     audiencia: Audiencia
     formato: Formato
     legenda: str
@@ -1279,6 +1289,17 @@ class PacotePublicacao(BaseModel):
     montado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     aprovado_por_humano: bool = False
     feedback_visual_humano: FeedbackVisualHumano | None = None
+
+    def corresponde_a(self, execucao: Execucao) -> bool:
+        if self.execucao != execucao.identificador:
+            return False
+        if not execucao.celula_liberada(self.audiencia, self.formato):
+            return False
+        if self.assinatura_conteudo is not None:
+            return self.assinatura_conteudo == execucao.assinatura_da_celula(self.audiencia, self.formato)
+        # Pacotes antigos continuam legíveis, mas nunca depois de uma nova avaliação.
+        historico = execucao.historico(self.audiencia, self.formato)
+        return bool(historico and historico.laudo_final and self.montado_em >= historico.laudo_final.avaliado_em)
 
 
 # ---------------------------------------------------------------------------

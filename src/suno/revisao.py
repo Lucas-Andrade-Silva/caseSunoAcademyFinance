@@ -146,9 +146,11 @@ def _chaves_essenciais_da_execucao(execucao: Execucao) -> dict[str, frozenset[st
         return {"chaves_essenciais": chaves_essenciais_da(execucao.categoria)}
     partes = {
         int(achado.group(1))
-        for chave in (a.chave for a in execucao.ancoras.todas())
+        for chave in [*(a.chave for a in execucao.ancoras.numericas), *(a.identificador for a in execucao.ancoras.textuais)]
         if (achado := re.match(r"a(\d+)_", chave))
     }
+    if execucao.selecao is not None:
+        partes.update(range(1, len(execucao.selecao.itens) + 1))
     return {
         "chaves_essenciais": frozenset(
             f"a{posicao}_{chave}"

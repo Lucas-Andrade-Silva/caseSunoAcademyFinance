@@ -15,8 +15,9 @@ import {
 import { listarOrigens, type ResumoDaAta } from "../dados/cliente";
 import { alternarSelecao } from "../lib/fontes";
 import { ler, gravar } from "./armazenamento";
+import { usarConfiguracoes } from "./configuracoes";
 import { usarDados } from "./dados";
-import { recentes } from "./janela";
+import { noticiasDoModo } from "./janela";
 
 const CHAVE = "suno.noticias-guardadas";
 export const MAXIMO_DE_NOTICIAS = 3;
@@ -37,7 +38,7 @@ interface Selecao {
   atualizar: () => void;
   /** O rascunho difere do que está guardado. */
   pendente: boolean;
-  /** As Atas guardadas, na janela de 30 dias e ainda existentes em disco. */
+  /** As Atas guardadas que ainda pertencem ao acervo do modo atual. */
   atasGuardadas: ResumoDaAta[];
   /** Tira tudo (guardada e rascunho). */
   limpar: () => void;
@@ -50,16 +51,27 @@ function iguais(a: readonly string[], b: readonly string[]): boolean {
 }
 
 export function ProvedorDeSelecao({ children }: { children: ReactNode }) {
+  const { modo } = usarConfiguracoes();
   const [guardada, definirGuardada] = useState<string[]>(lerGuardada);
   const [rascunho, definirRascunho] = useState<string[]>(lerGuardada);
   const { dados } = usarDados("origens", listarOrigens);
 
   const todasAsAtas = useMemo(
-    () => recentes((dados?.origens ?? []).flatMap((origem) => origem.atas)),
-    [dados],
+    () => noticiasDoModo((dados?.origens ?? []).flatMap((origem) => origem.atas), modo),
+    [dados, modo],
+  );
+  const permitidas = useMemo(() => new Set(todasAsAtas.map((ata) => ata.identificador)), [todasAsAtas]);
+  // Filtrar também durante a renderização evita expor a seleção do modo anterior por um quadro.
+  const guardadaDoModo = useMemo(
+    () => dados === undefined ? guardada : guardada.filter((id) => permitidas.has(id)),
+    [dados, guardada, permitidas],
+  );
+  const rascunhoDoModo = useMemo(
+    () => dados === undefined ? rascunho : rascunho.filter((id) => permitidas.has(id)),
+    [dados, rascunho, permitidas],
   );
 
-  // Uma notícia que saiu da janela de 30 dias (ou do disco) deixa de contar como marcada.
+  // A troca de modo remove notícias incompatíveis; a janela de 30 dias vale apenas no Real.
   useEffect(() => {
     if (dados === undefined) return;
     const existentes = new Set(todasAsAtas.map((ata) => ata.identificador));
@@ -78,27 +90,28 @@ export function ProvedorDeSelecao({ children }: { children: ReactNode }) {
 
   const atasGuardadas = useMemo(
     () =>
-      guardada
+      guardadaDoModo
         .map((id) => todasAsAtas.find((ata) => ata.identificador === id))
         .filter((ata): ata is ResumoDaAta => ata !== undefined),
-    [guardada, todasAsAtas],
+    [guardadaDoModo, todasAsAtas],
   );
 
   const alternar = useCallback(
     (identificador: string) => {
-      if (!rascunho.includes(identificador) && rascunho.length >= MAXIMO_DE_NOTICIAS) {
+      if (!permitidas.has(identificador)) return false;
+      if (!rascunhoDoModo.includes(identificador) && rascunhoDoModo.length >= MAXIMO_DE_NOTICIAS) {
         return false;
       }
-      definirRascunho(alternarSelecao(rascunho, identificador));
+      definirRascunho(alternarSelecao(rascunhoDoModo, identificador));
       return true;
     },
-    [rascunho],
+    [rascunhoDoModo, permitidas],
   );
 
   const atualizar = useCallback(() => {
-    definirGuardada(rascunho);
-    gravar("sessao", CHAVE, rascunho);
-  }, [rascunho]);
+    definirGuardada(rascunhoDoModo);
+    gravar("sessao", CHAVE, rascunhoDoModo);
+  }, [rascunhoDoModo]);
 
   const limpar = useCallback(() => {
     definirGuardada([]);
@@ -108,15 +121,15 @@ export function ProvedorDeSelecao({ children }: { children: ReactNode }) {
 
   const valor = useMemo<Selecao>(
     () => ({
-      rascunho,
-      guardada,
+      rascunho: rascunhoDoModo,
+      guardada: guardadaDoModo,
       alternar,
       atualizar,
-      pendente: !iguais(rascunho, guardada),
+      pendente: !iguais(rascunhoDoModo, guardadaDoModo),
       atasGuardadas,
       limpar,
     }),
-    [rascunho, guardada, alternar, atualizar, atasGuardadas, limpar],
+    [rascunhoDoModo, guardadaDoModo, alternar, atualizar, atasGuardadas, limpar],
   );
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;

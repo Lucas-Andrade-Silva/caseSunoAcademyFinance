@@ -6,12 +6,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { editarTextoDaCelula, obterPlanoDeEdicao, type Audiencia, type BlocoFala, type Laudo } from "../../dados/cliente";
 import Barras from "../../interface/Barras";
 import Botao from "../../interface/Botao";
+import PainelDeCorrecoes from "../../interface/PainelDeCorrecoes";
 import { CorpoDaPrevia, Divisao, Ilha, TituloDaGuia, TopoDaPrevia } from "../../interface/Divisao";
 import { IconeFechar, IconeMarca, IconeSalvar } from "../../interface/Icones";
 import { Pilulas } from "../../interface/Pilulas";
 import Vazio from "../../interface/Vazio";
 import { usarHistorico } from "../../nucleo/historico";
-import { barrasDoLaudo, celulaBloqueada, type BarraDoLaudo } from "../../nucleo/laudo";
+import { indicesComCorrecao, localizarCorrecoes, type CampoCorrigivel } from "../../nucleo/correcoes";
+import { barrasDoLaudo, type BarraDoLaudo } from "../../nucleo/laudo";
 import { rotuloAudiencia } from "../../texto/rotulos";
 import CartaoDoPrompt from "./CartaoDoPrompt";
 import CenasDoRoteiro, { type CamposDaCena } from "./CenasDoRoteiro";
@@ -26,7 +28,9 @@ import { resumoDoRoteiro } from "./tempo";
 export interface RoteiroDaAudiencia {
   blocos: readonly BlocoFala[];
   barras: readonly BarraDoLaudo[];
-  /** Laudo com Recomendação: o prompt e o salvo ficam bloqueados, como o Pacote no servidor. */
+  /** O Laudo da versão exibida; salvos antigos precisam ser reavaliados. */
+  laudo?: Laudo | null;
+  /** Indicação legada de Compliance; a liberação exige o Laudo completo acima. */
   bloqueado: boolean;
 }
 
@@ -66,6 +70,7 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
   // O texto corrigido nas cenas vale no lugar do gerado: o prompt e o salvo saem dele.
   const [editados, definirEditados] = useState<Partial<Record<Audiencia, BlocoFala[]>>>({});
   const [edicoes, definirEdicoes] = useState(0);
+  const revisoes = useRef<Partial<Record<Audiencia, number>>>({});
   const cartao = useRef<HTMLDivElement>(null);
 
   const audiencia = audiencias.includes(escolhida) ? escolhida : audiencias[0];
@@ -78,13 +83,16 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
   const [erroDoTexto, definirErroDoTexto] = useState<string | null>(null);
 
   async function salvarTexto() {
-    if (execucaoId === null) return;
+    if (execucaoId === null || salvandoTexto) return;
+    const revisao = revisoes.current[audiencia] ?? 0;
     definirSalvandoTexto(true);
     definirErroDoTexto(null);
     try {
       const novo = await editarTextoDaCelula(execucaoId, audiencia, "roteiro", {
         blocos: blocos.map(({ fala, tela }) => ({ fala, tela })),
       });
+      // Uma resposta antiga nunca aprova o texto digitado enquanto ela estava em trânsito.
+      if ((revisoes.current[audiencia] ?? 0) !== revisao) return;
       definirLaudosNovos((atuais) => ({ ...atuais, [audiencia]: novo }));
       definirTextoSalvo((atuais) => ({ ...atuais, [audiencia]: true }));
     } catch (erro) {
@@ -95,6 +103,13 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
   }
 
   function editarCena(indice: number, campos: Partial<CamposDaCena>) {
+    revisoes.current[audiencia] = (revisoes.current[audiencia] ?? 0) + 1;
+    definirMostrando(false);
+    definirAtuacoes((atuais) => {
+      const proximas = { ...atuais };
+      delete proximas[audiencia];
+      return proximas;
+    });
     definirEditados((atuais) => {
       const base = atuais[audiencia] ?? roteiro?.blocos ?? [];
       return { ...atuais, [audiencia]: base.map((bloco, i) => (i === indice ? { ...bloco, ...campos } : bloco)) };
@@ -119,6 +134,18 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
     if (cartao.current) mostrarNaRolagem(cartao.current, !reduzido);
   }, [pedidos]);
 
+  const novoLaudo = laudosNovos[audiencia];
+  const barras = novoLaudo ? barrasDoLaudo(novoLaudo) : roteiro?.barras ?? [];
+  const laudo = novoLaudo ?? roteiro?.laudo;
+  const revisaoPendente = textoEditado && !textoSalvo[audiencia];
+  const bloqueado = revisaoPendente || laudo?.destino !== "aprovado";
+  const camposCorrigiveis = useMemo<CampoCorrigivel[]>(
+    () => blocos.map((bloco, indice) => ({ indice, local: `Cena ${indice + 1} · fala`, texto: bloco.fala })),
+    [blocos],
+  );
+  const correcoes = useMemo(() => localizarCorrecoes(laudo, camposCorrigiveis), [laudo, camposCorrigiveis]);
+  const cenasComProblema = useMemo(() => indicesComCorrecao(correcoes), [correcoes]);
+
   if (!roteiro || blocos.length === 0) {
     return (
       <div className="flex min-h-full items-center justify-center lg:pl-[var(--area-da-rail)]">
@@ -127,22 +154,24 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
     );
   }
 
-  const novoLaudo = laudosNovos[audiencia];
-  const barras = novoLaudo ? barrasDoLaudo(novoLaudo) : roteiro.barras;
-  const bloqueado = novoLaudo ? celulaBloqueada(novoLaudo) : roteiro.bloqueado;
   const jaSalvo = salvoComo === assinatura(audiencia, clima, ritmo, edicoes);
 
   async function pedirPrompt() {
+    if (bloqueado || buscandoAtuacao) return;
+    definirErroDoTexto(null);
+    const revisao = revisoes.current[audiencia] ?? 0;
     if (execucaoId !== null && !(audiencia in atuacoes)) {
       definirBuscandoAtuacao(true);
       let lida: AtuacaoDoPlano | null = null;
       try {
         lida = lerAtuacao((await obterPlanoDeEdicao(execucaoId, audiencia)).plano);
       } catch {
-        lida = null; // sem plano (servidor fora ou Roteiro não aprovado): o prompt sai sem atuação
+        definirErroDoTexto("Não foi possível confirmar a liberação do Roteiro no servidor. Tente novamente.");
+        return;
       } finally {
         definirBuscandoAtuacao(false);
       }
+      if ((revisoes.current[audiencia] ?? 0) !== revisao) return;
       definirAtuacoes((atuais) => ({ ...atuais, [audiencia]: lida }));
     }
     definirMostrando(true);
@@ -150,7 +179,11 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
   }
 
   function aoSalvar() {
-    const dados: DadosDoVideo = { blocos: [...blocos], clima, ritmo, instrucao, barras: [...barras] };
+    if (bloqueado) return;
+    const dados: DadosDoVideo = {
+      blocos: [...blocos], clima, ritmo, instrucao, barras: [...barras], laudo,
+      textoAvaliado: JSON.stringify(blocos.map(({ fala, tela }) => ({ fala, tela }))),
+    };
     salvar({
       especie: "video",
       titulo: nome || "Roteiro de vídeo",
@@ -177,28 +210,38 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
       )}
 
       <div className="mt-8">
-        <CenasDoRoteiro key={audiencia} blocos={blocos} aoEditar={editarCena} />
-        {textoEditado && (
+        <PainelDeCorrecoes
+          pontos={correcoes}
+          aoEditar={() => document.getElementById("cena-corrigivel-0")?.scrollIntoView({ behavior: "smooth", block: "center" })}
+          aoSelecionar={(indice) => document.getElementById(`cena-corrigivel-${indice}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+        />
+        <div className={correcoes.length > 0 ? "mt-4" : ""}>
+          <CenasDoRoteiro
+            key={audiencia}
+            blocos={blocos}
+            aoEditar={editarCena}
+            indicesComProblema={cenasComProblema}
+          />
+        </div>
+        {(textoEditado || !laudo) && (
           <div className="mt-4">
             <p className="text-[13px] text-etiqueta">
               {textoSalvo[audiencia]
-                ? "Texto salvo e reavaliado: o Laudo ao lado já é o da sua versão."
-                : "Texto editado: o prompt já usa a sua versão. Salve para reavaliar o Laudo."}
+                ? laudo?.destino === "aprovado"
+                  ? "Texto aprovado: o Laudo ao lado já é o da sua versão."
+                  : "Texto reavaliado e reprovado: corrija os pontos indicados no Laudo."
+                : "O prompt e o salvamento aguardam a avaliação desta versão do texto."}
             </p>
-            {execucaoId !== null && !textoSalvo[audiencia] && (
+            {execucaoId !== null && (revisaoPendente || !laudo) && (
               <div className="mt-3">
                 <Botao variante="claro" tamanho="pequeno" disabled={salvandoTexto} onClick={() => void salvarTexto()}>
                   {salvandoTexto ? "Reavaliando…" : "Salvar texto e reavaliar"}
                 </Botao>
               </div>
             )}
-            {erroDoTexto && (
-              <p role="alert" className="mt-3 text-[14px] text-coral-claro">
-                {erroDoTexto}
-              </p>
-            )}
           </div>
         )}
+        {erroDoTexto && <p role="alert" className="mt-3 text-[14px] text-coral-claro">{erroDoTexto}</p>}
       </div>
 
       <div className="mt-14">
@@ -214,7 +257,11 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
         </Botao>
         {bloqueado && (
           <p role="status" className="mt-3 text-[14px] leading-snug text-coral-claro">
-            Laudo com Recomendação: sem prompt.
+            {revisaoPendente
+              ? "Texto editado: reavalie antes de copiar o prompt ou salvar."
+              : !laudo
+                ? "Sem Laudo desta versão: reavalie antes de copiar o prompt ou salvar."
+                : "Laudo reprovado: corrija e reavalie antes de copiar o prompt ou salvar."}
           </p>
         )}
       </div>
@@ -244,7 +291,7 @@ export default function TelaDoVideo({ nome, execucaoId, audiencias, roteiros, re
           ) : (
             !mostrando && <Vazio titulo="Sem laudo." />
           )}
-          {mostrando && (
+          {mostrando && !bloqueado && (
             <div ref={cartao} className="surge">
               <CartaoDoPrompt texto={instrucao} />
             </div>

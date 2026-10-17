@@ -7,6 +7,7 @@ falso de `test_geracao.py`.
 from __future__ import annotations
 
 from pathlib import Path
+from shutil import copy2
 
 from fastapi.testclient import TestClient
 
@@ -24,10 +25,15 @@ TEXTO = (
 
 
 def _cliente(tmp_path: Path, *, executor=None, atualizador: Atualizador | None = None) -> TestClient:
+    # Estes cenários começam com uma Ata; a coleta local pode acrescentar outras ao acervo real.
+    atas = tmp_path / "atas"
+    atas.mkdir(exist_ok=True)
+    for extensao in (".json", ".txt", ".pdf"):
+        copy2(PASTA_ATAS / f"{ATA}{extensao}", atas / f"{ATA}{extensao}")
     return TestClient(
         criar_app(
             tmp_path / "execucoes",
-            pasta_atas=PASTA_ATAS,
+            pasta_atas=atas,
             pasta_fontes=tmp_path / "fontes",
             executar_fn=executor,
             atualizador=atualizador,

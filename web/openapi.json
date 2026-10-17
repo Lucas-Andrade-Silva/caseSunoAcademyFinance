@@ -2955,6 +2955,7 @@
           "dados_texto_grande",
           "dados_cta",
           "asset_capa",
+          "asset_texto",
           "asset_aviso"
         ],
         "title": "ComposicaoCarrossel",
@@ -4925,6 +4926,17 @@
           "execucao": {
             "type": "string",
             "title": "Execucao"
+          },
+          "assinatura_conteudo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assinatura Conteudo"
           },
           "audiencia": {
             "$ref": "#/components/schemas/Audiencia"

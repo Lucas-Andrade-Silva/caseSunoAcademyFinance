@@ -55,7 +55,7 @@ export default function CartaoDeNoticia({
   const selo = seloDaAta(ata.categoria);
   const conteudo = (
     <>
-      <span className="flex items-start justify-between gap-3">
+      <span className={`flex items-start justify-between gap-3 ${onMarcar ? "min-h-6 pr-9" : ""}`}>
         <span className="text-[13px] text-etiqueta">
           {formatarDataDoDia(ata.data_referencia)}
           {selo && <span className="ml-2 text-coral-claro">{selo}</span>}
@@ -70,14 +70,6 @@ export default function CartaoDeNoticia({
             </span>
           )}
         </span>
-        {onMarcar && (
-          <Bolinha
-            marcada={marcada}
-            desabilitada={bolinhaDesabilitada}
-            onClick={onMarcar}
-            rotulo={`Selecionar ${ata.titulo}`}
-          />
-        )}
       </span>
       <span className="mt-3 block text-[17px] leading-snug text-texto">{ata.titulo}</span>
       {ata.resumo && (
@@ -88,14 +80,28 @@ export default function CartaoDeNoticia({
     </>
   );
 
-  const base = `block w-full rounded-xl p-5 text-left transition-colors duration-150 ${
+  const base = `relative block w-full rounded-xl text-left transition-colors duration-150 ${
     marcada ? "bg-superficie-alta ring-1 ring-claro/60" : "bg-superficie"
   }`;
-  return onAbrir ? (
-    <button type="button" onClick={onAbrir} className={`${base} hover:bg-superficie-alta`}>
-      {conteudo}
-    </button>
-  ) : (
-    <div className={base}>{conteudo}</div>
+  return (
+    <div className={base}>
+      {onAbrir ? (
+        <button type="button" onClick={onAbrir} aria-label={`Abrir ${ata.titulo}`} className="block w-full rounded-xl p-5 text-left hover:bg-superficie-alta">
+          {conteudo}
+        </button>
+      ) : (
+        <div className="p-5">{conteudo}</div>
+      )}
+      {onMarcar && (
+        <div className="absolute right-5 top-5">
+          <Bolinha
+            marcada={marcada}
+            desabilitada={bolinhaDesabilitada}
+            onClick={onMarcar}
+            rotulo={`Selecionar ${ata.titulo}`}
+          />
+        </div>
+      )}
+    </div>
   );
 }

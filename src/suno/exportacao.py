@@ -12,7 +12,7 @@ import zipfile
 from enum import StrEnum
 from pathlib import Path
 
-from suno.dominio import Audiencia, Execucao, Formato
+from suno.dominio import Audiencia, Execucao, Formato, PacotePublicacao
 from suno.gerador.execucao import _markdown_da_celula
 
 ROTULO_DA_AUDIENCIA: dict[Audiencia, str] = {
@@ -31,6 +31,20 @@ class FormatoExportacao(StrEnum):
     JSON = "json"
     MARKDOWN = "md"
     ZIP = "zip"
+
+
+def arquivo_do_pacote_atual(pacote: PacotePublicacao, caminho: Path) -> bool:
+    """Arquivos antigos que sobraram no diretório não pertencem ao novo manifesto."""
+    if caminho.suffix == ".mp4":
+        if pacote.video is None or caminho.name != Path(pacote.video).name:
+            return False
+        revisao = caminho.with_suffix(".revisao")
+        if revisao.is_file():
+            return revisao.read_text(encoding="utf-8") == pacote.assinatura_conteudo
+        return caminho.stat().st_mtime <= pacote.montado_em.timestamp()
+    if caminho.name.startswith("slide-") and caminho.suffix in {".png", ".html", ".json"}:
+        return caminho.stem in {Path(imagem.caminho).stem for imagem in pacote.imagens}
+    return True
 
 
 def _linha_da_decisao(execucao: Execucao, audiencia: Audiencia, formato: Formato) -> str:
@@ -72,10 +86,17 @@ def _zip(execucao: Execucao, pasta: Path) -> bytes:
             arquivo.writestr(f"{raiz}/celulas/{nome}", _markdown_da_celula(historico))
         pasta_do_pacote = pasta / "pacote"
         if pasta_do_pacote.is_dir():
-            for caminho in sorted(pasta_do_pacote.rglob("*")):
-                if caminho.is_file():
-                    relativo = caminho.relative_to(pasta).as_posix()
-                    arquivo.write(caminho, f"{raiz}/{relativo}")
+            for manifesto in sorted(pasta_do_pacote.glob("*/pacote.json")):
+                try:
+                    pacote = PacotePublicacao.model_validate_json(manifesto.read_text(encoding="utf-8"))
+                except ValueError:
+                    continue
+                if not pacote.corresponde_a(execucao):
+                    continue
+                for caminho in sorted(manifesto.parent.rglob("*")):
+                    if caminho.is_file() and arquivo_do_pacote_atual(pacote, caminho):
+                        relativo = caminho.relative_to(pasta).as_posix()
+                        arquivo.write(caminho, f"{raiz}/{relativo}")
     return memoria.getvalue()
 
 

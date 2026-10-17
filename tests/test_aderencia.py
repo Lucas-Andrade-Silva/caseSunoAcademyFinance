@@ -302,3 +302,23 @@ def test_as_duas_listas_de_fora_andam_juntas() -> None:
     assert len(medida.numeros_fora_com_unidade) == len(medida.numeros_fora_das_ancoras)
     assert medida.numeros_fora_das_ancoras == ["15", "4 e 5 de agosto de 2026"]
     assert medida.numeros_fora_com_unidade == ["15%", "4 e 5 de agosto de 2026"]
+
+
+_PROJECAO = AncoraNumerica(
+    chave="ipca_projecao_ano_seguinte",
+    rotulo="Projeção do IPCA para o ano seguinte",
+    valor_literal="3,9",
+    unidade=Unidade.PERCENTUAL,
+    trecho="as projeções para a inflação para 2026, 2027 e 2028 são 5,2%, 3,9% e 3,2%",
+)
+
+
+def test_ano_citado_no_trecho_da_ancora_e_sustentado():
+    resultado = medir_aderencia("3,9% em 2027", [_PROJECAO])
+    assert resultado.proporcao == 1.0
+    assert resultado.numeros_fora_das_ancoras == []
+
+
+def test_ano_que_nenhum_trecho_cita_continua_reprovando():
+    resultado = medir_aderencia("3,9% em 2031", [_PROJECAO])
+    assert resultado.numeros_fora_das_ancoras == ["2031"]
