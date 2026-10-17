@@ -69,8 +69,10 @@ Cada rodada gera a Célula e a avalia em camadas, cada uma só se a anterior apr
 
 Reprovada, a Célula volta ao seu gerador com as correções medidas e o texto anterior, até o teto de
 rodadas (padrão 4, de 0 a 10). Ela para quando aprova, quando reprova por falha de extração (que
-vai direto à revisão humana, H4) ou quando o teto acaba. Erro de provedor também manda a Célula
-para H4, com o motivo registrado.
+vai direto à revisão humana, H4), quando o Gerador devolve o mesmo texto da rodada anterior (outra
+rodada só gastaria cota para reprovar igual) ou quando o teto acaba. Erro de provedor, ou qualquer
+exceção inesperada numa rodada, também manda a Célula para H4: ficam as tentativas que já existiam e o
+motivo, sem credencial, em `HistoricoCelula.falha`. Uma Célula teimosa nunca derruba as outras oito.
 
 Uma correção permanece no pedido enquanto a sua própria métrica não for medida e aprovada. Isso
 evita alternar entre duas reprovações quando uma camada posterior, como Fidelidade, não chega a
@@ -163,8 +165,6 @@ Nenhuma variável é necessária para a demo e os testes. Valores padrão do có
 | `SUNO_EXECUCOES` | `data/execucoes` (só a CLI) |
 | `SUNO_CONFIGURACOES` | `data/configuracoes.json` |
 
-`SUNO_JUIZ_VISAO`, que ainda aparece no `.env.example`, não é lido pelo código.
-
 A aba Configurações grava `data/configuracoes.json` (não versionado), que vale por cima do `.env`
 campo a campo e é relido quando muda: Jev, URL e Limiar do Jev, Fidelidade, rodadas, RPM, modelos e
 a fila de provedores de cada papel (gerador, checador, vídeo, juiz de visão, diretor de arte,
@@ -208,6 +208,11 @@ Só `data/execucoes/demo-copom-280/` é versionada (sem mp4 nem áudio).
 | Ponte do Jev | `cd netlify-jev && npm test` |
 | Contrato da API | `tests/test_contrato_openapi.py`; regere o cliente com `scripts/gerar-cliente.sh` |
 | Relatório de uma execução | `uv run --offline python scripts/relatorio.py --execucao demo-copom-280` |
+
+A Calibração (H2) ainda não foi feita: `data/calibracao/` só tem `FORMATO.md` e
+`rotulos.exemplo.csv` (linhas fictícias). Sem `rotulos.csv`, `scripts/relatorio.py` mostra apenas a
+matriz de confusão automática (`ORIGEM_AUTOMATICA`), e os Limiares de Flesch-BR e de Qualidade
+são os provisórios.
 
 `tests/conftest.py` derruba qualquer socket. `scripts/testar_llm_de_avaliacao.py` e
 `scripts/testar_busca_de_imagens.py` usam rede e chaves reais e ficam fora da suíte.

@@ -95,7 +95,6 @@ def sem_chaves_de_provedor(monkeypatch: pytest.MonkeyPatch, tmp_path_factory: py
     """Nenhum teste enxerga chave de API, mesmo que exista um .env na máquina."""
     for chave in CHAVES_DE_PROVEDOR:
         monkeypatch.delenv(chave, raising=False)
-    monkeypatch.setenv("SUNO_JUIZ_VISAO", "0")
     # O Jev e o checador de fidelidade (ADR 0035, 0036) nascem desligados na suíte, mesmo que um teste
     # da CLI tenha carregado o .env da máquina no processo.
     monkeypatch.setenv("SUNO_JEV", "0")
